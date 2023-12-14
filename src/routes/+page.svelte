@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Timeline from '$lib/components/Timeline/Timeline.svelte';
 	import MediaPool from '$lib/components/Workbench/MediaPool.svelte';
-	import { availableMedia } from '../stores/store';
+	import { saveFilesToStore } from '$lib/utils/utils';
 
 	let hoverMedia = false;
 
@@ -17,7 +17,7 @@
 		// get file(s) from drop
 		let files = e.dataTransfer?.files;
 		if (files) {
-			handleFiles(files);
+			saveFilesToStore(files);
 		}
 	}
 
@@ -28,14 +28,6 @@
 		e.preventDefault();
 		e.stopPropagation();
 		hoverMedia = true;
-	}
-
-	function handleFiles(files: FileList) {
-		// convert FileList type to an array
-		let filesArr = [...files];
-
-		// save dropped file(s) into store
-		availableMedia.update((arr) => [...arr, ...filesArr]);
 	}
 </script>
 

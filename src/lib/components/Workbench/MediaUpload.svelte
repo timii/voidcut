@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { availableMedia } from '../../../stores/store';
+	import { saveFilesToStore } from '$lib/utils/utils';
 
 	function onMediaUpload(e: Event) {
 		console.log('media added:', e);
@@ -9,20 +9,20 @@
 			const files = (inputTarget as HTMLInputElement).files;
 
 			if (files) {
-				handleFiles(files);
+				saveFilesToStore(files);
 			}
 		}
 	}
 
-	function handleFiles(files: FileList) {
-		// convert FileList type to an array
-		let filesArr = [...files];
+	// function handleFiles(files: FileList) {
+	// 	// convert FileList type to an array
+	// 	let filesArr = [...files];
 
-		// save dropped file(s) into store
-		availableMedia.update((arr) => [...arr, ...filesArr]);
+	// 	// save dropped file(s) into store
+	// 	availableMedia.update((arr) => [...arr, ...filesArr]);
 
-		console.log('handleFiles -> files', files, 'availableMedia', $availableMedia);
-	}
+	// 	console.log('handleFiles -> files', files, 'availableMedia', $availableMedia);
+	// }
 </script>
 
 <div class="media-upload flex flex-col justify-center items-center h-full gap-8">
