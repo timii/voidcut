@@ -13,20 +13,11 @@
 			}
 		}
 	}
-
-	// function handleFiles(files: FileList) {
-	// 	// convert FileList type to an array
-	// 	let filesArr = [...files];
-
-	// 	// save dropped file(s) into store
-	// 	availableMedia.update((arr) => [...arr, ...filesArr]);
-
-	// 	console.log('handleFiles -> files', files, 'availableMedia', $availableMedia);
-	// }
 </script>
 
 <div class="media-upload flex flex-col justify-center items-center h-full gap-8">
 	<span class="media-upload-image">image placeholder</span>
+	<img src="$lib/assets/media-upload.png" alt="Media Upload" />
 	<div class="media-upload-info flex flex-col w-1/3 text-center">
 		<span>You have no media files added to this project. Upload media files to get started.</span>
 		<span class="text-gray-500 text-sm italic"
