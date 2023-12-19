@@ -34,6 +34,7 @@
 <main class="grid h-screen w-screen gap-1">
 	<div
 		class="workbench border-2 p-4 row-span-2"
+		role="region"
 		on:drop={onDropMedia}
 		on:dragleave={onDropMedia}
 		on:dragenter={onHoverMedia}
