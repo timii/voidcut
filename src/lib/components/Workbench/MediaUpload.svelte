@@ -2,7 +2,8 @@
 	import { saveFilesToStore } from '$lib/utils/utils';
 	import MediaUploadImage from '$lib/assets/media-upload.png';
 
-	function onMediaUpload(e: Event) {
+	// handle file(s) when media is uploaded
+	async function onMediaUpload(e: Event) {
 		console.log('media added:', e);
 
 		const inputTarget = e.target;
@@ -10,9 +11,35 @@
 			const files = (inputTarget as HTMLInputElement).files;
 
 			if (files) {
+				const videoMetadata = await getFileMetadata(files);
+				console.log('onMediaUpload -> videoMetadata:', videoMetadata);
 				saveFilesToStore(files);
 			}
 		}
+	}
+
+	// get metadata from given FileList
+	function getFileMetadata(files: FileList) {
+		return new Promise((resolve, reject) => {
+			// convert FileList type to an array
+			let filesArr = [...files];
+
+			// create video element to "hold" each file and only preload its metadata
+			var video = document.createElement('video');
+			video.preload = 'metadata';
+
+			// console.log('getFileInfo before onleadedmetadata -> video:', video);
+			video.src = URL.createObjectURL(filesArr[0]);
+			// add event listener to when metadata has loaded
+			video.onloadedmetadata = () => {
+				window.URL.revokeObjectURL(video.src);
+				var duration = video.duration;
+				console.log('getFileInfo in onleadedmetadata -> duration:', duration, 'video:', video);
+				resolve(duration);
+			};
+
+			// console.log('getFileInfo after onleadedmetadata -> video:', video);
+		});
 	}
 </script>
 

@@ -11,5 +11,6 @@
 		{/each}
 	</div>
 {:else}
+	<!-- No media added yet -->
 	<MediaUpload></MediaUpload>
 {/if}
