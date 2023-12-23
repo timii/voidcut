@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { saveFilesToStore } from '$lib/utils/utils';
+	import { handleMediaUpload, saveFilesToStore } from '$lib/utils/utils';
 	import MediaUploadImage from '$lib/assets/media-upload.png';
 
 	// handle file(s) when media is uploaded
@@ -11,9 +11,7 @@
 			const files = (inputTarget as HTMLInputElement).files;
 
 			if (files) {
-				const videoMetadata = await getFileMetadata(files);
-				console.log('onMediaUpload -> videoMetadata:', videoMetadata);
-				saveFilesToStore(files);
+				await handleMediaUpload(files);
 			}
 		}
 	}
@@ -28,8 +26,9 @@
 			var video = document.createElement('video');
 			video.preload = 'metadata';
 
-			// console.log('getFileInfo before onleadedmetadata -> video:', video);
+			// create blob out of file and pass it as a source to the video element
 			video.src = URL.createObjectURL(filesArr[0]);
+
 			// add event listener to when metadata has loaded
 			video.onloadedmetadata = () => {
 				window.URL.revokeObjectURL(video.src);
