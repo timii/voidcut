@@ -15,31 +15,6 @@
 			}
 		}
 	}
-
-	// get metadata from given FileList
-	function getFileMetadata(files: FileList) {
-		return new Promise((resolve, reject) => {
-			// convert FileList type to an array
-			let filesArr = [...files];
-
-			// create video element to "hold" each file and only preload its metadata
-			var video = document.createElement('video');
-			video.preload = 'metadata';
-
-			// create blob out of file and pass it as a source to the video element
-			video.src = URL.createObjectURL(filesArr[0]);
-
-			// add event listener to when metadata has loaded
-			video.onloadedmetadata = () => {
-				window.URL.revokeObjectURL(video.src);
-				var duration = video.duration;
-				console.log('getFileInfo in onleadedmetadata -> duration:', duration, 'video:', video);
-				resolve(duration);
-			};
-
-			// console.log('getFileInfo after onleadedmetadata -> video:', video);
-		});
-	}
 </script>
 
 <div class="media-upload flex flex-col justify-center items-center h-full gap-8">

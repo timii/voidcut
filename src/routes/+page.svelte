@@ -1,46 +1,10 @@
 <script lang="ts">
 	import Timeline from '$lib/components/Timeline/Timeline.svelte';
 	import MediaPool from '$lib/components/Workbench/MediaPool.svelte';
-	import { saveFilesToStore } from '$lib/utils/utils';
-
-	let hoverMedia = false;
-
-	function onDropMedia(e: DragEvent) {
-		console.log('media dropped:', e, 'dataTransfer:', e.dataTransfer);
-
-		// prevent default behavior
-		e.preventDefault();
-		e.stopPropagation();
-
-		hoverMedia = false;
-
-		// get file(s) from drop
-		let files = e.dataTransfer?.files;
-		if (files) {
-			saveFilesToStore(files);
-		}
-	}
-
-	function onHoverMedia(e: DragEvent) {
-		console.log('hover media:', e);
-
-		// prevent default behavior
-		e.preventDefault();
-		e.stopPropagation();
-		hoverMedia = true;
-	}
 </script>
 
 <main class="grid h-screen w-screen gap-1">
-	<div
-		class="workbench border-2 p-4 row-span-2"
-		role="region"
-		on:drop={onDropMedia}
-		on:dragleave={onDropMedia}
-		on:dragenter={onHoverMedia}
-		on:dragover={onHoverMedia}
-		style="background-color: {hoverMedia ? '#2e2e35' : ''};"
-	>
+	<div class="workbench border-2 p-4 row-span-2">
 		<MediaPool></MediaPool>
 	</div>
 	<div class="preview border-2 p-4 row-span-2 col-span-2">preview</div>
