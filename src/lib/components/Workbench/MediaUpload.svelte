@@ -19,7 +19,7 @@
 
 <div class="media-upload flex flex-col justify-center items-center h-full gap-8">
 	<img src={MediaUploadImage} class="media-upload-image" alt="Media Upload" />
-	<div class="media-upload-info flex flex-col w-1/3 text-center">
+	<div class="media-upload-info flex flex-col w-1/2 text-center">
 		<span>You have no media files added to this project. Upload media files to get started.</span>
 		<span class="text-gray-500 text-sm italic"
 			>(Hint: You can also just drag the files into this window)</span
