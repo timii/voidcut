@@ -8,7 +8,7 @@
 		<MediaPool></MediaPool>
 	</div>
 	<div class="preview border-2 p-4 row-span-2 col-span-2">preview</div>
-	<div class="timeline border-2 p-4 col-span-3">
+	<div class="timeline border-2 pt-4 col-span-3">
 		<Timeline></Timeline>
 	</div>
 </main>

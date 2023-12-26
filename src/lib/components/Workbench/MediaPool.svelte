@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { handleMediaUpload, saveFilesToStore } from '$lib/utils/utils';
+	import { handleMediaUpload } from '$lib/utils/utils';
 	import { availableMedia } from '../../../stores/store';
 	import MediaPoolElement from './MediaPoolElement.svelte';
 	import MediaUpload from './MediaUpload.svelte';
@@ -7,7 +7,7 @@
 	let hoverMedia = false;
 
 	async function onDropMedia(e: DragEvent) {
-		console.log('media dropped:', e, 'dataTransfer:', e.dataTransfer);
+		// console.log('media dropped:', e, 'dataTransfer:', e.dataTransfer);
 
 		// prevent default behavior
 		e.preventDefault();
@@ -17,8 +17,11 @@
 
 		// get file(s) from drop
 		let files = e.dataTransfer?.files;
-		if (files) {
-			handleMediaUpload(files);
+
+		// only handle files when actually dropped
+		if (files && files.length > 0 && e.type !== 'dragleave') {
+			console.log('media dropped:', e, 'dataTransfer:', e.dataTransfer);
+			await handleMediaUpload(files);
 		}
 	}
 
