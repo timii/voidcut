@@ -4,8 +4,8 @@
 @tailwind utilities;
 
 body {
-    background-color: #151519;
-    color: #c2c2c2;
+    background-color: theme('colors.background-color');
+    color: theme('colors.text-color');
     height: 100vh;
     box-sizing: border-box;
     font-family: 'Noto Sans', sans-serif;

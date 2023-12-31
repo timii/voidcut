@@ -4,7 +4,9 @@ export default {
   theme: {
     extend: {
       colors: {
-        "ruler-color": '#42424e'
+        "ruler-color": '#42424e',
+        "background-color": '#151519',
+        "text-color": '#c2c2c2'
       }
     },
   },

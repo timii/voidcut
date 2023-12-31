@@ -13,15 +13,15 @@
 
 	<!-- Timeline Tracks -->
 	<div
-		class="timeline-tracks h-full flex flex-col gap-1 w-[80%] overflow-x-scroll overflow-y-scroll border border-red-800 ml-5 mb-5 pt-2"
+		class="timeline-tracks h-full flex flex-col gap-1 w-full overflow-x-scroll overflow-y-scroll"
 	>
 		<!-- calculate width dynamically and fix width if element overflows -->
 		<!-- if container doesn't overflow -> set width of element to be 100% in px -->
 		<!-- and pass the calcualted width to the ruler to use it in there on the container element -->
-		<div class="timeline-content-container min-w-full h-full">
+		<div class="timeline-content-container min-w-full h-auto">
 			<TimelineRuler></TimelineRuler>
-			<div class="flex flex-col gap-3 mb-3">
-				<div class="bg-red-700 h-[50px] w-[1200px]"></div>
+			<div class="flex flex-col gap-3 mb-3 pl-5">
+				<div class="bg-red-700 h-[50px] w-[2200px]"></div>
 				<div class="bg-red-700 h-[50px] w-[800px]"></div>
 				<div class="bg-red-700 h-[50px] w-[600px] translate-x-[300px]"></div>
 				<div class="bg-red-700 h-[50px] w-[200px] translate-x-[50px]"></div>
