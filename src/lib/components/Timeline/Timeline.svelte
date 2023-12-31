@@ -12,11 +12,33 @@
 	</div>
 
 	<!-- Timeline Tracks -->
-	<div class="timeline-tracks h-full rounded flex flex-col gap-1 min-w-full">
-		<TimelineRuler></TimelineRuler>
-		<TimelineRow></TimelineRow>
-		<!-- <div class="timeline-row"></div>
-		<div class="timeline-row"></div>
-		<div class="timeline-row"></div> -->
+	<div
+		class="timeline-tracks h-full flex flex-col gap-1 w-[80%] overflow-x-scroll overflow-y-scroll border border-red-800 ml-5 mb-5 pt-2"
+	>
+		<!-- calculate width dynamically and fix width if element overflows -->
+		<!-- if container doesn't overflow -> set width of element to be 100% in px -->
+		<!-- and pass the calcualted width to the ruler to use it in there on the container element -->
+		<div class="timeline-content-container min-w-full h-full">
+			<TimelineRuler></TimelineRuler>
+			<div class="flex flex-col gap-3 mb-3">
+				<div class="bg-red-700 h-[50px] w-[1200px]"></div>
+				<div class="bg-red-700 h-[50px] w-[800px]"></div>
+				<div class="bg-red-700 h-[50px] w-[600px] translate-x-[300px]"></div>
+				<div class="bg-red-700 h-[50px] w-[200px] translate-x-[50px]"></div>
+				<div class="bg-red-700 h-[50px] w-[300px]"></div>
+				<div class="bg-red-700 h-[50px] w-[300px]"></div>
+				<div class="bg-red-700 h-[50px] w-[300px]"></div>
+				<div class="bg-red-700 h-[50px] w-[300px]"></div>
+				<div class="bg-red-700 h-[50px] w-[300px]"></div>
+				<div class="bg-red-700 h-[50px] w-[300px]"></div>
+				<div class="bg-red-700 h-[50px] w-[300px]"></div>
+				<div class="bg-red-700 h-[50px] w-[300px]"></div>
+				<div class="bg-red-700 h-[50px] w-[300px]"></div>
+			</div>
+			<!-- <TimelineRow></TimelineRow> -->
+			<!-- <div class="timeline-row"></div>
+				<div class="timeline-row"></div>
+				<div class="timeline-row"></div> -->
+		</div>
 	</div>
 </div>
