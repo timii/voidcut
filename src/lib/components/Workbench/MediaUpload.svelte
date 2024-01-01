@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { handleMediaUpload, saveFilesToStore } from '$lib/utils/utils';
+	import { handleFileUpload, saveFilesToStore } from '$lib/utils/utils';
 	import MediaUploadImage from '$lib/assets/media-upload.png';
 
 	// handle file(s) when media is uploaded
@@ -11,7 +11,7 @@
 			const files = (inputTarget as HTMLInputElement).files;
 
 			if (files) {
-				await handleMediaUpload(files);
+				await handleFileUpload(files);
 			}
 		}
 	}

@@ -1,5 +1,6 @@
 import { MediaType, type IMedia, type IFileMetadata } from "$lib/interfaces/Media";
-import { availableMedia } from "../../stores/store";
+import type { ITimelineElement, ITimelineTrack } from "$lib/interfaces/Timeline";
+import { availableMedia, timelineTracks } from "../../stores/store";
 
 // save a given array of media objects into the store 
 export function saveFilesToStore(files: IMedia[]) {
@@ -11,7 +12,7 @@ export function saveFilesToStore(files: IMedia[]) {
 }
 
 // handle given files when media is manually uploaded or drag and dropped
-export async function handleMediaUpload(files: FileList) {
+export async function handleFileUpload(files: FileList) {
 
     // convert FileList type to an array of files
     const filesArr = [...files];
@@ -32,8 +33,33 @@ export async function handleMediaUpload(files: FileList) {
         }
     }))
 
-    console.log('onMediaUpload -> mediaArr after map:', mediaArr);
+    console.log('handleFileUpload -> mediaArr after map:', mediaArr);
     saveFilesToStore(mediaArr);
+}
+
+export function handleTimelineMediaDrop(media: IMedia) {
+    console.log("handleTimelineMediaDrop -> media:", media)
+
+    // convert media type to timeline element type
+    const timelineEl: ITimelineElement = {
+        duration: media.duration ? media.duration : 3000,
+        mediaId: media.mediaId,
+        type: media.type,
+        elementId: generateId(),
+        playbackStartTime: 0,
+        trimFromStart: 0,
+        trimFromEnd: 0,
+        videoOptions: {}
+    }
+
+    // create a new track and add the new element into it
+    const timelineTrack: ITimelineTrack = {
+        trackId: generateId(),
+        elements: [timelineEl]
+    }
+
+    // add new object into timeline tracks
+    timelineTracks.update(arr => [...arr, timelineTrack])
 }
 
 // get metadata from a given file 
