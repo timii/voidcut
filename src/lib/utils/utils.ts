@@ -60,6 +60,9 @@ export function handleTimelineMediaDrop(media: IMedia) {
 
     // add new object into timeline tracks
     timelineTracks.update(arr => [...arr, timelineTrack])
+
+    console.log('handleTimelineMediaDrop -> tracks', timelineTrack);
+    timelineTracks.subscribe(value => console.log("handleTimelineMediaDrop -> timelineTracks:", value))
 }
 
 // get metadata from a given file 

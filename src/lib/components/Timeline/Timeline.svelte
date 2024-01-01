@@ -1,4 +1,6 @@
 <script lang="ts">
+	import type { IMedia } from '$lib/interfaces/Media';
+	import { handleTimelineMediaDrop } from '$lib/utils/utils';
 	import { timelineTracks } from '../../../stores/store';
 	import TimelineRow from './TimelineRow.svelte';
 	import TimelineRuler from './TimelineRuler.svelte';
@@ -20,7 +22,7 @@
 			return;
 		}
 		// parse it back to be a object again
-		const mediaData = JSON.parse(mediaDataString);
+		const mediaData: IMedia = JSON.parse(mediaDataString);
 
 		// only handle files when actually dropped
 		if (mediaData && e.type !== 'dragleave') {
@@ -32,7 +34,7 @@
 				'mediaData:',
 				mediaData
 			);
-			// await handleMediaUpload(files);
+			handleTimelineMediaDrop(mediaData);
 		}
 	}
 
