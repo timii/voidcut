@@ -61,6 +61,9 @@ export function handleTimelineMediaDrop(media: IMedia) {
     // add new object into timeline tracks
     timelineTracks.update(arr => [...arr, timelineTrack])
 
+    // TODO: add a new video element for each element dropped into the timeline
+
+
     console.log('handleTimelineMediaDrop -> tracks', timelineTrack);
     timelineTracks.subscribe(value => console.log("handleTimelineMediaDrop -> timelineTracks:", value))
 }
@@ -81,10 +84,14 @@ function getFileMetadata(file: File): Promise<IFileMetadata> {
         // add event listener to when metadata has loaded
         video.onloadedmetadata = () => {
             window.URL.revokeObjectURL(video.src);
-            var duration = video.duration;
+            const duration = video.duration;
+
+            // calculate the duration in milliseconds and round it to the nearest integer  
+            const durationInMs = Math.round(duration * 1000)
+
             console.log('getFileInfo in onleadedmetadata -> duration:', duration, 'video:', video);
             resolve({
-                duration
+                duration: durationInMs
             });
         };
 
