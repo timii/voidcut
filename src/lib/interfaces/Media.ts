@@ -2,12 +2,14 @@ export interface IMedia {
     name: string; // name of media
     mediaId: string; // unique id of media 
     type: MediaType; // enum type of media
+    src: string; // dataUrl of media
     loaded: boolean; // is media finished uploading
     duration?: number; // duration in milliseconds (only relevant for video and audio)
 }
 
 export interface IFileMetadata {
-    duration?: number;
+    src: string; // dataUrl string containing the source of the file
+    duration?: number; // duration metadata of file, if present
 }
 
 export enum MediaType {

@@ -1,16 +1,27 @@
 <script lang="ts">
 	import { MediaType } from '$lib/interfaces/Media';
+	import type { IPlayerElement } from '$lib/interfaces/Player';
 	import type { ITimelineElement, ITimelineTrack } from '$lib/interfaces/Timeline';
-	import { timelineTracks } from '../../../stores/store';
+	import { availableMedia, timelineTracks } from '../../../stores/store';
 
-	// create a flattened array of timeline elements from the array of tracks
 	$: timelineElements = flattenTimelineTracks($timelineTracks);
 
-	function flattenTimelineTracks(arr: ITimelineTrack[]): ITimelineElement[] {
+	// create a flattened array of timeline elements from a given array of tracks
+	function flattenTimelineTracks(arr: ITimelineTrack[]): IPlayerElement[] {
 		console.log('flattenTimelineTracks -> arr before:', arr);
 
 		// go through each track, return the flattened elements array and flatten the end result after all tracks have been iterated through
-		const flatArr = arr.flatMap((track) => track.elements.flat());
+		const flatArr = arr.flatMap((track) =>
+			track.elements.flatMap((el) => {
+				// TODO: lookup media from availableMedia array using mediaId and get src property from there and add it in here to the object
+				const foundEl = $availableMedia.find((media) => media.mediaId === el.mediaId);
+				if (!foundEl) {
+					return el;
+				}
+				console.log('flattenTimelineTracks -> el:', el, 'foundEl:', foundEl, 'src:', foundEl.src);
+				return el;
+			})
+		);
 		console.log('flattenTimelineTracks -> arr after:', flatArr);
 
 		return flatArr.length > 0 ? flatArr : [];
@@ -21,7 +32,9 @@
 	<!-- for each element in the timeline show a video/audio/image element -->
 	{#each timelineElements as element}
 		{#if element.type === MediaType.Video}
-			<div class="video"></div>
+			<video preload="auto" controls class="h-full w-full">
+				<source src={element.src} type="video/mp4" />
+			</video>
 		{:else if element.type === MediaType.Audio}
 			<div class="audio"></div>
 		{:else}

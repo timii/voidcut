@@ -21,7 +21,7 @@ export async function handleFileUpload(files: FileList) {
     const mediaArr: IMedia[] = await Promise.all(filesArr.map(async (file) => {
 
         // get metadata of current file
-        const fileMetadata = await getFileMetadata(file);
+        const fileMetadata = await getFileMetadata(file)
 
         console.log("utils -> in filesArr map file:", file)
         return {
@@ -61,16 +61,13 @@ export function handleTimelineMediaDrop(media: IMedia) {
     // add new object into timeline tracks
     timelineTracks.update(arr => [...arr, timelineTrack])
 
-    // TODO: add a new video element for each element dropped into the timeline
-
-
     console.log('handleTimelineMediaDrop -> tracks', timelineTrack);
     timelineTracks.subscribe(value => console.log("handleTimelineMediaDrop -> timelineTracks:", value))
 }
 
 // get metadata from a given file 
 function getFileMetadata(file: File): Promise<IFileMetadata> {
-    return new Promise((resolve) => {
+    return new Promise(async (resolve, reject) => {
         // convert FileList type to an array
         // let filesArr = [...file];
 
@@ -79,24 +76,61 @@ function getFileMetadata(file: File): Promise<IFileMetadata> {
         video.preload = 'metadata';
 
         // create blob out of file and pass it as a source to the video element
-        video.src = URL.createObjectURL(file);
+        video.src = await convertFileToDataUrl(file)
+        // video.src = URL.createObjectURL(file);
 
         // add event listener to when metadata has loaded
         video.onloadedmetadata = () => {
-            window.URL.revokeObjectURL(video.src);
+            // window.URL.revokeObjectURL(video.src);
             const duration = video.duration;
 
             // calculate the duration in milliseconds and round it to the nearest integer  
             const durationInMs = Math.round(duration * 1000)
 
-            console.log('getFileInfo in onleadedmetadata -> duration:', duration, 'video:', video);
+            console.log('getFileInfo in onleadedmetadata -> duration:', duration, 'video:', video, "src:", video.src);
             resolve({
+                src: video.src,
                 duration: durationInMs
             });
         };
 
+        // add event listener to when loading video throws an error
+        video.onerror = (err) => {
+            console.error("Error while getting file metadata", err)
+            reject(err)
+        }
+
         // console.log('getFileInfo after onleadedmetadata -> video:', video);
     });
+}
+
+// convert a given file into a data url string
+function convertFileToDataUrl(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+        if (FileReader) {
+            let fr = new FileReader();
+
+            // read file content as a dataUrl
+            fr.readAsDataURL(file);
+
+            // add eventlistener to when the FileReader finished loading
+            fr.onloadend = () => {
+                console.log('convertFileToDataUrl -> FileReader onload:', fr.result);
+                resolve(fr.result as string)
+                // testImage = fr.result as any;
+                // var source = document.createElement('source');
+                // source.setAttribute('src', fr.result as string);
+                // source.setAttribute('type', 'video/mp4');
+                // testVideo.appendChild(source);
+            };
+
+            // add eventlistener to when the FileReader throws an error
+            fr.onerror = (err) => {
+                console.error("Error while converting File to DataUrl", err)
+                reject(err)
+            }
+        }
+    })
 }
 
 // generate a unique id
