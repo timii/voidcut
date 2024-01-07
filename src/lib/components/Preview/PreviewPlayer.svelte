@@ -13,13 +13,13 @@
 		// go through each track, return the flattened elements array and flatten the end result after all tracks have been iterated through
 		const flatArr = arr.flatMap((track) =>
 			track.elements.flatMap((el) => {
-				// TODO: lookup media from availableMedia array using mediaId and get src property from there and add it in here to the object
+				// lookup media from availableMedia array in store using mediaId and get src property
 				const foundEl = $availableMedia.find((media) => media.mediaId === el.mediaId);
 				if (!foundEl) {
 					return el;
 				}
 				console.log('flattenTimelineTracks -> el:', el, 'foundEl:', foundEl, 'src:', foundEl.src);
-				return el;
+				return { src: foundEl.src, ...el };
 			})
 		);
 		console.log('flattenTimelineTracks -> arr after:', flatArr);
