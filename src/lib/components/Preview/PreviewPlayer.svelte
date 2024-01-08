@@ -28,13 +28,15 @@
 	}
 </script>
 
-<div class="preview-player bg-black h-full w-full">
+<div class="preview-player bg-black h-full w-full relative">
 	<!-- for each element in the timeline show a video/audio/image element -->
 	{#each timelineElements as element}
 		{#if element.type === MediaType.Video}
-			<video preload="auto" controls class="h-full w-full">
+			<!-- svelte-ignore a11y-media-has-caption -->
+			<video preload="auto" controls class="h-full w-full absolute top-0 left-0">
 				<source src={element.src} type="video/mp4" />
 			</video>
+			<!-- TODO: implement audio and image -->
 		{:else if element.type === MediaType.Audio}
 			<div class="audio"></div>
 		{:else}
