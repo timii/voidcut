@@ -70,16 +70,29 @@
 		<!-- calculate width dynamically and fix width if element overflows -->
 		<!-- if container doesn't overflow -> set width of element to be 100% in px -->
 		<!-- and pass the calcualted width to the ruler to use it in there on the container element -->
-		<div class="timeline-content min-w-full h-auto">
+		<div class="timeline-content min-w-full h-auto relative">
+			<!-- Timeline Ruler -->
 			<TimelineRuler></TimelineRuler>
+
+			<!-- Timeline Thumb-->
+			<div class="timeline-thumb w-[12px] h-full absolute ml-5 z-10">
+				<div
+					class="thumb-container w-full h-full flex flex-col items-center relative -left-[6px] -top-7"
+				>
+					<div
+						class="thumb-header w-full h-[25px] bg-green-600 rounded-b-[50px] rounded-t-[20px]"
+					></div>
+					<div class="thumb-stick bg-blue-600 w-[1px] h-full -top-2"></div>
+				</div>
+			</div>
 
 			<!-- Timeline Tracks -->
 			<div class="timeline-tracks flex flex-col gap-3 mb-3 pl-5">
-				{#each $timelineTracks as track}
+				<!-- {#each $timelineTracks as track}
 					<TimelineRow {track}></TimelineRow>
-				{/each}
+				{/each} -->
 
-				<!-- <div class="bg-red-700 h-[50px] w-[2200px] mr-5"></div>
+				<div class="bg-red-700 h-[50px] w-[2200px] mr-5"></div>
 				<div class="bg-red-700 h-[50px] w-[800px]"></div>
 				<div class="bg-red-700 h-[50px] w-[600px] translate-x-[300px]"></div>
 				<div class="bg-red-700 h-[50px] w-[200px] translate-x-[50px]"></div>
@@ -91,7 +104,7 @@
 				<div class="bg-red-700 h-[50px] w-[300px]"></div>
 				<div class="bg-red-700 h-[50px] w-[300px]"></div>
 				<div class="bg-red-700 h-[50px] w-[300px]"></div>
-				<div class="bg-red-700 h-[50px] w-[300px]"></div> -->
+				<div class="bg-red-700 h-[50px] w-[300px]"></div>
 			</div>
 		</div>
 	</div>
