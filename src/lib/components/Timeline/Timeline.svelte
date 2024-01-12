@@ -80,9 +80,9 @@
 					class="thumb-container w-full h-full flex flex-col items-center relative -left-[6px] -top-7"
 				>
 					<div
-						class="thumb-header w-full h-[25px] bg-green-600 rounded-b-[50px] rounded-t-[20px]"
+						class="thumb-header w-full h-[25px] bg-green-600 rounded-b-[50px] rounded-t-[20px] sticky top-0"
 					></div>
-					<div class="thumb-stick bg-blue-600 w-[1px] h-full -top-2"></div>
+					<div class="thumb-stick bg-blue-600 w-[1px] h-full"></div>
 				</div>
 			</div>
 
