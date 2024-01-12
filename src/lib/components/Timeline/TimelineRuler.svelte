@@ -9,7 +9,7 @@
 </script>
 
 <div
-	class="timeline-ruler sticky top-0 left-0 h-7 pl-5 bg-background-color border-ruler-color border-t-2 flex z-[1]"
+	class="timeline-ruler sticky top-0 left-0 h-7 pl-5 bg-background-color border-ruler-color border-t-2 flex z-[1] cursor-pointer"
 >
 	{#each { length: $maxPlaybackTime / 1000 } as _, i}
 		<div class="timeline-ruler-block w-12 flex flex-col items-start">

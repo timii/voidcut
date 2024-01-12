@@ -4,6 +4,7 @@
 	import { timelineTracks } from '../../../stores/store';
 	import TimelineRow from './TimelineRow.svelte';
 	import TimelineRuler from './TimelineRuler.svelte';
+	import TimelineThumb from './TimelineThumb.svelte';
 
 	let hoverElement = false;
 
@@ -75,16 +76,7 @@
 			<TimelineRuler></TimelineRuler>
 
 			<!-- Timeline Thumb-->
-			<div
-				class="timeline-thumb w-[12px] h-[calc(100%+28px)] absolute ml-5 z-10 -left-[6px] -top-7"
-			>
-				<div class="thumb-container w-full h-full flex flex-col items-center relative">
-					<div
-						class="thumb-header w-full h-[25px] bg-green-600 rounded-b-[50px] rounded-t-[20px] sticky top-0"
-					></div>
-					<div class="thumb-stick bg-blue-600 w-[2px] h-full"></div>
-				</div>
-			</div>
+			<TimelineThumb></TimelineThumb>
 
 			<!-- Timeline Tracks -->
 			<div class="timeline-tracks flex flex-col gap-3 mb-3 pl-5">
