@@ -75,14 +75,14 @@
 			<TimelineRuler></TimelineRuler>
 
 			<!-- Timeline Thumb-->
-			<div class="timeline-thumb w-[12px] h-full absolute ml-5 z-10">
-				<div
-					class="thumb-container w-full h-full flex flex-col items-center relative -left-[6px] -top-7"
-				>
+			<div
+				class="timeline-thumb w-[12px] h-[calc(100%+28px)] absolute ml-5 z-10 -left-[6px] -top-7"
+			>
+				<div class="thumb-container w-full h-full flex flex-col items-center relative">
 					<div
 						class="thumb-header w-full h-[25px] bg-green-600 rounded-b-[50px] rounded-t-[20px] sticky top-0"
 					></div>
-					<div class="thumb-stick bg-blue-600 w-[1px] h-full"></div>
+					<div class="thumb-stick bg-blue-600 w-[2px] h-full"></div>
 				</div>
 			</div>
 
