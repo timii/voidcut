@@ -1,12 +1,26 @@
 <script lang="ts">
 	import type { IMedia } from '$lib/interfaces/Media';
-	import { handleTimelineMediaDrop } from '$lib/utils/utils';
-	import { timelineTracks } from '../../../stores/store';
+	import { handleTimelineMediaDrop, resetAllBeingDragged } from '$lib/utils/utils';
+	import { onMount } from 'svelte';
 	import TimelineRow from './TimelineRow.svelte';
 	import TimelineRuler from './TimelineRuler.svelte';
 	import TimelineThumb from './TimelineThumb.svelte';
+	import {
+		maxPlaybackTime,
+		thumbOffset,
+		currentThumbPosition,
+		isThumbBeingDragged
+	} from '../../../stores/store';
 
 	let hoverElement = false;
+
+	onMount(() => {
+		// listen to mouseup events of the window
+		window.addEventListener('mouseup', (e: MouseEvent) => {
+			resetAllBeingDragged();
+			console.log('window mouseup');
+		});
+	});
 
 	function onDropElement(e: DragEvent) {
 		// console.log('element dropped:', e, 'dataTransfer:', e.dataTransfer);
@@ -47,6 +61,20 @@
 		e.stopPropagation();
 		hoverElement = true;
 	}
+
+	// move thumb to current position
+	function moveThumb(e: MouseEvent) {
+		e.preventDefault();
+		// check if mouse button is held down and the thumb is currently being dragged
+		if (e.buttons === 1) {
+			$currentThumbPosition = e.clientX - $thumbOffset;
+
+			if (!$isThumbBeingDragged) {
+				$isThumbBeingDragged = true;
+				console.log('isThumbBeingDragged?:', $isThumbBeingDragged);
+			}
+		}
+	}
 </script>
 
 <div class="timeline-container flex flex-col h-full gap-2">
@@ -64,6 +92,8 @@
 		on:dragleave={onDropElement}
 		on:dragenter={onHoverElement}
 		on:dragover={onHoverElement}
+		on:mousemove={moveThumb}
+		on:mousedown={moveThumb}
 		style="background-color: {hoverElement ? '#2e2e35' : ''};"
 	>
 		<!-- Timeline Content -->

@@ -1,6 +1,6 @@
 import { MediaType, type IMedia, type IFileMetadata } from "$lib/interfaces/Media";
 import type { ITimelineElement, ITimelineTrack } from "$lib/interfaces/Timeline";
-import { availableMedia, timelineTracks } from "../../stores/store";
+import { availableMedia, isTimelineElementBeingDragged, isThumbBeingDragged, timelineTracks } from "../../stores/store";
 
 // save a given array of media objects into the store 
 export function saveFilesToStore(files: IMedia[]) {
@@ -136,4 +136,10 @@ function convertFileToDataUrl(file: File): Promise<string> {
 // generate a unique id
 function generateId() {
     return crypto.randomUUID() as string
+}
+
+// set all "beingDragged" values in store to false 
+export function resetAllBeingDragged() {
+    isThumbBeingDragged.set(false)
+    isTimelineElementBeingDragged.set(false)
 }

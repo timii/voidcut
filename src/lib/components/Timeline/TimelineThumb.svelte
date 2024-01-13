@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { currentThumbPosition, thumbOffset } from '../../../stores/store';
+	import { currentThumbPosition, isThumbBeingDragged, thumbOffset } from '../../../stores/store';
 
 	let thumbPosition = $currentThumbPosition;
 	let thumbOffsetLeft = 0;
@@ -15,21 +15,10 @@
 	// handle dragging thumb
 	function dragElement(e: MouseEvent) {
 		// console.log('e:', e);
+		e.preventDefault();
 
 		// only drag element if mouse is held down
 		if (e.buttons === 1) {
-			e.preventDefault();
-			// console.log(
-			// 	'dragElement start -> thumbPositionAfter:',
-			// 	thumbPosition,
-			// 	'e.clientX:',
-			// 	e.clientX,
-			// 	'offsetLeft:',
-			// 	thumbElementRef.offsetLeft,
-			// 	'thumbOffsetLeft:',
-			// 	thumbOffsetLeft
-			// );
-
 			// calculate new position using the current mouse position - the left offset of the thumb element
 			const newPos = e.clientX - thumbOffsetLeft;
 
@@ -37,13 +26,17 @@
 			if (newPos >= 0) {
 				thumbPosition = newPos;
 				$currentThumbPosition = thumbPosition;
-				console.log('currentThumbPosition:', $currentThumbPosition);
+				// console.log('currentThumbPosition:', $currentThumbPosition);
+
+				if (!$isThumbBeingDragged) {
+					$isThumbBeingDragged = true;
+					console.log('isThumbBeingDragged?:', $isThumbBeingDragged);
+				}
 			}
 		}
 	}
 </script>
 
-<!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
 	class="timeline-thumb w-[12px] h-[calc(100%+28px)] absolute ml-5 z-10 -left-[6px] -top-7 cursor-grab"
 	bind:this={thumbElementRef}
