@@ -17,7 +17,6 @@
 <div
 	class="element-container flex flex-col items-center"
 	draggable="true"
-	role="region"
 	on:dragstart={onDragElement}
 >
 	<div class="media h-24 w-32 rounded bg-red-500"></div>

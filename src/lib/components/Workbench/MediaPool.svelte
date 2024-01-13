@@ -16,11 +16,11 @@
 		hoverFile = false;
 
 		// get file(s) from drop
-		let files = e.dataTransfer?.files;
+		const files = e.dataTransfer?.files;
 
 		// only handle files when actually dropped
 		if (files && files.length > 0 && e.type !== 'dragleave') {
-			console.log('media dropped in if:', e, 'dataTransfer:', e.dataTransfer);
+			console.log('media dropped in if:', e, 'dataTransfer:', e.dataTransfer, 'files:', files);
 			await handleFileUpload(files);
 		}
 	}
@@ -37,7 +37,6 @@
 
 <div
 	class="mediapool-container h-full"
-	role="region"
 	on:drop={onDropFile}
 	on:dragleave={onDropFile}
 	on:dragenter={onHoverFile}

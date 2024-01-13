@@ -60,7 +60,6 @@
 	<!-- Timeline Scroll Container -->
 	<div
 		class="timeline-scroll-container h-full flex flex-col gap-1 w-full overflow-x-scroll overflow-y-scroll"
-		role="region"
 		on:drop={onDropElement}
 		on:dragleave={onDropElement}
 		on:dragenter={onHoverElement}
