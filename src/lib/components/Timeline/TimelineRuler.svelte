@@ -9,6 +9,7 @@
 
 	// move thumb to current position if mouse is clicked over ruler
 	function moveThumb(e: MouseEvent) {
+		e.preventDefault();
 		// only necessary for mouse move event to check if a mouse button is held down
 		if (e.buttons === 1) {
 			$currentThumbPosition = e.clientX - $thumbOffset;
