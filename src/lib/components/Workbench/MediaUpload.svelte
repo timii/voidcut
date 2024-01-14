@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { handleFileUpload, saveFilesToStore } from '$lib/utils/utils';
-	import MediaUploadImage from '$lib/assets/media-upload.png';
+	import MediaUploadImage from '$lib/assets/workbench/media-upload.png';
 
 	// handle file(s) when media is uploaded
 	async function onMediaUpload(e: Event) {

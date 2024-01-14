@@ -4,7 +4,9 @@
 	export let onClickCallback = () => {};
 </script>
 
-<!-- svelte-ignore a11y-click-events-have-key-events -->
-<div on:click={onClickCallback} class="cursor-pointer">
+<button
+	on:click={onClickCallback}
+	class="cursor-pointer rounded p-[2px] hover:bg-background-color-lighter"
+>
 	<img src={icon} {alt} />
-</div>
+</button>

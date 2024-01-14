@@ -6,6 +6,7 @@ export default {
       colors: {
         "ruler-color": '#42424e',
         "background-color": '#151519',
+        "background-color-lighter": '#2c2c2f',
         "text-color": '#c2c2c2'
       }
     },

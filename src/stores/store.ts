@@ -3,7 +3,7 @@ import type { ITimelineTrack } from '$lib/interfaces/Timeline';
 import { writable } from 'svelte/store';
 
 // Timeline
-export const currentTimelineScale = writable(0);
+export const currentTimelineScale = writable(40); // default timeline scale (40 * 1px = 1 sec)
 export const minTimeineScale = writable(0);
 export const maxTimelineScale = writable(0);
 export const currentPlaybackTime = writable(0);
@@ -16,3 +16,6 @@ export const isTimelineElementBeingDragged = writable(false);
 
 // Workbench
 export const availableMedia = writable<IMedia[]>([]);
+
+// Preview
+export const previewPlaying = writable(false);

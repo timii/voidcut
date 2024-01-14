@@ -39,8 +39,11 @@
 			<!-- TODO: implement audio and image -->
 		{:else if element.type === MediaType.Audio}
 			<div class="audio"></div>
-		{:else}
+		{:else if element.type === MediaType.Image}
 			<div class="image"></div>
+			<!-- default case that should not be reached usually -->
+		{:else}
+			<div class="no-matching-element-type"></div>
 		{/if}
 	{/each}
 </div>

@@ -30,7 +30,7 @@
 	}
 </script>
 
-<div class="preview-controls flex gap-2 justify-center items-center h-full">
+<div class="preview-controls flex gap-1 justify-center items-center h-full">
 	<PreviewControlsButton
 		onClickCallback={onSkipStartClick}
 		icon={SkipStartIcon}
