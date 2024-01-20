@@ -22,8 +22,8 @@ export const AdjustingInterval = (workFunc, interval, errorFunc) => {
     var expected, timeout;
 
     const start = function () {
-        expected = Date.now() + this.interval;
-        timeout = setTimeout(step, this.interval);
+        expected = Date.now() + interval;
+        timeout = setTimeout(step, interval);
     }
 
     const stop = function () {
