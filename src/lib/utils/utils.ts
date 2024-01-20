@@ -1,6 +1,12 @@
 import { MediaType, type IMedia, type IFileMetadata } from "$lib/interfaces/Media";
 import type { ITimelineElement, ITimelineTrack } from "$lib/interfaces/Timeline";
-import { availableMedia, isTimelineElementBeingDragged, isThumbBeingDragged, timelineTracks } from "../../stores/store";
+import { availableMedia, isTimelineElementBeingDragged, isThumbBeingDragged, timelineTracks, currentPlaybackTime, playbackIntervalId } from "../../stores/store";
+import { accurateInterval } from "./accurateInterval";
+import { CONSTS } from "./consts";
+
+let test: {
+    cancel: () => void;
+};
 
 // save a given array of media objects into the store 
 export function saveFilesToStore(files: IMedia[]) {
@@ -143,3 +149,42 @@ export function resetAllBeingDragged() {
     isThumbBeingDragged.set(false)
     isTimelineElementBeingDragged.set(false)
 }
+
+// remove interval that handles the current playback time
+export function pausePlayback() {
+    console.log("pausePlayback")
+    playbackIntervalId.update((id) => {
+        // use current interval id to clear the interval
+        clearInterval(id)
+        test.cancel()
+        // set the store value back to zero
+        return 0;
+    })
+}
+
+// create interval that increases current playback time
+export function resumePlayback() {
+    // const startTime = new Date().valueOf();
+    const startTime = new Date().getTime();;
+    console.time('Execution time');
+    test = accurateInterval(() => {
+        // const intervalId = setInterval(() => {
+        var diff = new Date().getTime() - startTime;
+        var drift = diff % 1000;
+        // increase the current playback time in store by timeout amount
+        currentPlaybackTime.update(value => value + CONSTS.playbackIntervalTimer)
+        // console.log("interval drift:", (new Date().valueOf() - startTime) % 1000);
+        console.log("interval drift:", drift, "%");
+        console.timeEnd('Execution time');
+        console.time('Execution time');
+        // console.log("interval drift:", (new Date().getTime() - startTime) % 1000);
+        currentPlaybackTime.subscribe(el => console.log("playback interval -> currentPlaybackTime:", el))
+    }, CONSTS.playbackIntervalTimer)
+
+    // write the interval id into store
+    // playbackIntervalId.set(intervalId)
+}
+
+export function convertPlaybackToPxScale() { }
+
+export function convertPxToPlaybackScale() { }
