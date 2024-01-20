@@ -16,3 +16,30 @@ export const accurateInterval = function (time, fn) {
         cancel: cancel
     };
 };
+
+export const AdjustingInterval = (workFunc, interval, errorFunc) => {
+    // var that = this;
+    var expected, timeout;
+
+    const start = function () {
+        expected = Date.now() + this.interval;
+        timeout = setTimeout(step, this.interval);
+    }
+
+    const stop = function () {
+        clearTimeout(timeout);
+    }
+
+    function step() {
+        var drift = Date.now() - expected;
+        if (drift > interval) {
+            // You could have some default stuff here too...
+            if (errorFunc) errorFunc();
+        }
+        workFunc();
+        expected += interval;
+        timeout = setTimeout(step, Math.max(0, interval - drift));
+    }
+
+    return { start, stop }
+}
