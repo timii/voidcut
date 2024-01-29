@@ -1,12 +1,17 @@
 import { MediaType, type IMedia, type IFileMetadata } from "$lib/interfaces/Media";
 import type { ITimelineElement, ITimelineTrack } from "$lib/interfaces/Timeline";
+import { tick } from "svelte";
 import { availableMedia, isTimelineElementBeingDragged, isThumbBeingDragged, timelineTracks, currentPlaybackTime, playbackIntervalId } from "../../stores/store";
-import { accurateInterval } from "./accurateInterval";
+import { AdjustingInterval, accurateInterval } from "./accurateInterval";
 import { CONSTS } from "./consts";
 
 let test: {
     cancel: () => void;
 };
+let ticker: {
+    start: () => void;
+    stop: () => void;
+}
 
 // save a given array of media objects into the store 
 export function saveFilesToStore(files: IMedia[]) {
@@ -156,7 +161,8 @@ export function pausePlayback() {
     playbackIntervalId.update((id) => {
         // use current interval id to clear the interval
         clearInterval(id)
-        test.cancel()
+        // test.cancel()
+        ticker.stop()
         // set the store value back to zero
         return 0;
     })
@@ -167,19 +173,28 @@ export function resumePlayback() {
     // const startTime = new Date().valueOf();
     const startTime = new Date().getTime();;
     console.time('Execution time');
-    test = accurateInterval(() => {
-        // const intervalId = setInterval(() => {
+
+    const intervallCallback = () => {
         var diff = new Date().getTime() - startTime;
         var drift = diff % 1000;
         // increase the current playback time in store by timeout amount
         currentPlaybackTime.update(value => value + CONSTS.playbackIntervalTimer)
         // console.log("interval drift:", (new Date().valueOf() - startTime) % 1000);
-        console.log("interval drift:", drift, "%");
+        // console.log("interval drift:", drift, "%");
         console.timeEnd('Execution time');
         console.time('Execution time');
         // console.log("interval drift:", (new Date().getTime() - startTime) % 1000);
         currentPlaybackTime.subscribe(el => console.log("playback interval -> currentPlaybackTime:", el))
-    }, CONSTS.playbackIntervalTimer)
+    }
+
+    const doError = () => {
+        console.warn('The drift exceeded the interval.');
+    };
+
+    ticker = AdjustingInterval(intervallCallback, CONSTS.playbackIntervalTimer, doError);
+    ticker.start()
+    // const intervalId = setInterval(intervallCallback, CONSTS.playbackIntervalTimer)
+    // test = accurateInterval(() => intervallCallback, CONSTS.playbackIntervalTimer)
 
     // write the interval id into store
     // playbackIntervalId.set(intervalId)
