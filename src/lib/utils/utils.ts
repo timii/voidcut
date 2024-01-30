@@ -2,8 +2,9 @@ import { MediaType, type IMedia, type IFileMetadata } from "$lib/interfaces/Medi
 import type { ITimelineElement, ITimelineTrack } from "$lib/interfaces/Timeline";
 import { tick } from "svelte";
 import { availableMedia, isTimelineElementBeingDragged, isThumbBeingDragged, timelineTracks, currentPlaybackTime, playbackIntervalId } from "../../stores/store";
-import { AdjustingInterval, accurateInterval } from "./accurateInterval";
+import { AdjustingInterval } from "./accurateInterval";
 import { CONSTS } from "./consts";
+import { adjustingInterval } from "./betterInterval";
 
 let test: {
     cancel: () => void;
@@ -191,7 +192,8 @@ export function resumePlayback() {
         console.warn('The drift exceeded the interval.');
     };
 
-    ticker = AdjustingInterval(intervallCallback, CONSTS.playbackIntervalTimer, doError);
+    // ticker = AdjustingInterval(intervallCallback, CONSTS.playbackIntervalTimer, doError);
+    ticker = adjustingInterval(intervallCallback, CONSTS.playbackIntervalTimer, doError);
     ticker.start()
     // const intervalId = setInterval(intervallCallback, CONSTS.playbackIntervalTimer)
     // test = accurateInterval(() => intervallCallback, CONSTS.playbackIntervalTimer)

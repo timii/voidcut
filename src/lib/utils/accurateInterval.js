@@ -17,6 +17,9 @@
 //     };
 // };
 
+
+// self-adjusting interval to account for drifting using setInterval normally
+// source: https://stackoverflow.com/a/44337628
 export const AdjustingInterval = (/** @type {{ (): void; (): void; }} */ workFunc, /** @type {number} */ interval, /** @type {{ (): void; (): void; }} */ errorFunc) => {
     // var that = this;
     /**
