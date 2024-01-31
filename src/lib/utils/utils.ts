@@ -1,7 +1,7 @@
 import { MediaType, type IMedia, type IFileMetadata } from "$lib/interfaces/Media";
 import type { ITimelineElement, ITimelineTrack } from "$lib/interfaces/Timeline";
 import { tick } from "svelte";
-import { availableMedia, isTimelineElementBeingDragged, isThumbBeingDragged, timelineTracks, currentPlaybackTime, playbackIntervalId } from "../../stores/store";
+import { availableMedia, isTimelineElementBeingDragged, isThumbBeingDragged, timelineTracks, currentPlaybackTime, playbackIntervalId, currentTimelineScale } from "../../stores/store";
 import { AdjustingInterval } from "./accurateInterval";
 import { CONSTS } from "./consts";
 import { adjustingInterval } from "./betterInterval";
@@ -172,12 +172,13 @@ export function pausePlayback() {
 // create interval that increases current playback time
 export function resumePlayback() {
     // const startTime = new Date().valueOf();
+    // TODO: remove old testing stuff
     const startTime = new Date().getTime();;
     console.time('Execution time');
 
     const intervallCallback = () => {
-        var diff = new Date().getTime() - startTime;
-        var drift = diff % 1000;
+        // var diff = new Date().getTime() - startTime;
+        // var drift = diff % 1000;
         // increase the current playback time in store by timeout amount
         currentPlaybackTime.update(value => value + CONSTS.playbackIntervalTimer)
         // console.log("interval drift:", (new Date().valueOf() - startTime) % 1000);
@@ -202,6 +203,9 @@ export function resumePlayback() {
     // playbackIntervalId.set(intervalId)
 }
 
-export function convertPlaybackToPxScale() { }
+// convert a given pixel amount to the playback time (in ms) using the current timeline scale
+export function convertPxToPlaybackScale(px: number, scale: number) {
+    return Math.round((px / scale) * 1000) || 0
+}
 
-export function convertPxToPlaybackScale() { }
+export function convertPlaybackToPxScale() { }
