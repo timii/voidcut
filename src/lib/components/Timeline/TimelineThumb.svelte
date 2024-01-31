@@ -1,6 +1,13 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { currentThumbPosition, isThumbBeingDragged, thumbOffset } from '../../../stores/store';
+	import {
+		currentThumbPosition,
+		isThumbBeingDragged,
+		thumbOffset,
+		currentPlaybackTime,
+		currentTimelineScale
+	} from '../../../stores/store';
+	import { convertPxToPlaybackScale } from '$lib/utils/utils';
 
 	let thumbPosition = $currentThumbPosition;
 	let thumbOffsetLeft = 0;
@@ -24,9 +31,13 @@
 
 			// avoid the thumb to be moved further left than the tracks
 			if (newPos >= 0) {
-				thumbPosition = newPos;
-				$currentThumbPosition = thumbPosition;
-				// console.log('currentThumbPosition:', $currentThumbPosition);
+				$currentThumbPosition = newPos;
+
+				// calculate playback time using the the new thumb position and write it into the store
+				const playbackTime = convertPxToPlaybackScale(newPos, $currentTimelineScale);
+				$currentPlaybackTime = playbackTime;
+
+				console.log('currentThumbPosition:', $currentThumbPosition, 'playbackTime:', playbackTime);
 
 				if (!$isThumbBeingDragged) {
 					$isThumbBeingDragged = true;
@@ -35,6 +46,15 @@
 			}
 		}
 	}
+
+	// dynamically calculate thumb position using the current playback time from the store
+	$: $currentPlaybackTime,
+		(() => {
+			// console.log('in timelineThumb before -> $currentThumbPosition,', $currentThumbPosition);
+			$currentThumbPosition = ($currentPlaybackTime / 1000) * $currentTimelineScale;
+			// console.log('in timelineThumb after -> $currentThumbPosition,', $currentThumbPosition);
+		})();
+	// ($currentPlaybackTime / 1000) * $currentTimelineScale;
 </script>
 
 <div

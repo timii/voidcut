@@ -1,27 +1,46 @@
 <script lang="ts">
+	import { convertPxToPlaybackScale } from '$lib/utils/utils';
 	import {
 		maxPlaybackTime,
 		thumbOffset,
 		currentThumbPosition,
-		isThumbBeingDragged
+		isThumbBeingDragged,
+		currentTimelineScale,
+		currentPlaybackTime
 	} from '../../../stores/store';
 
 	let maxPlaybackTimeVal = $maxPlaybackTime;
 
 	// calculate number of seconds of max playback time
 	let amountOfTicks = maxPlaybackTimeVal / 1000;
-	console.log('maxPlaybackTimeVal:', maxPlaybackTimeVal);
+	// console.log('maxPlaybackTimeVal:', maxPlaybackTimeVal);
 
 	// move thumb to current position if mouse is clicked over ruler
 	function moveThumb(e: MouseEvent) {
 		e.preventDefault();
 		// only necessary for mouse move event to check if a mouse button is held down
 		if (e.buttons === 1) {
-			$currentThumbPosition = e.clientX - $thumbOffset;
+			const newPos = e.clientX - $thumbOffset;
+			$currentThumbPosition = newPos;
+
+			// calculate playback time using the the new thumb position and write it into the store
+			const playbackTime = convertPxToPlaybackScale(newPos, $currentTimelineScale);
+			$currentPlaybackTime = playbackTime;
+
+			console.log(
+				'moveThumb -> e.clientX:',
+				e.clientX,
+				'thumbOffset:',
+				$thumbOffset,
+				'$currentThumbPosition,',
+				$currentThumbPosition,
+				'new playback time:',
+				playbackTime
+			);
 
 			if (!$isThumbBeingDragged) {
 				$isThumbBeingDragged = true;
-				console.log('isThumbBeingDragged?:', $isThumbBeingDragged);
+				// console.log('isThumbBeingDragged?:', $isThumbBeingDragged);
 			}
 		}
 	}
@@ -33,7 +52,10 @@
 	on:mousemove={moveThumb}
 >
 	{#each { length: $maxPlaybackTime / 1000 } as _, i}
-		<div class="timeline-ruler-block w-12 flex flex-col items-start">
+		<div
+			class="timeline-ruler-block flex flex-col items-start"
+			style="width: {1 * $currentTimelineScale}px;"
+		>
 			<div class="timeline-ruler-tick w-px h-[5px] bg-ruler-color"></div>
 			<div class="timeline-ruler-label text-ruler-color text-[11px] translate-x-[-50%]">
 				{i}
