@@ -21,26 +21,30 @@
 		// only necessary for mouse move event to check if a mouse button is held down
 		if (e.buttons === 1) {
 			const newPos = e.clientX - $thumbOffset;
-			$currentThumbPosition = newPos;
 
-			// calculate playback time using the the new thumb position and write it into the store
-			const playbackTime = convertPxToPlaybackScale(newPos, $currentTimelineScale);
-			$currentPlaybackTime = playbackTime;
+			// avoid the thumb to be moved further left than the tracks
+			if (newPos >= 0) {
+				$currentThumbPosition = newPos;
 
-			console.log(
-				'moveThumb -> e.clientX:',
-				e.clientX,
-				'thumbOffset:',
-				$thumbOffset,
-				'$currentThumbPosition,',
-				$currentThumbPosition,
-				'new playback time:',
-				playbackTime
-			);
+				// calculate playback time using the the new thumb position and write it into the store
+				const playbackTime = convertPxToPlaybackScale(newPos, $currentTimelineScale);
+				$currentPlaybackTime = playbackTime;
 
-			if (!$isThumbBeingDragged) {
-				$isThumbBeingDragged = true;
-				// console.log('isThumbBeingDragged?:', $isThumbBeingDragged);
+				console.log(
+					'moveThumb -> e.clientX:',
+					e.clientX,
+					'thumbOffset:',
+					$thumbOffset,
+					'$currentThumbPosition,',
+					$currentThumbPosition,
+					'new playback time:',
+					playbackTime
+				);
+
+				if (!$isThumbBeingDragged) {
+					$isThumbBeingDragged = true;
+					// console.log('isThumbBeingDragged?:', $isThumbBeingDragged);
+				}
 			}
 		}
 	}
