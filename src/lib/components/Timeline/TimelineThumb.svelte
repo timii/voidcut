@@ -7,7 +7,7 @@
 		currentPlaybackTime,
 		currentTimelineScale
 	} from '../../../stores/store';
-	import { convertPxToPlaybackScale } from '$lib/utils/utils';
+	import { convertPlaybackToPxScale, convertPxToPlaybackScale } from '$lib/utils/utils';
 
 	let thumbPosition = $currentThumbPosition;
 	let thumbOffsetLeft = 0;
@@ -47,14 +47,13 @@
 		}
 	}
 
-	// dynamically calculate thumb position using the current playback time from the store
+	// dynamically calculate thumb position when playback time in store updates
 	$: $currentPlaybackTime,
 		(() => {
 			// console.log('in timelineThumb before -> $currentThumbPosition,', $currentThumbPosition);
-			$currentThumbPosition = ($currentPlaybackTime / 1000) * $currentTimelineScale;
+			$currentThumbPosition = convertPlaybackToPxScale($currentPlaybackTime, $currentTimelineScale);
 			// console.log('in timelineThumb after -> $currentThumbPosition,', $currentThumbPosition);
 		})();
-	// ($currentPlaybackTime / 1000) * $currentTimelineScale;
 </script>
 
 <div

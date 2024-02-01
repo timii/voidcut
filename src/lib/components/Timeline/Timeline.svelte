@@ -1,6 +1,10 @@
 <script lang="ts">
 	import type { IMedia } from '$lib/interfaces/Media';
-	import { handleTimelineMediaDrop, resetAllBeingDragged } from '$lib/utils/utils';
+	import {
+		convertPxToPlaybackScale,
+		handleTimelineMediaDrop,
+		resetAllBeingDragged
+	} from '$lib/utils/utils';
 	import { onMount } from 'svelte';
 	import TimelineRow from './TimelineRow.svelte';
 	import TimelineRuler from './TimelineRuler.svelte';
@@ -9,7 +13,9 @@
 		maxPlaybackTime,
 		thumbOffset,
 		currentThumbPosition,
-		isThumbBeingDragged
+		isThumbBeingDragged,
+		currentTimelineScale,
+		currentPlaybackTime
 	} from '../../../stores/store';
 
 	let hoverElement = false;
@@ -67,11 +73,20 @@
 		e.preventDefault();
 		// check if mouse button is held down and the thumb is currently being dragged
 		if (e.buttons === 1) {
-			$currentThumbPosition = e.clientX - $thumbOffset;
+			const newPos = e.clientX - $thumbOffset;
 
-			if (!$isThumbBeingDragged) {
-				$isThumbBeingDragged = true;
-				console.log('isThumbBeingDragged?:', $isThumbBeingDragged);
+			// avoid the thumb to be moved further left than the tracks
+			if (newPos >= 0) {
+				$currentThumbPosition = newPos;
+
+				// calculate playback time using the the new thumb position and write it into the store
+				const playbackTime = convertPxToPlaybackScale(newPos, $currentTimelineScale);
+				$currentPlaybackTime = playbackTime;
+
+				if (!$isThumbBeingDragged) {
+					$isThumbBeingDragged = true;
+					console.log('isThumbBeingDragged?:', $isThumbBeingDragged);
+				}
 			}
 		}
 	}
@@ -82,7 +97,12 @@
 	<div class="timeline-controls flex flex-row p-1 border">
 		<div class="flex-1">element controls</div>
 		<div class="flex-1 text-center">time</div>
-		<div class="flex-1 text-right">timeline controls</div>
+		<div class="flex-1 text-right">
+			<div class="flex gap-3 justify-end mr-12 text-lg">
+				<div class="increase-scale cursor-pointer" on:click={increaseTimelineScale}>+</div>
+				<div class="decrease-scale cursor-pointer" on:click={decreaseTimelineScale}>-</div>
+			</div>
+		</div>
 	</div>
 
 	<!-- Timeline Scroll Container -->

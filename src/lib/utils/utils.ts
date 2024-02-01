@@ -1,14 +1,9 @@
 import { MediaType, type IMedia, type IFileMetadata } from "$lib/interfaces/Media";
 import type { ITimelineElement, ITimelineTrack } from "$lib/interfaces/Timeline";
-import { tick } from "svelte";
-import { availableMedia, isTimelineElementBeingDragged, isThumbBeingDragged, timelineTracks, currentPlaybackTime, playbackIntervalId, currentTimelineScale } from "../../stores/store";
-import { AdjustingInterval } from "./accurateInterval";
+import { availableMedia, isTimelineElementBeingDragged, isThumbBeingDragged, timelineTracks, currentPlaybackTime, playbackIntervalId } from "../../stores/store";
 import { CONSTS } from "./consts";
 import { adjustingInterval } from "./betterInterval";
 
-let test: {
-    cancel: () => void;
-};
 let ticker: {
     start: () => void;
     stop: () => void;
@@ -175,6 +170,7 @@ export function resumePlayback() {
     // TODO: remove old testing stuff
     const startTime = new Date().getTime();;
     console.time('Execution time');
+    currentPlaybackTime.subscribe(el => console.log("playback interval -> currentPlaybackTime:", el))
 
     const intervallCallback = () => {
         // var diff = new Date().getTime() - startTime;
@@ -186,7 +182,6 @@ export function resumePlayback() {
         console.timeEnd('Execution time');
         console.time('Execution time');
         // console.log("interval drift:", (new Date().getTime() - startTime) % 1000);
-        currentPlaybackTime.subscribe(el => console.log("playback interval -> currentPlaybackTime:", el))
     }
 
     const doError = () => {
@@ -208,4 +203,7 @@ export function convertPxToPlaybackScale(px: number, scale: number) {
     return Math.round((px / scale) * 1000) || 0
 }
 
-export function convertPlaybackToPxScale() { }
+// convert a given playback time (in ms) to the corresponding timeline thumb pixel amount using the scale
+export function convertPlaybackToPxScale(playbackTime: number, scale: number) {
+    return Math.round((playbackTime / 1000) * scale)
+}
