@@ -3,6 +3,7 @@
 	import {
 		convertPxToPlaybackScale,
 		handleTimelineMediaDrop,
+		moveTimelineThumb,
 		resetAllBeingDragged
 	} from '$lib/utils/utils';
 	import { onMount } from 'svelte';
@@ -67,29 +68,6 @@
 		e.stopPropagation();
 		hoverElement = true;
 	}
-
-	// move thumb to current position
-	function moveThumb(e: MouseEvent) {
-		e.preventDefault();
-		// check if mouse button is held down and the thumb is currently being dragged
-		if (e.buttons === 1) {
-			const newPos = e.clientX - $thumbOffset;
-
-			// avoid the thumb to be moved further left than the tracks
-			if (newPos >= 0) {
-				$currentThumbPosition = newPos;
-
-				// calculate playback time using the the new thumb position and write it into the store
-				const playbackTime = convertPxToPlaybackScale(newPos, $currentTimelineScale);
-				$currentPlaybackTime = playbackTime;
-
-				if (!$isThumbBeingDragged) {
-					$isThumbBeingDragged = true;
-					console.log('isThumbBeingDragged?:', $isThumbBeingDragged);
-				}
-			}
-		}
-	}
 </script>
 
 <div class="timeline-container flex flex-col h-full gap-2">
@@ -112,8 +90,8 @@
 		on:dragleave={onDropElement}
 		on:dragenter={onHoverElement}
 		on:dragover={onHoverElement}
-		on:mousemove={moveThumb}
-		on:mousedown={moveThumb}
+		on:mousemove={moveTimelineThumb}
+		on:mousedown={moveTimelineThumb}
 		style="background-color: {hoverElement ? '#2e2e35' : ''};"
 	>
 		<!-- Timeline Content -->

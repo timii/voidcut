@@ -1,6 +1,6 @@
 import { MediaType, type IMedia, type IFileMetadata } from "$lib/interfaces/Media";
 import type { ITimelineElement, ITimelineTrack } from "$lib/interfaces/Timeline";
-import { availableMedia, isTimelineElementBeingDragged, isThumbBeingDragged, timelineTracks, currentPlaybackTime, playbackIntervalId, currentTimelineScale, currentThumbPosition } from "../../stores/store";
+import { availableMedia, isTimelineElementBeingDragged, isThumbBeingDragged, timelineTracks, currentPlaybackTime, playbackIntervalId, currentTimelineScale, currentThumbPosition, thumbOffset } from "../../stores/store";
 import { CONSTS } from "./consts";
 import { adjustingInterval } from "./betterInterval";
 import { get } from "svelte/store";
@@ -210,5 +210,27 @@ export function convertPlaybackToPxScale() {
     return Math.round((get(currentPlaybackTime) / 1000) * get(currentTimelineScale))
 }
 
-export function moveTimelineThumb(thumbOffset: number, scale: number) {
+// move the timeline thumb using a given mouse event
+export function moveTimelineThumb(e: MouseEvent) {
+    e.preventDefault();
+
+    // only drag element if mouse is held down
+    if (e.buttons === 1) {
+        // calculate new position using the mouse position on the x axis and the left thumb offset
+        const newPos = e.clientX - get(thumbOffset);
+
+        // avoid the thumb to be moved further left than the tracks
+        if (newPos >= 0) {
+            currentThumbPosition.set(newPos);
+
+            // calculate playback time using the the new thumb position and write it into the store
+            const playbackTime = convertPxToPlaybackScale();
+            currentPlaybackTime.set(playbackTime);
+
+            if (!get(isThumbBeingDragged)) {
+                isThumbBeingDragged.set(true);
+                console.log('isThumbBeingDragged?:', get(isThumbBeingDragged));
+            }
+        }
+    }
 }

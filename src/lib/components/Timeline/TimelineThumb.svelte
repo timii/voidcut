@@ -7,7 +7,11 @@
 		currentPlaybackTime,
 		currentTimelineScale
 	} from '../../../stores/store';
-	import { convertPlaybackToPxScale, convertPxToPlaybackScale } from '$lib/utils/utils';
+	import {
+		convertPlaybackToPxScale,
+		convertPxToPlaybackScale,
+		moveTimelineThumb
+	} from '$lib/utils/utils';
 
 	let thumbPosition = $currentThumbPosition;
 	let thumbOffsetLeft = 0;
@@ -19,39 +23,11 @@
 		$thumbOffset = thumbOffsetLeft;
 	});
 
-	// handle dragging thumb
-	function dragElement(e: MouseEvent) {
-		// console.log('e:', e);
-		e.preventDefault();
-
-		// only drag element if mouse is held down
-		if (e.buttons === 1) {
-			// calculate new position using the current mouse position - the left offset of the thumb element
-			const newPos = e.clientX - thumbOffsetLeft;
-
-			// avoid the thumb to be moved further left than the tracks
-			if (newPos >= 0) {
-				$currentThumbPosition = newPos;
-
-				// calculate playback time using the the new thumb position and write it into the store
-				const playbackTime = convertPxToPlaybackScale(newPos, $currentTimelineScale);
-				$currentPlaybackTime = playbackTime;
-
-				console.log('currentThumbPosition:', $currentThumbPosition, 'playbackTime:', playbackTime);
-
-				if (!$isThumbBeingDragged) {
-					$isThumbBeingDragged = true;
-					console.log('isThumbBeingDragged?:', $isThumbBeingDragged);
-				}
-			}
-		}
-	}
-
 	// dynamically calculate thumb position when playback time in store updates
 	$: $currentPlaybackTime,
 		(() => {
 			// console.log('in timelineThumb before -> $currentThumbPosition,', $currentThumbPosition);
-			$currentThumbPosition = convertPlaybackToPxScale($currentPlaybackTime, $currentTimelineScale);
+			$currentThumbPosition = convertPlaybackToPxScale();
 			// console.log('in timelineThumb after -> $currentThumbPosition,', $currentThumbPosition);
 		})();
 </script>
@@ -60,7 +36,7 @@
 	class="timeline-thumb w-[12px] h-[calc(100%+28px)] absolute ml-5 z-10 -left-[6px] -top-7 cursor-grab"
 	bind:this={thumbElementRef}
 	style="transform: translateX({$currentThumbPosition}px)"
-	on:mousemove={dragElement}
+	on:mousemove={moveTimelineThumb}
 >
 	<div class="thumb-container w-full h-full flex flex-col items-center relative">
 		<div
