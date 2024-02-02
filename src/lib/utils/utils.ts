@@ -1,8 +1,9 @@
 import { MediaType, type IMedia, type IFileMetadata } from "$lib/interfaces/Media";
 import type { ITimelineElement, ITimelineTrack } from "$lib/interfaces/Timeline";
-import { availableMedia, isTimelineElementBeingDragged, isThumbBeingDragged, timelineTracks, currentPlaybackTime, playbackIntervalId } from "../../stores/store";
+import { availableMedia, isTimelineElementBeingDragged, isThumbBeingDragged, timelineTracks, currentPlaybackTime, playbackIntervalId, currentTimelineScale, currentThumbPosition } from "../../stores/store";
 import { CONSTS } from "./consts";
 import { adjustingInterval } from "./betterInterval";
+import { get } from "svelte/store";
 
 let ticker: {
     start: () => void;
@@ -198,12 +199,16 @@ export function resumePlayback() {
     // playbackIntervalId.set(intervalId)
 }
 
-// convert a given pixel amount to the playback time (in ms) using the current timeline scale
-export function convertPxToPlaybackScale(px: number, scale: number) {
-    return Math.round((px / scale) * 1000) || 0
+// convert the current thumb position (in px) to the playback time (in ms) using the current timeline scale
+export function convertPxToPlaybackScale() {
+    // TODO:
+    return Math.round((get(currentThumbPosition) / get(currentTimelineScale)) * 1000) || 0
 }
 
-// convert a given playback time (in ms) to the corresponding timeline thumb pixel amount using the scale
-export function convertPlaybackToPxScale(playbackTime: number, scale: number) {
-    return Math.round((playbackTime / 1000) * scale)
+// convert the current playback time (in ms) to the thumb position (in px) using the current timeline scale
+export function convertPlaybackToPxScale() {
+    return Math.round((get(currentPlaybackTime) / 1000) * get(currentTimelineScale))
+}
+
+export function moveTimelineThumb(thumbOffset: number, scale: number) {
 }
