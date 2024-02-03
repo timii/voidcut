@@ -1,8 +1,9 @@
 <script lang="ts">
 	import type { IMedia } from '$lib/interfaces/Media';
 	import {
-		convertPxToPlaybackScale,
 		handleTimelineMediaDrop,
+		hasHorizontalScrollbar,
+		hasVerticalScrollbar,
 		moveTimelineThumb,
 		resetAllBeingDragged
 	} from '$lib/utils/utils';
@@ -10,16 +11,12 @@
 	import TimelineRow from './TimelineRow.svelte';
 	import TimelineRuler from './TimelineRuler.svelte';
 	import TimelineThumb from './TimelineThumb.svelte';
-	import {
-		maxPlaybackTime,
-		thumbOffset,
-		currentThumbPosition,
-		isThumbBeingDragged,
-		currentTimelineScale,
-		currentPlaybackTime
-	} from '../../../stores/store';
+	import { currentTimelineScale, timelineTracks } from '../../../stores/store';
 
 	let hoverElement = false;
+	let scrollContainerEl: HTMLDivElement;
+	let isOverflowingX = false;
+	let isOverflowingY = false;
 
 	onMount(() => {
 		// listen to mouseup events of the window
@@ -27,6 +24,18 @@
 			resetAllBeingDragged();
 			console.log('window mouseup');
 		});
+
+		isOverflowingY = hasVerticalScrollbar(scrollContainerEl);
+		isOverflowingX = hasHorizontalScrollbar(scrollContainerEl);
+
+		console.log(
+			'onMount -> scrollContainerEl:',
+			scrollContainerEl,
+			'overflowY?:',
+			isOverflowingY,
+			'overflowX?:',
+			isOverflowingX
+		);
 	});
 
 	function onDropElement(e: DragEvent) {
@@ -61,8 +70,6 @@
 	}
 
 	function onHoverElement(e: DragEvent) {
-		// console.log('hover media:', e);
-
 		// prevent default behavior
 		e.preventDefault();
 		e.stopPropagation();
@@ -93,12 +100,16 @@
 		on:mousemove={moveTimelineThumb}
 		on:mousedown={moveTimelineThumb}
 		style="background-color: {hoverElement ? '#2e2e35' : ''};"
+		bind:this={scrollContainerEl}
 	>
 		<!-- Timeline Content -->
 		<!-- calculate width dynamically and fix width if element overflows -->
 		<!-- if container doesn't overflow -> set width of element to be 100% in px -->
 		<!-- and pass the calcualted width to the ruler to use it in there on the container element -->
-		<div class="timeline-content min-w-full h-auto relative">
+		<div
+			class="timeline-content min-w-full h-auto relative"
+			style="height: {isOverflowingY ? 'auto' : '100%'};"
+		>
 			<!-- Timeline Ruler -->
 			<TimelineRuler></TimelineRuler>
 
@@ -111,9 +122,17 @@
 					<TimelineRow {track}></TimelineRow>
 				{/each} -->
 
-				<div class="bg-red-700 h-[50px] w-[2200px] mr-5"></div>
-				<div class="bg-red-700 h-[50px] w-[800px]"></div>
-				<div class="bg-red-700 h-[50px] w-[600px] translate-x-[300px]"></div>
+				<div class="bg-red-700 h-[50px] w-[20px] mr-5"></div>
+				<div class="bg-red-700 h-[50px] w-[80px]"></div>
+				<div class="bg-red-700 h-[50px] w-[80px]"></div>
+				<div class="bg-red-700 h-[50px] w-[80px]"></div>
+				<div class="bg-red-700 h-[50px] w-[80px]"></div>
+				<div class="bg-red-700 h-[50px] w-[80px]"></div>
+				<div class="bg-red-700 h-[50px] w-[80px]"></div>
+				<div class="bg-red-700 h-[50px] w-[80px]"></div>
+				<div class="bg-red-700 h-[50px] w-[80px]"></div>
+				<div class="bg-red-700 h-[50px] w-[80px]"></div>
+				<!-- <div class="bg-red-700 h-[50px] w-[600px] translate-x-[300px]"></div>
 				<div class="bg-red-700 h-[50px] w-[200px] translate-x-[50px]"></div>
 				<div class="bg-red-700 h-[50px] w-[300px]"></div>
 				<div class="bg-red-700 h-[50px] w-[300px]"></div>
@@ -123,7 +142,7 @@
 				<div class="bg-red-700 h-[50px] w-[300px]"></div>
 				<div class="bg-red-700 h-[50px] w-[300px]"></div>
 				<div class="bg-red-700 h-[50px] w-[300px]"></div>
-				<div class="bg-red-700 h-[50px] w-[300px]"></div>
+				<div class="bg-red-700 h-[50px] w-[300px]"></div> -->
 			</div>
 		</div>
 	</div>
