@@ -5,7 +5,7 @@ import { CONSTS } from "./consts";
 import { adjustingInterval } from "./betterInterval";
 import { get } from "svelte/store";
 
-let ticker: {
+let interval: {
     start: () => void;
     stop: () => void;
 }
@@ -159,7 +159,7 @@ export function pausePlayback() {
         // use current interval id to clear the interval
         clearInterval(id)
         // test.cancel()
-        ticker.stop()
+        interval.stop()
         // set the store value back to zero
         return 0;
     })
@@ -190,8 +190,8 @@ export function resumePlayback() {
     };
 
     // ticker = AdjustingInterval(intervallCallback, CONSTS.playbackIntervalTimer, doError);
-    ticker = adjustingInterval(intervallCallback, CONSTS.playbackIntervalTimer, doError);
-    ticker.start()
+    interval = adjustingInterval(intervallCallback, CONSTS.playbackIntervalTimer, doError);
+    interval.start()
     // const intervalId = setInterval(intervallCallback, CONSTS.playbackIntervalTimer)
     // test = accurateInterval(() => intervallCallback, CONSTS.playbackIntervalTimer)
 
@@ -201,7 +201,6 @@ export function resumePlayback() {
 
 // convert the current thumb position (in px) to the playback time (in ms) using the current timeline scale
 export function convertPxToPlaybackScale() {
-    // TODO:
     return Math.round((get(currentThumbPosition) / get(currentTimelineScale)) * 1000) || 0
 }
 
@@ -233,4 +232,12 @@ export function moveTimelineThumb(e: MouseEvent) {
             }
         }
     }
+}
+
+export function hasHorizontalScrollbar(el: HTMLElement) {
+    return el.scrollWidth > el.clientWidth;
+}
+
+export function hasVerticalScrollbar(el: HTMLElement) {
+    return el.scrollHeight > el.clientHeight;
 }
