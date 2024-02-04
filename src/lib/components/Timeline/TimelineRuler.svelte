@@ -9,12 +9,11 @@
 		currentPlaybackTime
 	} from '../../../stores/store';
 
-	let maxPlaybackTimeVal = $maxPlaybackTime;
+	export let amountOfTicks = 30;
 
 	// calculate number of seconds of max playback time
-	let amountOfTicks = maxPlaybackTimeVal / 1000;
+	// let amountOfTicks = $maxPlaybackTime / 1000;
 	// console.log('maxPlaybackTimeVal:', maxPlaybackTimeVal);
-
 </script>
 
 <div
@@ -22,10 +21,11 @@
 	on:mousedown={moveTimelineThumb}
 	on:mousemove={moveTimelineThumb}
 >
-	{#each { length: $maxPlaybackTime / 1000 } as _, i}
+	<!-- {#each { length: amountOfTicks / 1000 } as _, i} -->
+	{#each { length: amountOfTicks } as _, i}
 		<div
 			class="timeline-ruler-block flex flex-col items-start"
-			style="width: {1 * $currentTimelineScale}px;"
+			style="min-width: {$currentTimelineScale}px;"
 		>
 			<div class="timeline-ruler-tick w-px h-[5px] bg-ruler-color"></div>
 			<div class="timeline-ruler-label text-ruler-color text-[11px] translate-x-[-50%]">

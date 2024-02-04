@@ -11,12 +11,14 @@
 	import TimelineRow from './TimelineRow.svelte';
 	import TimelineRuler from './TimelineRuler.svelte';
 	import TimelineThumb from './TimelineThumb.svelte';
-	import { currentTimelineScale, timelineTracks } from '../../../stores/store';
+	import { currentTimelineScale, thumbOffset, timelineTracks } from '../../../stores/store';
 
 	let hoverElement = false;
 	let scrollContainerEl: HTMLDivElement;
 	let isOverflowingX = false;
 	let isOverflowingY = false;
+	let amountOfTicks = 0;
+	let amountOfTicksRounded = 0;
 
 	onMount(() => {
 		// listen to mouseup events of the window
@@ -25,8 +27,28 @@
 			console.log('window mouseup');
 		});
 
+		// TODO: change that so check both scrollbars everytime something in the timeline changes and/or screen sitze changes
 		isOverflowingY = hasVerticalScrollbar(scrollContainerEl);
 		isOverflowingX = hasHorizontalScrollbar(scrollContainerEl);
+
+		// get current width of timeline to calculate max playback time at the start
+		amountOfTicks = scrollContainerEl.scrollWidth / $currentTimelineScale;
+		amountOfTicksRounded = Math.ceil(amountOfTicks);
+		console.log(
+			'timeline width -> clientWidth:',
+			scrollContainerEl.clientWidth,
+			'scrollWidth:',
+			scrollContainerEl.scrollWidth,
+			'offsetWidth:',
+			scrollContainerEl.offsetWidth,
+			'thumbOffset:',
+			$thumbOffset,
+			'amount of ticks in the timeline possible:',
+			amountOfTicks,
+			'rounded up:',
+			amountOfTicksRounded
+		);
+		// TODO: check the timeline width everytime something in the timeline changes
 
 		console.log(
 			'onMount -> scrollContainerEl:',
@@ -111,7 +133,7 @@
 			style="height: {isOverflowingY ? 'auto' : '100%'};"
 		>
 			<!-- Timeline Ruler -->
-			<TimelineRuler></TimelineRuler>
+			<TimelineRuler amountOfTicks={amountOfTicksRounded}></TimelineRuler>
 
 			<!-- Timeline Thumb-->
 			<TimelineThumb></TimelineThumb>
@@ -122,17 +144,9 @@
 					<TimelineRow {track}></TimelineRow>
 				{/each} -->
 
-				<div class="bg-red-700 h-[50px] w-[20px] mr-5"></div>
-				<div class="bg-red-700 h-[50px] w-[80px]"></div>
-				<div class="bg-red-700 h-[50px] w-[80px]"></div>
-				<div class="bg-red-700 h-[50px] w-[80px]"></div>
-				<div class="bg-red-700 h-[50px] w-[80px]"></div>
-				<div class="bg-red-700 h-[50px] w-[80px]"></div>
-				<div class="bg-red-700 h-[50px] w-[80px]"></div>
-				<div class="bg-red-700 h-[50px] w-[80px]"></div>
-				<div class="bg-red-700 h-[50px] w-[80px]"></div>
-				<div class="bg-red-700 h-[50px] w-[80px]"></div>
-				<!-- <div class="bg-red-700 h-[50px] w-[600px] translate-x-[300px]"></div>
+				<div class="bg-red-700 h-[50px] w-[220px] mr-5"></div>
+				<div class="bg-red-700 h-[50px] w-[800px]"></div>
+				<div class="bg-red-700 h-[50px] w-[600px] translate-x-[300px]"></div>
 				<div class="bg-red-700 h-[50px] w-[200px] translate-x-[50px]"></div>
 				<div class="bg-red-700 h-[50px] w-[300px]"></div>
 				<div class="bg-red-700 h-[50px] w-[300px]"></div>
@@ -142,7 +156,7 @@
 				<div class="bg-red-700 h-[50px] w-[300px]"></div>
 				<div class="bg-red-700 h-[50px] w-[300px]"></div>
 				<div class="bg-red-700 h-[50px] w-[300px]"></div>
-				<div class="bg-red-700 h-[50px] w-[300px]"></div> -->
+				<div class="bg-red-700 h-[50px] w-[300px]"></div>
 			</div>
 		</div>
 	</div>
