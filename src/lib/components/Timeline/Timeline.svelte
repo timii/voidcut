@@ -144,7 +144,7 @@
 					<TimelineRow {track}></TimelineRow>
 				{/each} -->
 
-				<div class="bg-red-700 h-[50px] w-[220px] mr-5"></div>
+				<div class="bg-red-700 h-[50px] w-[2200px] mr-5"></div>
 				<div class="bg-red-700 h-[50px] w-[800px]"></div>
 				<div class="bg-red-700 h-[50px] w-[600px] translate-x-[300px]"></div>
 				<div class="bg-red-700 h-[50px] w-[200px] translate-x-[50px]"></div>

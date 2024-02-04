@@ -17,7 +17,7 @@
 </script>
 
 <div
-	class="timeline-ruler sticky top-0 left-0 h-7 pl-5 bg-background-color border-ruler-color border-t-2 flex z-[1] cursor-grab select-none"
+	class="timeline-ruler sticky top-0 left-0 h-7 pl-5 bg-background-color border-ruler-color border-t-2 flex z-[1] cursor-grab select-none w-fit min-w-full"
 	on:mousedown={moveTimelineThumb}
 	on:mousemove={moveTimelineThumb}
 >
