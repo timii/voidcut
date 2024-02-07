@@ -97,6 +97,22 @@
 		e.stopPropagation();
 		hoverElement = true;
 	}
+	// listen to scrolling in the timeline
+	function onTimelineScroll(e: Event) {
+		if (e.currentTarget) {
+			const target = e.currentTarget as HTMLElement;
+			const horizontalScroll = target.scrollLeft;
+			const verticalScroll = target.scrollTop;
+			console.log(
+				'timeline scrolled -> e:',
+				e,
+				'horizontal:',
+				horizontalScroll,
+				'vertical:',
+				verticalScroll
+			);
+		}
+	}
 </script>
 
 <div class="timeline-container flex flex-col h-full gap-2">
