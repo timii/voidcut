@@ -11,7 +11,13 @@
 	import TimelineRow from './TimelineRow.svelte';
 	import TimelineRuler from './TimelineRuler.svelte';
 	import TimelineThumb from './TimelineThumb.svelte';
-	import { currentTimelineScale, thumbOffset, timelineTracks } from '../../../stores/store';
+	import {
+		currentTimelineScale,
+		horizontalScroll,
+		thumbOffset,
+		timelineTracks,
+		verticalScroll
+	} from '../../../stores/store';
 
 	let hoverElement = false;
 	let scrollContainerEl: HTMLDivElement;
@@ -97,19 +103,22 @@
 		e.stopPropagation();
 		hoverElement = true;
 	}
+
 	// listen to scrolling in the timeline
 	function onTimelineScroll(e: Event) {
 		if (e.currentTarget) {
 			const target = e.currentTarget as HTMLElement;
-			const horizontalScroll = target.scrollLeft;
-			const verticalScroll = target.scrollTop;
+			const horizontalScrollValue = target.scrollLeft;
+			const verticalScrollValue = target.scrollTop;
+			$horizontalScroll = horizontalScrollValue;
+			$verticalScroll = verticalScrollValue;
 			console.log(
 				'timeline scrolled -> e:',
 				e,
 				'horizontal:',
-				horizontalScroll,
+				horizontalScrollValue,
 				'vertical:',
-				verticalScroll
+				verticalScrollValue
 			);
 		}
 	}
