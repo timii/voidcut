@@ -1,6 +1,6 @@
 import { MediaType, type IMedia, type IFileMetadata } from "$lib/interfaces/Media";
 import type { ITimelineElement, ITimelineTrack } from "$lib/interfaces/Timeline";
-import { availableMedia, isTimelineElementBeingDragged, isThumbBeingDragged, timelineTracks, currentPlaybackTime, playbackIntervalId, currentTimelineScale, currentThumbPosition, thumbOffset } from "../../stores/store";
+import { availableMedia, isTimelineElementBeingDragged, isThumbBeingDragged, timelineTracks, currentPlaybackTime, playbackIntervalId, currentTimelineScale, currentThumbPosition, thumbOffset, horizontalScroll } from "../../stores/store";
 import { CONSTS } from "./consts";
 import { adjustingInterval } from "./betterInterval";
 import { get } from "svelte/store";
@@ -215,8 +215,8 @@ export function moveTimelineThumb(e: MouseEvent) {
 
     // only drag element if mouse is held down
     if (e.buttons === 1) {
-        // calculate new position using the mouse position on the x axis and the left thumb offset
-        const newPos = e.clientX - get(thumbOffset);
+        // calculate new position using the mouse position on the x axis, the left thumb offset and the amount scrolled horizontally
+        const newPos = e.clientX - get(thumbOffset) + get(horizontalScroll);
 
         // avoid the thumb to be moved further left than the tracks
         if (newPos >= 0) {
