@@ -7,6 +7,7 @@
 	import SkipEndIcon from '$lib/assets/preview/skip-end.png';
 	import FrameBeforeIcon from '$lib/assets/preview/frame-before.png';
 	import FrameAfterIcon from '$lib/assets/preview/frame-after.png';
+	import { pausePlayback, resumePlayback } from '$lib/utils/utils';
 
 	function onSkipStartClick() {
 		console.log('onSkipStartClick clicked!');
@@ -16,9 +17,14 @@
 		console.log('onFrameBeforeClick clicked!');
 	}
 
+	// play/pause current playback
 	function onPlayPauseClick() {
 		console.log('handlePlayPause clicked!');
-		previewPlaying.update((value) => !value);
+		previewPlaying.update((value) => {
+			value ? pausePlayback() : resumePlayback();
+			return !value;
+		});
+		// TODO: pause/resume playback
 	}
 
 	function onFrameAfterClick() {
