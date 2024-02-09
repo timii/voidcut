@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { previewPlaying } from '../../../stores/store';
+	import { currentPlaybackTime, previewPlaying } from '../../../stores/store';
 	import PreviewControlsButton from '$lib/components/Preview/PreviewControlsButton.svelte';
 	import PlayIcon from '$lib/assets/preview/play.png';
 	import PauseIcon from '$lib/assets/preview/pause.png';
@@ -11,6 +11,10 @@
 
 	function onSkipStartClick() {
 		console.log('onSkipStartClick clicked!');
+		// pause playback to clear current playback interval
+		pausePlayback();
+		// reset current playback to 0
+		currentPlaybackTime.set(0);
 	}
 
 	function onFrameBeforeClick() {
