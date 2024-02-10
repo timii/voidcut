@@ -66,6 +66,56 @@
 		);
 	});
 
+	// get the max playback time everytime the timelineTracks store changes
+	$: getMaxPlaybackTime($timelineTracks);
+	// // call this function every time the timelineTracks store variable changes
+	// $: $timelineTracks,
+	// 	(() => {
+	// 		console.log('Timeline -> timelineTracks changed:', $timelineTracks);
+	// 	})();
+
+	function getMaxPlaybackTime(tracks: ITimelineTrack[]) {
+		console.log('Timeline -> timelineTracks changed:', $timelineTracks);
+		// go through each row and element and check what the last playback time is
+		if (tracks.length > 0) {
+			let maxTime = 0;
+			tracks.forEach((track) => {
+				console.log('getMaxPlaybackTime -> track:', track);
+				track.elements.forEach((element) => {
+					// add element offset and duration to get the time the element ends
+					const endTime = element.playbackStartTime + element.duration;
+					if (endTime > maxTime) {
+						maxTime = endTime;
+					}
+					console.log('getMaxPlaybackTime -> element:', element, 'endTime:', endTime);
+				});
+			});
+			maxPlaybackTime.set(maxTime);
+
+			// update timeline ruler ticks amount to scale it with the increased timeline width
+			// but only if the new amount of ticks is equal or more to the start amount to avoid
+			// timeline ruler being smaller than screen
+			const maxTimeAsTicks = Math.ceil(maxTime / 1000);
+			if (maxTimeAsTicks >= $startAmountOfTicks) {
+				console.log('getMaxPlaybackTime in if');
+				amountOfTicksRounded = maxTimeAsTicks;
+			}
+			console.log(
+				'getMaxPlaybackTime -> after all for each maxTime:',
+				maxTime,
+				'amountOfTicksRounded:',
+				amountOfTicksRounded,
+				'startAmountOfTicks:',
+				$startAmountOfTicks,
+				'amountOfTicksRounded >= $startAmountOfTicks:',
+				amountOfTicksRounded >= $startAmountOfTicks
+			);
+		} else {
+			// if the array is empty -> reset maxPlaybackTime
+			maxPlaybackTime.set(0);
+		}
+	}
+
 	function onDropElement(e: DragEvent) {
 		// console.log('element dropped:', e, 'dataTransfer:', e.dataTransfer);
 
@@ -146,6 +196,7 @@
 		on:dragover={onHoverElement}
 		on:mousemove={moveTimelineThumb}
 		on:mousedown={moveTimelineThumb}
+		on:scroll={onTimelineScroll}
 		style="background-color: {hoverElement ? '#2e2e35' : ''};"
 		bind:this={scrollContainerEl}
 	>
