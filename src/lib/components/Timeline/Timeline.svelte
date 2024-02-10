@@ -14,10 +14,13 @@
 	import {
 		currentTimelineScale,
 		horizontalScroll,
+		maxPlaybackTime,
+		startAmountOfTicks,
 		thumbOffset,
 		timelineTracks,
 		verticalScroll
 	} from '../../../stores/store';
+	import type { ITimelineTrack } from '$lib/interfaces/Timeline';
 
 	let hoverElement = false;
 	let scrollContainerEl: HTMLDivElement;
@@ -40,6 +43,9 @@
 		// get current width of timeline to calculate max playback time at the start
 		amountOfTicks = scrollContainerEl.scrollWidth / $currentTimelineScale;
 		amountOfTicksRounded = Math.ceil(amountOfTicks);
+
+		// set amount of ticks at the start
+		startAmountOfTicks.set(amountOfTicksRounded);
 		console.log(
 			'timeline width -> clientWidth:',
 			scrollContainerEl.clientWidth,
