@@ -99,12 +99,14 @@
 			maxPlaybackTime.set(maxTime);
 
 			// update timeline ruler ticks amount to scale it with the increased timeline width
-			// but only if the new amount of ticks is equal or more to the start amount to avoid
-			// timeline ruler being smaller than screen
+			// but only if the new amount of ticks is equal or more to the start amount
 			const maxTimeAsTicks = Math.ceil(maxTime / 1000);
 			if (maxTimeAsTicks >= $startAmountOfTicks) {
 				console.log('getMaxPlaybackTime in if');
 				amountOfTicksRounded = maxTimeAsTicks;
+			} else {
+				// if the max time is smaller than the starting amount of ticks set it back to the starting value to avoid timeline ruler being short than screen
+				amountOfTicksRounded = $startAmountOfTicks;
 			}
 			console.log(
 				'getMaxPlaybackTime -> after all for each maxTime:',
