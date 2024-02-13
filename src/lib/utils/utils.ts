@@ -4,6 +4,8 @@ import { availableMedia, isTimelineElementBeingDragged, isThumbBeingDragged, tim
 import { CONSTS } from "./consts";
 import { adjustingInterval } from "./betterInterval";
 import { get } from "svelte/store";
+import resolveConfig from 'tailwindcss/resolveConfig'
+import tailwindConfig from './../../../tailwind.config'
 
 let interval: {
     start: () => void;
@@ -45,8 +47,9 @@ export async function handleFileUpload(files: FileList) {
     saveFilesToStore(mediaArr);
 }
 
+// handle given media when it's drag and dropped into the timeline
 export function handleTimelineMediaDrop(media: IMedia) {
-    console.log("handleTimelineMediaDrop -> media:", media)
+    // console.log("handleTimelineMediaDrop -> media:", media)
 
     // convert media type to timeline element type
     const timelineEl: ITimelineElement = {
@@ -69,8 +72,8 @@ export function handleTimelineMediaDrop(media: IMedia) {
     // add new object into timeline tracks
     timelineTracks.update(arr => [...arr, timelineTrack])
 
-    console.log('handleTimelineMediaDrop -> tracks', timelineTrack);
-    timelineTracks.subscribe(value => console.log("handleTimelineMediaDrop -> timelineTracks:", value))
+    // console.log('handleTimelineMediaDrop -> tracks', timelineTrack);
+    // timelineTracks.subscribe(value => console.log("handleTimelineMediaDrop -> timelineTracks:", value))
 }
 
 // get metadata from a given file 
@@ -95,7 +98,7 @@ function getFileMetadata(file: File): Promise<IFileMetadata> {
             // calculate the duration in milliseconds and round it to the nearest integer  
             const durationInMs = Math.round(duration * 1000)
 
-            console.log('getFileInfo in onleadedmetadata -> duration:', duration, 'video:', video, "src:", video.src);
+            // console.log('getFileInfo in onleadedmetadata -> duration:', duration, 'video:', video, "src:", video.src);
             resolve({
                 src: video.src,
                 duration: durationInMs
@@ -123,7 +126,7 @@ function convertFileToDataUrl(file: File): Promise<string> {
 
             // add eventlistener to when the FileReader finished loading
             fr.onloadend = () => {
-                console.log('convertFileToDataUrl -> FileReader onload:', fr.result);
+                // console.log('convertFileToDataUrl -> FileReader onload:', fr.result);
                 resolve(fr.result as string)
                 // testImage = fr.result as any;
                 // var source = document.createElement('source');
@@ -234,10 +237,17 @@ export function moveTimelineThumb(e: MouseEvent) {
     }
 }
 
+// calculate if a given html element has a horizontal scrollbar
 export function hasHorizontalScrollbar(el: HTMLElement) {
     return el.scrollWidth > el.clientWidth;
 }
 
+// calculate if a given html element has a vertical scrollbar
 export function hasVerticalScrollbar(el: HTMLElement) {
     return el.scrollHeight > el.clientHeight;
+}
+
+// get all tailwind variables to use in components
+export function getTailwindVariables() {
+    return resolveConfig(tailwindConfig)
 }
