@@ -5,7 +5,7 @@ import { CONSTS } from "./consts";
 import { adjustingInterval } from "./betterInterval";
 import { get } from "svelte/store";
 import resolveConfig from 'tailwindcss/resolveConfig'
-import tailwindConfig from './../../../tailwind.config'
+import tailwindConfig from '../../../tailwind.config.js'
 
 let interval: {
     start: () => void;
