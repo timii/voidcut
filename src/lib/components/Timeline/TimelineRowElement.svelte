@@ -1,8 +1,12 @@
 <script lang="ts">
 	import type { ITimelineElement } from '$lib/interfaces/Timeline';
-	import { currentTimelineScale } from '../../../stores/store';
+	import { getTailwindVariables } from '$lib/utils/utils';
+	import { currentTimelineScale, selectedElement } from '../../../stores/store';
 
 	export let element: ITimelineElement;
+
+	// check if selected element matches id of this element
+	$: isSelected = $selectedElement === element.elementId;
 
 	$: elementWidth = (element.duration / 1000) * $currentTimelineScale;
 	console.log(
@@ -17,6 +21,22 @@
 		'calc:',
 		(element.duration / 1000) * $currentTimelineScale
 	);
+
+	const tailwindVariables = getTailwindVariables();
+	const tailwindColors = tailwindVariables.theme.colors;
+
+	function onElementClick(e: MouseEvent) {
+		e.stopPropagation();
+		$selectedElement = element.elementId;
+	}
+
+	// TODO: select row element on click instead of moving timeline thumb (currently it always registers as a click on the timeline intsead of the row element so you can't click on a row element)
 </script>
 
-<div class="bg-red-500 h-[50px] mr-5 rounded" style="width: {elementWidth}px;"></div>
+<div
+	class=" h-[50px] mr-5 rounded"
+	style="width: {elementWidth}px; background-color: {isSelected
+		? tailwindColors.orange[500]
+		: tailwindColors.red[500]}"
+	on:mousedown={onElementClick}
+></div>

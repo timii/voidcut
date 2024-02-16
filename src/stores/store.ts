@@ -17,6 +17,7 @@ export const playbackIntervalId = writable(0); // store to hold the playback int
 export const timelineTracks = writable<ITimelineTrack[]>([])
 export const isThumbBeingDragged = writable(false);
 export const isTimelineElementBeingDragged = writable(false);
+export const selectedElement = writable(""); // keep track which element is currently selected in the timeline
 
 // Workbench
 export const availableMedia = writable<IMedia[]>([]);
