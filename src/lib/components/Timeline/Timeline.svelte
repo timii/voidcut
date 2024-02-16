@@ -21,6 +21,7 @@
 		verticalScroll
 	} from '../../../stores/store';
 	import type { ITimelineTrack } from '$lib/interfaces/Timeline';
+	import TimelineControls from './TimelineControls.svelte';
 
 	let hoverElement = false;
 	let scrollContainerEl: HTMLDivElement;
@@ -143,14 +144,14 @@
 
 		// only handle files when actually dropped
 		if (mediaData && e.type !== 'dragleave') {
-			console.log(
-				'element dropped in if:',
-				e,
-				'dataTransfer:',
-				e.dataTransfer,
-				'mediaData:',
-				mediaData
-			);
+			// console.log(
+			// 	'element dropped in if:',
+			// 	e,
+			// 	'dataTransfer:',
+			// 	e.dataTransfer,
+			// 	'mediaData:',
+			// 	mediaData
+			// );
 			handleTimelineMediaDrop(mediaData);
 		}
 	}
@@ -170,30 +171,21 @@
 			const verticalScrollValue = target.scrollTop;
 			$horizontalScroll = horizontalScrollValue;
 			$verticalScroll = verticalScrollValue;
-			console.log(
-				'timeline scrolled -> e:',
-				e,
-				'horizontal:',
-				horizontalScrollValue,
-				'vertical:',
-				verticalScrollValue
-			);
+			// console.log(
+			// 	'timeline scrolled -> e:',
+			// 	e,
+			// 	'horizontal:',
+			// 	horizontalScrollValue,
+			// 	'vertical:',
+			// 	verticalScrollValue
+			// );
 		}
 	}
 </script>
 
 <div class="timeline-container flex flex-col h-full gap-2">
 	<!-- Timeline Controls -->
-	<div class="timeline-controls flex flex-row p-1 border">
-		<div class="flex-1">element controls</div>
-		<div class="flex-1 text-center">time</div>
-		<div class="flex-1 text-right">
-			<div class="flex gap-3 justify-end mr-12 text-lg">
-				<div class="increase-scale cursor-pointer" on:click={increaseTimelineScale}>+</div>
-				<div class="decrease-scale cursor-pointer" on:click={decreaseTimelineScale}>-</div>
-			</div>
-		</div>
-	</div>
+	<TimelineControls></TimelineControls>
 
 	<!-- Timeline Scroll Container -->
 	<div
@@ -224,11 +216,11 @@
 
 			<!-- Timeline Tracks -->
 			<div class="timeline-tracks flex flex-col gap-3 mb-3 pl-5">
-				<!-- {#each $timelineTracks as track}
+				{#each $timelineTracks as track}
 					<TimelineRow {track}></TimelineRow>
-				{/each} -->
+				{/each}
 
-				<div class="bg-red-700 h-[50px] w-[2200px] mr-5"></div>
+				<!-- <div class="bg-red-700 h-[50px] w-[2200px] mr-5"></div>
 				<div class="bg-red-700 h-[50px] w-[800px]"></div>
 				<div class="bg-red-700 h-[50px] w-[600px] translate-x-[300px]"></div>
 				<div class="bg-red-700 h-[50px] w-[200px] translate-x-[50px]"></div>
@@ -240,7 +232,7 @@
 				<div class="bg-red-700 h-[50px] w-[300px]"></div>
 				<div class="bg-red-700 h-[50px] w-[300px]"></div>
 				<div class="bg-red-700 h-[50px] w-[300px]"></div>
-				<div class="bg-red-700 h-[50px] w-[300px]"></div>
+				<div class="bg-red-700 h-[50px] w-[300px]"></div> -->
 			</div>
 		</div>
 	</div>
