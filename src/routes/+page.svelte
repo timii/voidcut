@@ -1,7 +1,7 @@
 <script lang="ts">
-	import Timeline from '$lib/components/Timeline/Timeline.svelte';
-	import MediaPool from '$lib/components/Workbench/MediaPool.svelte';
-	import Preview from '$lib/components/Preview/Preview.svelte';
+	import Timeline from '$lib/components/timeline/Timeline.svelte';
+	import MediaPool from '$lib/components/workbench/MediaPool.svelte';
+	import Preview from '$lib/components/preview/Preview.svelte';
 </script>
 
 <main class="flex flex-col h-screen w-screen gap-1 max-w-screen max-h-screen">

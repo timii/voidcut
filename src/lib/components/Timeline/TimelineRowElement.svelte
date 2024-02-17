@@ -26,6 +26,7 @@
 	const tailwindColors = tailwindVariables.theme.colors;
 
 	function onElementClick(e: MouseEvent) {
+		// avoid timeline thumb being dragged when clicking on element
 		e.stopPropagation();
 		$selectedElement = element.elementId;
 	}
