@@ -251,3 +251,13 @@ export function hasVerticalScrollbar(el: HTMLElement) {
 export function getTailwindVariables() {
     return resolveConfig(tailwindConfig)
 }
+
+// get index of timeline element that matches the given id
+export function getIndexOfId(arr: ITimelineTrack[], id: string) {
+    for (var i = 0; i < arr.length; i++) {
+        var index = arr[i].elements.findIndex(el => el.elementId === id);
+        if (index > -1) {
+            return [i, index];
+        }
+    }
+}
