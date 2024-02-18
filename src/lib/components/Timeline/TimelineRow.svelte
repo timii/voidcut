@@ -6,7 +6,7 @@
 	console.log('TimelineRow -> track:', track);
 </script>
 
-<div class="bg-ruler-color h-[50px] opacity-50 w-full mr-5 rounded">
+<div class="bg-ruler-color h-[50px] opacity-50 w-full mr-5 rounded flex">
 	{#each track.elements as element}
 		<TimelineRowElement {element}></TimelineRowElement>
 	{/each}
