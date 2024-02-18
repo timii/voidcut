@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { MediaType } from '$lib/interfaces/Media';
-	import type { IPlayerElement } from '$lib/interfaces/Player';
+	import type { IPlayerElement, IPlayerElementsMap } from '$lib/interfaces/Player';
 	import type { ITimelineElement, ITimelineTrack } from '$lib/interfaces/Timeline';
 	import { availableMedia, previewPlaying, timelineTracks } from '../../../stores/store';
 
@@ -8,12 +8,13 @@
 
 	// map to hold references to each player element and its properties using its elementId as a key
 	// const playerElementsMap = new Map<string, { el: HTMLElement; properties: HTMLElement }>();
-	let playerElementsMap: { [x: string]: { el: HTMLElement; properties: IPlayerElement } } = {};
-	$: console.log('playerElementsMap:', playerElementsMap);
+	let playerElementsMap: IPlayerElementsMap = {};
+	$: filterPlayerElementsMap(playerElementsMap);
 
 	// handle playing and pausing elements when the previewPlaying store value change
 	$: handlePlayingElements($previewPlaying);
 
+	// TODO: not implemented
 	function handlePlayingElements(playing: boolean) {
 		console.log(
 			'handlePlayingElements -> playing:',
@@ -22,6 +23,25 @@
 			playerElementsMap[0],
 			typeof playerElementsMap[0]
 		);
+	}
+
+	// filter the given map by removing keys where the element in the value is null
+	function filterPlayerElementsMap(map: IPlayerElementsMap) {
+		// console.log(
+		// 	'filterPlayerElementsMap -> playerElementsMap changes before:',
+		// 	JSON.parse(JSON.stringify(playerElementsMap))
+		// );
+		// loop through map and filter out elements where the element is null
+		for (const [key, value] of Object.entries(map)) {
+			console.log('in for loop -> key:', key, 'value:', value, 'el is null?:', value.el === null);
+			if (value.el === null) {
+				delete playerElementsMap[key];
+			}
+		}
+		// console.log(
+		// 	'filterPlayerElementsMap -> playerElementsMap changes after:',
+		// 	JSON.parse(JSON.stringify(playerElementsMap))
+		// );
 	}
 
 	// create a flattened array of timeline elements from a given array of tracks
@@ -37,22 +57,26 @@
 					return el;
 				}
 				const playerEl = { src: foundEl.src, ...el } as IPlayerElement;
-				console.log(
-					'flattenTimelineTracks -> playerEl:',
-					playerEl,
-					'playerElementsMap:',
-					playerElementsMap
-				);
+				// console.log('flattenTimelineTracks -> playerEl:', playerEl);
+				// console.log(
+				// 	'flattenTimelineTracks -> playerElementsMap before:',
+				// 	JSON.parse(JSON.stringify(playerElementsMap))
+				// );
 
-				// add the media properties to the map using the elementId as the key
+				// if key with matching element id exists, add the media properties to the value
 				playerElementsMap[playerEl.elementId] = {
 					...playerElementsMap[playerEl.elementId],
 					properties: playerEl
 				};
+
+				// console.log(
+				// 	'flattenTimelineTracks -> playerElementsMap after:',
+				// 	JSON.parse(JSON.stringify(playerElementsMap))
+				// );
 				return playerEl;
 			})
 		);
-		// console.log('flattenTimelineTracks -> arr after:', flatArr);
+		console.log('flattenTimelineTracks -> arr after:', flatArr);
 
 		return flatArr.length > 0 ? flatArr : [];
 	}

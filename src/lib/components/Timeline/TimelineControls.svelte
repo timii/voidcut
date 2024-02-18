@@ -26,6 +26,7 @@
 				else {
 					const trackAfterRemoval = tracks[firstIndex].elements.toSpliced(secondIndex, 1);
 					tracks[firstIndex].elements = trackAfterRemoval;
+					return tracks;
 				}
 			});
 		}
