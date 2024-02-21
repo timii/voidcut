@@ -19,10 +19,24 @@
 		console.log(
 			'handlePlayingElements -> playing:',
 			playing,
+			'map:',
+			playerElementsMap,
 			'playerElementsMap[0]:',
 			playerElementsMap[0],
 			typeof playerElementsMap[0]
 		);
+		// TODO: only do this playing for audio and video types, not for images
+		// go though elements map and find every element that is withing the current playback time
+		// (playerElementsMap[0].el as HTMLVideoElement).play();
+		Object.values(playerElementsMap).forEach((el) => {
+			if (el.properties.type === MediaType.Image) {
+				return;
+			}
+			console.log('in for each map -> el:', el, typeof el.el);
+			// type the el property to get correct typing for play and pause
+			const htmlEl = el.el as HTMLMediaElement;
+			playing ? htmlEl.play() : htmlEl.pause();
+		});
 	}
 
 	// filter the given map by removing keys where the element in the value is null
