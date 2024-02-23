@@ -1,7 +1,11 @@
 <script lang="ts">
 	import type { ITimelineElement } from '$lib/interfaces/Timeline';
 	import { getTailwindVariables } from '$lib/utils/utils';
-	import { currentTimelineScale, selectedElement } from '../../../stores/store';
+	import {
+		currentTimelineScale,
+		isThumbBeingDragged,
+		selectedElement
+	} from '../../../stores/store';
 
 	export let element: ITimelineElement;
 
@@ -31,7 +35,12 @@
 		$selectedElement = element.elementId;
 	}
 
-	// TODO: select row element on click instead of moving timeline thumb (currently it always registers as a click on the timeline intsead of the row element so you can't click on a row element)
+	function onElementDrag(e: MouseEvent) {
+		// avoid timeline tuhumb being dragged when dragging the mouse over it
+		if (!$isThumbBeingDragged) {
+			e.stopPropagation();
+		}
+	}
 </script>
 
 <div
@@ -40,4 +49,5 @@
 		? tailwindColors.orange[500]
 		: tailwindColors.red[500]}"
 	on:mousedown={onElementClick}
+	on:mousemove={onElementDrag}
 ></div>
