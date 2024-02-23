@@ -216,8 +216,8 @@ export function convertPlaybackToPxScale() {
 export function moveTimelineThumb(e: MouseEvent) {
     e.preventDefault();
 
-    // only drag element if mouse is held down
-    if (e.buttons === 1) {
+    // only drag element if mouse is held down and no timeline element is currently dragged
+    if (e.buttons === 1 && !get(isTimelineElementBeingDragged)) {
         // calculate new position using the mouse position on the x axis, the left thumb offset and the amount scrolled horizontally
         const newPos = e.clientX - get(thumbOffset) + get(horizontalScroll);
 

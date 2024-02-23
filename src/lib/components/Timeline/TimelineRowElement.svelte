@@ -4,6 +4,7 @@
 	import {
 		currentTimelineScale,
 		isThumbBeingDragged,
+		isTimelineElementBeingDragged,
 		selectedElement
 	} from '../../../stores/store';
 
@@ -36,9 +37,17 @@
 	}
 
 	function onElementDrag(e: MouseEvent) {
-		// avoid timeline tuhumb being dragged when dragging the mouse over it
-		if (!$isThumbBeingDragged) {
+		e.preventDefault();
+
+		// only drag element if mouse is held down and the timeline thumb is currently not being dragged
+		if (e.buttons === 1 && !$isThumbBeingDragged) {
+			// avoid timeline thumb being dragged when dragging the mouse over it
 			e.stopPropagation();
+
+			if (!$isTimelineElementBeingDragged) {
+				$isTimelineElementBeingDragged = true;
+				console.log('isTimelineElementBeingDragged?:', $isTimelineElementBeingDragged);
+			}
 		}
 	}
 </script>
