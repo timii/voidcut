@@ -2,7 +2,12 @@
 	import { MediaType } from '$lib/interfaces/Media';
 	import type { IPlayerElement, IPlayerElementsMap } from '$lib/interfaces/Player';
 	import type { ITimelineElement, ITimelineTrack } from '$lib/interfaces/Timeline';
-	import { availableMedia, previewPlaying, timelineTracks } from '../../../stores/store';
+	import {
+		availableMedia,
+		currentPlaybackTime,
+		previewPlaying,
+		timelineTracks
+	} from '../../../stores/store';
 
 	$: timelineElements = flattenTimelineTracks($timelineTracks);
 
@@ -21,25 +26,28 @@
 			playing,
 			'map:',
 			playerElementsMap,
-			'playerElementsMap[0]:',
-			playerElementsMap[0],
-			typeof playerElementsMap[0]
+			'$currentPlaybackTime:',
+			$currentPlaybackTime
 		);
-		// TODO: only do this playing for audio and video types, not for images
-		// go though elements map and find every element that is withing the current playback time
-		// (playerElementsMap[0].el as HTMLVideoElement).play();
 		Object.values(playerElementsMap).forEach((el) => {
+			// ignore image elements
 			if (el.properties.type === MediaType.Image) {
 				return;
 			}
-			console.log('in for each map -> el:', el, typeof el.el);
-			// type the el property to get correct typing for play and pause
+			console.log('in for each map -> el:', el);
+			// TODO: check if current element is within the playback time
+
+			// type the el property to get correct typing
 			const htmlEl = el.el as HTMLMediaElement;
+			// set currentTime of element to current playback time (in seconds)
+			// TODO: but take the element offset in the timeline into consideration
+			htmlEl.currentTime = $currentPlaybackTime / 1000;
+			// play/pause the element depending the "previewPlaying" store value
 			playing ? htmlEl.play() : htmlEl.pause();
 		});
 	}
 
-	// filter the given map by removing keys where the element in the value is null
+	// filter the given map by removing keys where the "el" property in the value is null
 	function filterPlayerElementsMap(map: IPlayerElementsMap) {
 		// console.log(
 		// 	'filterPlayerElementsMap -> playerElementsMap changes before:',
@@ -52,10 +60,10 @@
 				delete playerElementsMap[key];
 			}
 		}
-		// console.log(
-		// 	'filterPlayerElementsMap -> playerElementsMap changes after:',
-		// 	JSON.parse(JSON.stringify(playerElementsMap))
-		// );
+		console.log(
+			'filterPlayerElementsMap -> playerElementsMap changes after:',
+			JSON.parse(JSON.stringify(playerElementsMap))
+		);
 	}
 
 	// create a flattened array of timeline elements from a given array of tracks
