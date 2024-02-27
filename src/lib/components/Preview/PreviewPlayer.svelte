@@ -39,11 +39,15 @@
 
 			// type the el property to get correct typing
 			const htmlEl = el.el as HTMLMediaElement;
-			// set currentTime of element to current playback time (in seconds)
-			// TODO: but take the element offset in the timeline into consideration
-			htmlEl.currentTime = $currentPlaybackTime / 1000;
-			// play/pause the element depending the "previewPlaying" store value
-			playing ? htmlEl.play() : htmlEl.pause();
+			// take the element offset in the timeline into consideration
+			const currentElTime = $currentPlaybackTime - el.properties.playbackStartTime;
+			console.log('in for each map -> currentElTime:', currentElTime);
+			if (currentElTime >= 0) {
+				// set currentTime of element to current playback time (in seconds)
+				htmlEl.currentTime = $currentPlaybackTime / 1000;
+				// play/pause the element depending the "previewPlaying" store value
+				playing ? htmlEl.play() : htmlEl.pause();
+			}
 		});
 	}
 
