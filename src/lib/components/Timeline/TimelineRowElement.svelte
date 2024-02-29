@@ -3,15 +3,20 @@
 	import { getTailwindVariables } from '$lib/utils/utils';
 	import {
 		currentTimelineScale,
+		horizontalScroll,
 		isThumbBeingDragged,
 		isTimelineElementBeingDragged,
-		selectedElement
+		selectedElement,
+		thumbOffset
 	} from '../../../stores/store';
 
 	export let element: ITimelineElement;
 
 	// check if selected element matches id of this element
 	$: isSelected = $selectedElement === element.elementId;
+
+	// dynamically calculate left offset of element
+	$: leftOffset = (element.playbackStartTime / 1000) * $currentTimelineScale;
 
 	$: elementWidth = (element.duration / 1000) * $currentTimelineScale;
 	console.log(
@@ -44,9 +49,23 @@
 			// avoid timeline thumb being dragged when dragging the mouse over it
 			e.stopPropagation();
 
-			if (!$isTimelineElementBeingDragged) {
-				$isTimelineElementBeingDragged = true;
-				console.log('isTimelineElementBeingDragged?:', $isTimelineElementBeingDragged);
+			// calculate new position using the mouse position on the x axis, the left thumb offset and the amount scrolled horizontally
+			// TODO: we need to use a new calcualtion because we can't directly use the mouse position and instead calculate the difference the mouse moved to see where we need to move the element
+			const newPos = e.clientX - $thumbOffset + $horizontalScroll;
+
+			// avoid the element to be moved further left than the tracks
+			if (newPos >= 0) {
+				const scrolledPxInSeconds = Math.round((newPos / $currentTimelineScale) * 10000);
+				console.log('onElementDrag -> newPos:', newPos, 'in seconds:', scrolledPxInSeconds);
+				element.playbackStartTime = scrolledPxInSeconds;
+
+				// TODO: calculate horizontal position when dragging
+				// TODO: update timeline tracks with correct offset
+
+				if (!$isTimelineElementBeingDragged) {
+					$isTimelineElementBeingDragged = true;
+					console.log('isTimelineElementBeingDragged?:', $isTimelineElementBeingDragged);
+				}
 			}
 		}
 	}
@@ -56,7 +75,7 @@
 	class=" h-[50px] mr-5 rounded"
 	style="width: {elementWidth}px; background-color: {isSelected
 		? tailwindColors.orange[500]
-		: tailwindColors.red[500]}"
+		: tailwindColors.red[500]}; transform: translateX({leftOffset})"
 	on:mousedown={onElementClick}
 	on:mousemove={onElementDrag}
 ></div>

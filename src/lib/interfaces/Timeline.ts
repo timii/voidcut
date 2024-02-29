@@ -5,9 +5,9 @@ export interface ITimelineElement {
     mediaId: string, // unique id of media
     type: MediaType, // enum type of element
     duration: number, // duration in milliseconds
-    playbackStartTime: number, // time on timeline where element starts in miliseconds
-    trimFromStart: number, // how much is trimmed from the start in milliseconds
-    trimFromEnd: number, // how much is trimmed from the end in milliseconds
+    playbackStartTime: number, // time on timeline where element starts (in miliseconds)
+    trimFromStart: number, // how much is trimmed from the start (in milliseconds)
+    trimFromEnd: number, // how much is trimmed from the end (in milliseconds)
     videoOptions: {} // object to keep track of applied filters of the element (e.g: Blur, Brightness, Volume, etc.)
 }
 
