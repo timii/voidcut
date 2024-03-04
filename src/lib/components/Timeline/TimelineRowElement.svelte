@@ -1,13 +1,14 @@
 <script lang="ts">
 	import type { ITimelineElement } from '$lib/interfaces/Timeline';
-	import { getTailwindVariables } from '$lib/utils/utils';
+	import { getIndexOfElementInTracks, getTailwindVariables } from '$lib/utils/utils';
 	import {
 		currentTimelineScale,
 		horizontalScroll,
 		isThumbBeingDragged,
 		isTimelineElementBeingDragged,
 		selectedElement,
-		thumbOffset
+		thumbOffset,
+		timelineTracks
 	} from '../../../stores/store';
 
 	export let element: ITimelineElement;
@@ -61,6 +62,38 @@
 
 				// TODO: calculate horizontal position when dragging
 				// TODO: update timeline tracks with correct offset
+
+				const indeces = getIndexOfElementInTracks();
+				if (!indeces) {
+					return;
+				}
+				const firstIndex = indeces[0];
+				const secondIndex = indeces[1];
+				timelineTracks.update(
+					(tracks) => {
+						const track = tracks[firstIndex];
+						const newEl = track.elements[secondIndex];
+						const obj: ITimelineElement = {
+							...newEl,
+							playbackStartTime: newPos
+						};
+						track.elements[secondIndex] = obj;
+						tracks[firstIndex] = track;
+						return tracks;
+					}
+					// tracks.map(
+					// (track) => track.elements.map((el) => el)
+					// track.elements.map((el) => {
+					// 	if (el.elementId === element.elementId) {
+					// 		return {
+					// 			...el,
+					// 			playbackStartTime: newPos
+					// 		};
+					// 	}
+					// 	return el;
+					// })
+					// )
+				);
 
 				if (!$isTimelineElementBeingDragged) {
 					$isTimelineElementBeingDragged = true;

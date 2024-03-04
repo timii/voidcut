@@ -1,6 +1,6 @@
 import { MediaType, type IMedia, type IFileMetadata } from "$lib/interfaces/Media";
 import type { ITimelineElement, ITimelineTrack } from "$lib/interfaces/Timeline";
-import { availableMedia, isTimelineElementBeingDragged, isThumbBeingDragged, timelineTracks, currentPlaybackTime, playbackIntervalId, currentTimelineScale, currentThumbPosition, thumbOffset, horizontalScroll } from "../../stores/store";
+import { availableMedia, isTimelineElementBeingDragged, isThumbBeingDragged, timelineTracks, currentPlaybackTime, playbackIntervalId, currentTimelineScale, currentThumbPosition, thumbOffset, horizontalScroll, selectedElement } from "../../stores/store";
 import { CONSTS } from "./consts";
 import { adjustingInterval } from "./betterInterval";
 import { get } from "svelte/store";
@@ -63,6 +63,14 @@ export function handleTimelineMediaDrop(media: IMedia) {
         videoOptions: {}
     }
 
+    // const tracksCopy = get(timelineTracks)
+    // if there already exists a track add it to the track
+    // if (tracksCopy.length >= 1) {
+    //     tracksCopy[0].elements.push(timelineEl)
+    //     timelineTracks.set(tracksCopy)
+
+    // } else {
+
     // create a new track and add the new element into it
     const timelineTrack: ITimelineTrack = {
         trackId: generateId(),
@@ -71,6 +79,7 @@ export function handleTimelineMediaDrop(media: IMedia) {
 
     // add new object into timeline tracks
     timelineTracks.update(arr => [...arr, timelineTrack])
+    // }
 
     // console.log('handleTimelineMediaDrop -> tracks', timelineTrack);
     // timelineTracks.subscribe(value => console.log("handleTimelineMediaDrop -> timelineTracks:", value))
@@ -173,8 +182,8 @@ export function resumePlayback() {
     // const startTime = new Date().valueOf();
     // TODO: remove old testing stuff
     const startTime = new Date().getTime();;
-    console.time('Execution time');
-    currentPlaybackTime.subscribe(el => console.log("playback interval -> currentPlaybackTime:", el))
+    // console.time('Execution time');
+    // currentPlaybackTime.subscribe(el => console.log("playback interval -> currentPlaybackTime:", el))
 
     const intervallCallback = () => {
         // var diff = new Date().getTime() - startTime;
@@ -183,8 +192,8 @@ export function resumePlayback() {
         currentPlaybackTime.update(value => value + CONSTS.playbackIntervalTimer)
         // console.log("interval drift:", (new Date().valueOf() - startTime) % 1000);
         // console.log("interval drift:", drift, "%");
-        console.timeEnd('Execution time');
-        console.time('Execution time');
+        // console.timeEnd('Execution time');
+        // console.time('Execution time');
         // console.log("interval drift:", (new Date().getTime() - startTime) % 1000);
     }
 
@@ -253,9 +262,11 @@ export function getTailwindVariables() {
 }
 
 // get index of timeline element that matches the given id
-export function getIndexOfId(arr: ITimelineTrack[], id: string) {
-    for (var i = 0; i < arr.length; i++) {
-        var index = arr[i].elements.findIndex(el => el.elementId === id);
+export function getIndexOfElementInTracks() {
+    const tracks = get(timelineTracks)
+    const selectedElementId = get(selectedElement)
+    for (let i = 0; i < tracks.length; i++) {
+        let index = tracks[i].elements.findIndex(el => el.elementId === selectedElementId);
         if (index > -1) {
             return [i, index];
         }
