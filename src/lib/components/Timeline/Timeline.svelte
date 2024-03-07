@@ -22,6 +22,7 @@
 	} from '../../../stores/store';
 	import type { ITimelineTrack } from '$lib/interfaces/Timeline';
 	import TimelineControls from './TimelineControls.svelte';
+	import { CONSTS } from '$lib/utils/consts';
 
 	let hoverElement = false;
 	let scrollContainerEl: HTMLDivElement;
@@ -101,7 +102,7 @@
 
 			// update timeline ruler ticks amount to scale it with the increased timeline width
 			// but only if the new amount of ticks is equal or more to the start amount
-			const maxTimeAsTicks = Math.ceil(maxTime / 1000);
+			const maxTimeAsTicks = Math.ceil(maxTime / CONSTS.secondsMultiplier);
 			if (maxTimeAsTicks >= $startAmountOfTicks) {
 				console.log('getMaxPlaybackTime in if');
 				amountOfTicksRounded = maxTimeAsTicks;

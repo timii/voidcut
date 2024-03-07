@@ -105,7 +105,7 @@ function getFileMetadata(file: File): Promise<IFileMetadata> {
             const duration = video.duration;
 
             // calculate the duration in milliseconds and round it to the nearest integer  
-            const durationInMs = Math.round(duration * 1000)
+            const durationInMs = Math.round(duration * CONSTS.secondsMultiplier)
 
             // console.log('getFileInfo in onleadedmetadata -> duration:', duration, 'video:', video, "src:", video.src);
             resolve({
@@ -213,12 +213,12 @@ export function resumePlayback() {
 
 // convert the current thumb position (in px) to the playback time (in ms) using the current timeline scale
 export function convertPxToPlaybackScale() {
-    return Math.round((get(currentThumbPosition) / get(currentTimelineScale)) * 1000) || 0
+    return Math.round((get(currentThumbPosition) / get(currentTimelineScale)) * CONSTS.secondsMultiplier) || 0
 }
 
 // convert the current playback time (in ms) to the thumb position (in px) using the current timeline scale
 export function convertPlaybackToPxScale() {
-    return Math.round((get(currentPlaybackTime) / 1000) * get(currentTimelineScale))
+    return Math.round((get(currentPlaybackTime) / CONSTS.secondsMultiplier) * get(currentTimelineScale))
 }
 
 // move the timeline thumb using a given mouse event

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { ITimelineElement } from '$lib/interfaces/Timeline';
+	import { CONSTS } from '$lib/utils/consts';
 	import { getIndexOfElementInTracks, getTailwindVariables } from '$lib/utils/utils';
 	import {
 		currentTimelineScale,
@@ -11,15 +12,16 @@
 		timelineTracks
 	} from '../../../stores/store';
 
-	export let element: ITimelineElement;
+	export let element: ITimelineElement = {} as ITimelineElement;
 
 	// check if selected element matches id of this element
 	$: isSelected = $selectedElement === element.elementId;
 
 	// dynamically calculate left offset of element
-	$: leftOffset = (element.playbackStartTime / 1000) * $currentTimelineScale;
+	$: leftOffset = (element.playbackStartTime / CONSTS.secondsMultiplier) * $currentTimelineScale;
+	leftOffset = (element.playbackStartTime / CONSTS.secondsMultiplier) * $currentTimelineScale;
 
-	$: elementWidth = (element.duration / 1000) * $currentTimelineScale;
+	$: elementWidth = (element.duration / CONSTS.secondsMultiplier) * $currentTimelineScale;
 	console.log(
 		'TimelineRowElement -> element:',
 		element,
@@ -30,7 +32,9 @@
 		'scale:',
 		$currentTimelineScale,
 		'calc:',
-		(element.duration / 1000) * $currentTimelineScale
+		(element.duration / CONSTS.secondsMultiplier) * $currentTimelineScale,
+		'leftOffset:',
+		leftOffset
 	);
 
 	const tailwindVariables = getTailwindVariables();
@@ -56,9 +60,12 @@
 
 			// avoid the element to be moved further left than the tracks
 			if (newPos >= 0) {
-				const scrolledPxInSeconds = Math.round((newPos / $currentTimelineScale) * 10000);
+				const scrolledPxInSeconds = Math.round(
+					(newPos / $currentTimelineScale) * CONSTS.secondsMultiplier
+				);
 				console.log('onElementDrag -> newPos:', newPos, 'in seconds:', scrolledPxInSeconds);
 				element.playbackStartTime = scrolledPxInSeconds;
+				leftOffset = scrolledPxInSeconds;
 
 				// TODO: calculate horizontal position when dragging
 				// TODO: update timeline tracks with correct offset
@@ -79,6 +86,7 @@
 						};
 						track.elements[secondIndex] = obj;
 						tracks[firstIndex] = track;
+						console.log('onElementDrag -> tracks after mapping:', tracks);
 						return tracks;
 					}
 					// tracks.map(
@@ -108,7 +116,7 @@
 	class=" h-[50px] mr-5 rounded"
 	style="width: {elementWidth}px; background-color: {isSelected
 		? tailwindColors.orange[500]
-		: tailwindColors.red[500]}; transform: translateX({leftOffset})"
+		: tailwindColors.red[500]}; transform: translateX({leftOffset}px)"
 	on:mousedown={onElementClick}
 	on:mousemove={onElementDrag}
 ></div>
