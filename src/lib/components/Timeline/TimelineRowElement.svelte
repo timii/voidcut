@@ -19,6 +19,7 @@
 
 	// dynamically calculate left offset of element
 	$: leftOffset = (element.playbackStartTime / CONSTS.secondsMultiplier) * $currentTimelineScale;
+	// set the left offset once in the beginning
 	leftOffset = (element.playbackStartTime / CONSTS.secondsMultiplier) * $currentTimelineScale;
 
 	$: elementWidth = (element.duration / CONSTS.secondsMultiplier) * $currentTimelineScale;
@@ -65,7 +66,7 @@
 				);
 				console.log('onElementDrag -> newPos:', newPos, 'in seconds:', scrolledPxInSeconds);
 				element.playbackStartTime = scrolledPxInSeconds;
-				leftOffset = scrolledPxInSeconds;
+				leftOffset = newPos;
 
 				// TODO: calculate horizontal position when dragging
 				// TODO: update timeline tracks with correct offset
