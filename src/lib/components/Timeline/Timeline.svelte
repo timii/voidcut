@@ -198,7 +198,7 @@
 		on:mousemove={moveTimelineThumb}
 		on:mousedown={moveTimelineThumb}
 		on:scroll={onTimelineScroll}
-		style="background-color: {hoverElement ? '#2e2e35' : ''};"
+		style="background-color: {hoverElement && $timelineTracks.length === 0 ? '#2e2e35' : ''};"
 		bind:this={scrollContainerEl}
 	>
 		<!-- Timeline Content -->
