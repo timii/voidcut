@@ -127,14 +127,37 @@
 	}
 
 	function onDropElement(e: DragEvent) {
-		// console.log('element dropped:', e, 'dataTransfer:', e.dataTransfer);
-
 		// prevent default behavior
 		e.preventDefault();
 		e.stopPropagation();
-
 		hoverElement = false;
 
+		handleAddElementToTimeline(e);
+	}
+
+	function onHoverElement(e: DragEvent) {
+		// prevent default behavior
+		e.preventDefault();
+		e.stopPropagation();
+		hoverElement = true;
+	}
+
+	function onHoverOverDivider(e: DragEvent) {
+		// prevent default behavior
+		e.preventDefault();
+		e.stopPropagation();
+		(e.target as HTMLDivElement).classList.add('drag-over');
+	}
+
+	function onDropOverDivider(e: DragEvent) {
+		// prevent default behavior
+		e.preventDefault();
+		e.stopPropagation();
+		(e.target as HTMLDivElement).classList.remove('drag-over');
+	}
+
+	//
+	function handleAddElementToTimeline(e: DragEvent) {
 		// get data from dropped element
 		let mediaDataString = e.dataTransfer?.getData('media-data');
 		if (!mediaDataString) {
@@ -155,13 +178,6 @@
 			// );
 			handleTimelineMediaDrop(mediaData);
 		}
-	}
-
-	function onHoverElement(e: DragEvent) {
-		// prevent default behavior
-		e.preventDefault();
-		e.stopPropagation();
-		hoverElement = true;
 	}
 
 	// listen to scrolling in the timeline
@@ -216,7 +232,17 @@
 			<TimelineThumb></TimelineThumb>
 
 			<!-- Timeline Tracks -->
-			<div class="timeline-tracks flex flex-col gap-3 mb-3 pl-5">
+			<div class="timeline-tracks flex flex-col gap-[2px] mb-3 pl-5">
+				<!-- TODO: add a dropzone between each track, before first and after last -->
+				<!-- the dropzone is highlighted automatically if something is hovered over it -->
+				<div
+					class="track-divider w-full bg-slate-500 h-[2px] mt-1 rounded-sm"
+					on:drop={onDropElement}
+					on:dragleave={onDropElement}
+					on:dragenter={onHoverOverDivider}
+					on:dragover={onHoverOverDivider}
+				></div>
+				<div class="drop-zone"></div>
 				{#each $timelineTracks as track}
 					<TimelineRow {track}></TimelineRow>
 				{/each}
@@ -238,3 +264,9 @@
 		</div>
 	</div>
 </div>
+
+<style lang="postcss">
+	.drag-over {
+		background-color: red;
+	}
+</style>
