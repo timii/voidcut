@@ -33,7 +33,7 @@
 </script>
 
 <div
-	class="timeline-thumb w-[12px] h-[calc(100%+28px)] absolute ml-5 z-10 -left-[6px] -top-7 cursor-grab"
+	class="timeline-thumb w-[12px] h-[calc(100%+28px)] absolute ml-5 z-10 -left-[6px] -top-7 cursor-grab duration-0"
 	bind:this={thumbElementRef}
 	style="transform: translateX({$currentThumbPosition}px)"
 	on:mousemove={moveTimelineThumb}
