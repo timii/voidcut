@@ -237,8 +237,8 @@
 				<!-- the dropzone is highlighted automatically if something is hovered over it -->
 				<div
 					class="track-divider w-full bg-slate-500 h-[2px] mt-1 rounded-sm"
-					on:drop={onDropElement}
-					on:dragleave={onDropElement}
+					on:drop={onDropOverDivider}
+					on:dragleave={onDropOverDivider}
 					on:dragenter={onHoverOverDivider}
 					on:dragover={onHoverOverDivider}
 				></div>
@@ -266,7 +266,8 @@
 </div>
 
 <style lang="postcss">
-	.drag-over {
+	/* needs to have :global prefix because class gets added dynamically */
+	:global(.drag-over) {
 		background-color: red;
 	}
 </style>

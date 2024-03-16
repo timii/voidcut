@@ -3,6 +3,10 @@
 @tailwind components;
 @tailwind utilities;
 
+* {
+    transition: all 0.2s;
+}
+
 body {
     background-color: theme('colors.background-color');
     color: theme('colors.text-color');
