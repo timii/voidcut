@@ -48,7 +48,7 @@ export async function handleFileUpload(files: FileList) {
 }
 
 // handle given media when it's drag and dropped into the timeline
-export function handleTimelineMediaDrop(media: IMedia) {
+export function handleTimelineMediaDrop(media: IMedia, index?: number) {
     // console.log("handleTimelineMediaDrop -> media:", media)
 
     // convert media type to timeline element type
@@ -58,6 +58,7 @@ export function handleTimelineMediaDrop(media: IMedia) {
         type: media.type,
         elementId: generateId(),
         playbackStartTime: 0,
+        // playbackStartTime: 4000, // TODO: remove only for testing
         trimFromStart: 0,
         trimFromEnd: 0,
         videoOptions: {}
@@ -77,8 +78,18 @@ export function handleTimelineMediaDrop(media: IMedia) {
         elements: [timelineEl]
     }
 
-    // add new object into timeline tracks
-    timelineTracks.update(arr => [...arr, timelineTrack])
+    console.log("handleTimelineMediaDrop -> index:", index)
+    if (index === undefined) {
+        // append new track object into timeline tracks
+        timelineTracks.update(arr => [...arr, timelineTrack])
+    } else {
+        // add new track object at given index
+        timelineTracks.update(arr => {
+            const test = [...arr]
+            console.log("handleTimelineMediaDrop -> add at given index:", test.toSpliced(index, 0, timelineTrack))
+            return arr.toSpliced(index, 0, timelineTrack)
+        })
+    }
     // }
 
     // console.log('handleTimelineMediaDrop -> tracks', timelineTrack);

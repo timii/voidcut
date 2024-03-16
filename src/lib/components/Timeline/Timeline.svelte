@@ -149,15 +149,19 @@
 		(e.target as HTMLDivElement).classList.add('drag-over');
 	}
 
-	function onDropOverDivider(e: DragEvent) {
+	function onDropOverDivider(e: DragEvent, index: number) {
 		// prevent default behavior
 		e.preventDefault();
 		e.stopPropagation();
 		(e.target as HTMLDivElement).classList.remove('drag-over');
+
+		console.log('onDropOverDivider -> e', e, 'index:', index);
+
+		handleAddElementToTimeline(e, index);
 	}
 
 	//
-	function handleAddElementToTimeline(e: DragEvent) {
+	function handleAddElementToTimeline(e: DragEvent, index?: number) {
 		// get data from dropped element
 		let mediaDataString = e.dataTransfer?.getData('media-data');
 		if (!mediaDataString) {
@@ -176,7 +180,7 @@
 			// 	'mediaData:',
 			// 	mediaData
 			// );
-			handleTimelineMediaDrop(mediaData);
+			handleTimelineMediaDrop(mediaData, index);
 		}
 	}
 
@@ -232,19 +236,35 @@
 			<TimelineThumb></TimelineThumb>
 
 			<!-- Timeline Tracks -->
-			<div class="timeline-tracks flex flex-col gap-[2px] mb-3 pl-5">
-				<!-- TODO: add a dropzone between each track, before first and after last -->
-				<!-- the dropzone is highlighted automatically if something is hovered over it -->
-				<div
-					class="track-divider w-full bg-slate-500 h-[2px] mt-1 rounded-sm"
-					on:drop={onDropOverDivider}
-					on:dragleave={onDropOverDivider}
-					on:dragenter={onHoverOverDivider}
-					on:dragover={onHoverOverDivider}
-				></div>
-				<div class="drop-zone"></div>
-				{#each $timelineTracks as track}
+			<div class="timeline-tracks flex flex-col mb-3 pl-5">
+				{#each $timelineTracks as track, i}
+					<!-- TODO: add a dropzone between each track, before first and after last -->
+					<!-- the dropzone is highlighted automatically if something is hovered over it -->
+					{#if i === 0}
+						<div
+							class="track-divider w-full bg-slate-500 h-[4px] mt-1 rounded-sm"
+							on:drop={(e) => {
+								onDropOverDivider(e, i);
+							}}
+							on:dragleave={(e) => {
+								onDropOverDivider(e, i);
+							}}
+							on:dragenter={onHoverOverDivider}
+							on:dragover={onHoverOverDivider}
+						></div>
+					{/if}
 					<TimelineRow {track}></TimelineRow>
+					<div
+						class="track-divider w-full bg-slate-500 h-[4px] rounded-sm"
+						on:drop={(e) => {
+							onDropOverDivider(e, i + 1);
+						}}
+						on:dragleave={(e) => {
+							onDropOverDivider(e, i + 1);
+						}}
+						on:dragenter={onHoverOverDivider}
+						on:dragover={onHoverOverDivider}
+					></div>
 				{/each}
 
 				<!-- <div class="bg-red-700 h-[50px] w-[2200px] mr-5"></div>
