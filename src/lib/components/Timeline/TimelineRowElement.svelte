@@ -41,6 +41,9 @@
 	const tailwindVariables = getTailwindVariables();
 	const tailwindColors = tailwindVariables.theme.colors;
 	let elementRef: HTMLElement;
+	let dx = 0,
+		dy = 0,
+		draggedItem: HTMLElement;
 
 	// function dragElement(e: DragEvent) {
 	// 	// e.preventDefault();
@@ -63,6 +66,28 @@
 	// 	// 	e.dataTransfer.effectAllowed = 'move';
 	// 	// }
 	// }
+
+	function drag(e: DragEvent) {
+		e.stopPropagation();
+		// e.preventDefault();
+		draggedItem.style.left = `${e.clientX - dx}`;
+		draggedItem.style.top = `${e.clientY - dy}`;
+	}
+	function dragStart(e: DragEvent) {
+		// e.stopPropagation();
+		// e.preventDefault();
+		draggedItem = e.target as HTMLElement;
+		if (draggedItem) {
+			dx = e.clientX - draggedItem.getBoundingClientRect().x;
+			dy = e.clientY - draggedItem.getBoundingClientRect().y;
+		}
+	}
+	function dragLeave(e: DragEvent) {
+		// e.stopPropagation();
+		// e.preventDefault();
+		// Clear temporary data
+		dx = dy = 0;
+	}
 
 	function onElementClick(e: MouseEvent) {
 		// avoid timeline thumb being dragged when clicking on element
@@ -163,12 +188,25 @@
 	class=" h-[50px] mr-5 rounded"
 	style="width: {elementWidth}px; background-color: {isSelected
 		? tailwindColors.orange[500]
-		: tailwindColors.red[500]}; transform: translateX({leftOffset}px)"
+		: tailwindColors.red[500]}; transform: translateX({leftOffset}px);"
+	on:drag={drag}
+	on:dragstart={dragStart}
+	on:dragleave={dragLeave}
+	on:mousedown={onElementClick}
+	on:mousemove={onElementDrag}
+	bind:this={elementRef}
+></div>
+<!-- <div
+	draggable="true"
+	class=" h-[50px] mr-5 rounded"
+	style="width: {elementWidth}px; background-color: {isSelected
+		? tailwindColors.orange[500]
+		: tailwindColors.red[500]}; transform: translateX({leftOffset}px);"
 	on:mousedown={onElementClick}
 	on:mousemove={onElementDrag}
 	on:mouseup={onElementDrop}
 	bind:this={elementRef}
-></div>
+></div> -->
 <!-- <div
 	draggable="true"
 	class=" h-[50px] mr-5 rounded"
