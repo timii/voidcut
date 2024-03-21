@@ -32,10 +32,13 @@
 	let amountOfTicksRounded = 0;
 
 	onMount(() => {
-		// listen to mouseup events of the window
-		window.addEventListener('mouseup', (e: MouseEvent) => {
-			resetAllBeingDragged();
-			console.log('window mouseup');
+		// listen to selected events in the window
+		const events = ['mouseup', 'dragend'];
+		events.forEach((e) => {
+			window.addEventListener(e, () => {
+				resetAllBeingDragged();
+				console.log(e + ' mouseup');
+			});
 		});
 
 		// TODO: change that so check both scrollbars everytime something in the timeline changes and/or screen sitze changes
