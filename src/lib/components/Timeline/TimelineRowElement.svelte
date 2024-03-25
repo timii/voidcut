@@ -219,7 +219,7 @@
 
 <div
 	draggable="true"
-	class="timeline-row-element h-[50px] mr-5 rounded"
+	class="timeline-row-element h-[50px] mr-5 rounded hover:cursor-pointer"
 	style="width: {elementWidth}px; background-color: {isSelected
 		? tailwindColors.orange[500]
 		: tailwindColors.red[500]}; transform: translateX({leftOffset}px); display: {dragging

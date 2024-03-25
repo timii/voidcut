@@ -242,24 +242,28 @@ export function moveTimelineThumb(e: MouseEvent) {
 
     const moveThumb = onlyPrimaryButtonClicked && !get(isTimelineElementBeingDragged) && originNotOverElOrThumbAlreadyMoving
 
-    // check if we should move the thumb or if something else is already dragged
-    if (moveThumb) {
-        // calculate new position using the mouse position on the x axis, the left thumb offset and the amount scrolled horizontally
-        const newPos = e.clientX - get(thumbOffset) + get(horizontalScroll);
+    // check if we should move the thumb or if something else is already being dragged
+    if (!moveThumb) {
+        return
+    }
 
-        // avoid the thumb to be moved further left than the tracks
-        if (newPos >= 0) {
-            currentThumbPosition.set(newPos);
+    // calculate new position using the mouse position on the x axis, the left thumb offset and the amount scrolled horizontally
+    const newPos = e.clientX - get(thumbOffset) + get(horizontalScroll);
 
-            // calculate playback time using the the new thumb position and write it into the store
-            const playbackTime = convertPxToPlaybackScale();
-            currentPlaybackTime.set(playbackTime);
+    // avoid the thumb to be moved further left than the tracks
+    if (newPos < 0) {
+        return
+    }
 
-            if (!get(isThumbBeingDragged)) {
-                console.log('isThumbBeingDragged?:', JSON.parse(JSON.stringify(get(isThumbBeingDragged))));
-                isThumbBeingDragged.set(true);
-            }
-        }
+    currentThumbPosition.set(newPos);
+
+    // calculate playback time using the the new thumb position and write it into the store
+    const playbackTime = convertPxToPlaybackScale();
+    currentPlaybackTime.set(playbackTime);
+
+    if (!get(isThumbBeingDragged)) {
+        // console.log('isThumbBeingDragged?:', JSON.parse(JSON.stringify(get(isThumbBeingDragged))));
+        isThumbBeingDragged.set(true);
     }
 
 }
