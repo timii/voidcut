@@ -4,7 +4,7 @@
 	import DeleteIcon from '$lib/assets/timeline/delete.png';
 	import { get } from 'svelte/store';
 	import type { ITimelineTrack } from '$lib/interfaces/Timeline';
-	import { getIndexOfId } from '$lib/utils/utils';
+	import { getIndexOfElementInTracks } from '$lib/utils/utils';
 	function deleteSelectedElement() {
 		console.log(
 			'deleteSelectedElement clicked -> selectedElement:',
@@ -12,24 +12,25 @@
 			'timelineTracks:',
 			$timelineTracks
 		);
-		const indeces = getIndexOfId($timelineTracks, $selectedElement);
-		if (indeces) {
-			console.log('deleteSelectedElement -> indeces found:', indeces);
-			const firstIndex = indeces[0];
-			const secondIndex = indeces[1];
-			timelineTracks.update((tracks) => {
-				// if there is only one element on the track, remove the whole track
-				if (tracks[firstIndex].elements.length === 1) {
-					return tracks.toSpliced(firstIndex, 1);
-				}
-				// else remove the specific element from the elements on the track
-				else {
-					const trackAfterRemoval = tracks[firstIndex].elements.toSpliced(secondIndex, 1);
-					tracks[firstIndex].elements = trackAfterRemoval;
-					return tracks;
-				}
-			});
+		const indeces = getIndexOfElementInTracks();
+		if (!indeces) {
+			return;
 		}
+		console.log('deleteSelectedElement -> indeces found:', indeces);
+		const firstIndex = indeces[0];
+		const secondIndex = indeces[1];
+		timelineTracks.update((tracks) => {
+			// if there is only one element on the track, remove the whole track
+			if (tracks[firstIndex].elements.length === 1) {
+				return tracks.toSpliced(firstIndex, 1);
+			}
+			// else remove the specific element from the elements on the track
+			else {
+				const trackAfterRemoval = tracks[firstIndex].elements.toSpliced(secondIndex, 1);
+				tracks[firstIndex].elements = trackAfterRemoval;
+				return tracks;
+			}
+		});
 	}
 </script>
 
