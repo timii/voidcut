@@ -236,8 +236,14 @@ export function convertPlaybackToPxScale() {
 export function moveTimelineThumb(e: MouseEvent) {
     e.preventDefault();
 
-    // only drag element if mouse is held down and no timeline element is currently dragged
-    if (e.buttons === 1 && !get(isTimelineElementBeingDragged)) {
+    const clickOriginOverElement = (e.target as HTMLElement).classList.contains('timeline-row-element')
+    const originNotOverElOrThumbAlreadyMoving = !clickOriginOverElement || get(isThumbBeingDragged)
+    const onlyPrimaryButtonClicked = e.buttons === 1
+
+    const moveThumb = onlyPrimaryButtonClicked && !get(isTimelineElementBeingDragged) && originNotOverElOrThumbAlreadyMoving
+
+    // check if we should move the thumb or if something else is already dragged
+    if (moveThumb) {
         // calculate new position using the mouse position on the x axis, the left thumb offset and the amount scrolled horizontally
         const newPos = e.clientX - get(thumbOffset) + get(horizontalScroll);
 
@@ -250,11 +256,12 @@ export function moveTimelineThumb(e: MouseEvent) {
             currentPlaybackTime.set(playbackTime);
 
             if (!get(isThumbBeingDragged)) {
+                console.log('isThumbBeingDragged?:', JSON.parse(JSON.stringify(get(isThumbBeingDragged))));
                 isThumbBeingDragged.set(true);
-                console.log('isThumbBeingDragged?:', get(isThumbBeingDragged));
             }
         }
     }
+
 }
 
 // calculate if a given html element has a horizontal scrollbar

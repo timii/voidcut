@@ -36,8 +36,11 @@
 		const events = ['mouseup', 'dragend'];
 		events.forEach((e) => {
 			window.addEventListener(e, () => {
-				resetAllBeingDragged();
-				console.log(e + ' mouseup');
+				// delay resetting the store values to workaround when mouse down event fires after mouse butto isn't held down anymore
+				setTimeout(() => {
+					resetAllBeingDragged();
+					console.log(e + ' mouseup');
+				}, CONSTS.resetDelay);
 			});
 		});
 
@@ -166,7 +169,7 @@
 	//
 	function handleAddElementToTimeline(e: DragEvent, index?: number) {
 		// get data from dropped element
-		let mediaDataString = e.dataTransfer?.getData('media-data');
+		let mediaDataString = e.dataTransfer?.getData(CONSTS.mediaPoolTransferKey);
 		if (!mediaDataString) {
 			return;
 		}
@@ -218,7 +221,7 @@
 		on:dragleave={onDropElement}
 		on:dragenter={onHoverElement}
 		on:dragover={onHoverElement}
-		on:mousemove={moveTimelineThumb}
+		on:pointermove={moveTimelineThumb}
 		on:mousedown={moveTimelineThumb}
 		on:scroll={onTimelineScroll}
 		style="background-color: {hoverElement && $timelineTracks.length === 0 ? '#2e2e35' : ''};"

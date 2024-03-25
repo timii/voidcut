@@ -1,15 +1,12 @@
 <script lang="ts">
 	import type { ITimelineElement } from '$lib/interfaces/Timeline';
 	import { CONSTS } from '$lib/utils/consts';
-	import { getIndexOfElementInTracks, getTailwindVariables } from '$lib/utils/utils';
+	import { getTailwindVariables } from '$lib/utils/utils';
 	import {
 		currentTimelineScale,
-		horizontalScroll,
 		isThumbBeingDragged,
 		isTimelineElementBeingDragged,
-		selectedElement,
-		thumbOffset,
-		timelineTracks
+		selectedElement
 	} from '../../../stores/store';
 
 	export let element: ITimelineElement = {} as ITimelineElement;
@@ -41,9 +38,7 @@
 	const tailwindVariables = getTailwindVariables();
 	const tailwindColors = tailwindVariables.theme.colors;
 	let elementRef: HTMLElement;
-	let dx = 0,
-		dy = 0,
-		draggedItem: HTMLElement;
+	let dragging = false;
 
 	// function dragElement(e: DragEvent) {
 	// 	// e.preventDefault();
@@ -67,36 +62,68 @@
 	// 	// }
 	// }
 
-	function drag(e: DragEvent) {
-		e.stopPropagation();
-		// e.preventDefault();
-		draggedItem.style.left = `${e.clientX - dx}`;
-		draggedItem.style.top = `${e.clientY - dy}`;
-	}
-	function dragStart(e: DragEvent) {
-		// e.stopPropagation();
-		// e.preventDefault();
-		draggedItem = e.target as HTMLElement;
-		if (draggedItem) {
-			dx = e.clientX - draggedItem.getBoundingClientRect().x;
-			dy = e.clientY - draggedItem.getBoundingClientRect().y;
-		}
-	}
-	function dragLeave(e: DragEvent) {
-		// e.stopPropagation();
-		// e.preventDefault();
-		// Clear temporary data
-		dx = dy = 0;
-	}
+	// function drag(e: DragEvent) {
+	// 	e.stopPropagation();
+	// 	// e.preventDefault();
+	// 	draggedItem.style.left = `${e.clientX - dx}`;
+	// 	draggedItem.style.top = `${e.clientY - dy}`;
+	// }
+	// function dragStart(e: DragEvent) {
+	// 	// e.stopPropagation();
+	// 	// e.preventDefault();
+	// 	draggedItem = e.target as HTMLElement;
+	// 	if (draggedItem) {
+	// 		dx = e.clientX - draggedItem.getBoundingClientRect().x;
+	// 		dy = e.clientY - draggedItem.getBoundingClientRect().y;
+	// 	}
+	// }
+	// function dragLeave(e: DragEvent) {
+	// 	// e.stopPropagation();
+	// 	// e.preventDefault();
+	// 	// Clear temporary data
+	// 	dx = dy = 0;
+	// }
 
 	function onElementClick(e: MouseEvent) {
 		// avoid timeline thumb being dragged when clicking on element
 		e.stopPropagation();
 		$selectedElement = element.elementId;
+		console.log('click element -> e:', e);
 	}
 
 	function onElementDrop(e: MouseEvent) {
 		e.preventDefault();
+		console.log(
+			'drop element -> e:',
+			e,
+			'get(isTimelineElementBeingDragged)',
+			$isTimelineElementBeingDragged
+		);
+
+		dragging = false;
+
+		console.log(
+			'drop element after delay -> e:',
+			e,
+			'get(isTimelineElementBeingDragged)',
+			$isTimelineElementBeingDragged
+		);
+	}
+
+	function drag(e: DragEvent) {
+		console.log('onElementDrag in if -> e:', e);
+		dragging = true;
+		isTimelineElementBeingDragged.set(true);
+	}
+
+	// overwrite the event listener from parent element in timeline
+	function onPointerMove(e: MouseEvent) {
+		if (e.buttons === 1 && !$isThumbBeingDragged) {
+			isTimelineElementBeingDragged.set(true);
+		}
+		if (!$isThumbBeingDragged) {
+			e.stopPropagation();
+		}
 	}
 
 	function onElementDrag(e: MouseEvent) {
@@ -105,7 +132,14 @@
 			// avoid timeline thumb being dragged when dragging over element
 			e.stopPropagation();
 			e.preventDefault();
-			console.log('onElementDrag in if -> e:', e);
+			// console.log('onElementDrag in if -> e:', e);
+			// dragging = true;
+
+			// TODO: clone element
+			// TODO: hide original element
+			// TODO: put clone in position of original element
+			// TODO: add drag event listeners to clone
+			// TODO: when dropping delete clone and move original to new position
 		}
 		// 	// avoid timeline thumb being dragged when dragging the mouse over it
 		// 	e.stopPropagation();
@@ -185,17 +219,27 @@
 
 <div
 	draggable="true"
-	class=" h-[50px] mr-5 rounded"
+	class="timeline-row-element h-[50px] mr-5 rounded"
 	style="width: {elementWidth}px; background-color: {isSelected
 		? tailwindColors.orange[500]
-		: tailwindColors.red[500]}; transform: translateX({leftOffset}px);"
-	on:drag={drag}
-	on:dragstart={dragStart}
-	on:dragleave={dragLeave}
+		: tailwindColors.red[500]}; transform: translateX({leftOffset}px); display: {dragging
+		? 'none'
+		: 'unset'}"
 	on:mousedown={onElementClick}
-	on:mousemove={onElementDrag}
+	on:pointermove={onPointerMove}
+	on:drag={drag}
+	on:dragend={onElementDrop}
 	bind:this={elementRef}
 ></div>
+<!-- <div
+	class="clone h-[50px] mr-5 rounded absolute"
+	style="width: {elementWidth}px; background-color: {isSelected
+		? tailwindColors.orange[500]
+		: tailwindColors.red[500]}; transform: translateX({leftOffset}px); display: {dragging
+		? 'unset'
+		: 'none'}"
+></div> -->
+
 <!-- <div
 	draggable="true"
 	class=" h-[50px] mr-5 rounded"
