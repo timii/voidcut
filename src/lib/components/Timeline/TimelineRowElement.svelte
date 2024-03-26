@@ -6,7 +6,8 @@
 		currentTimelineScale,
 		isThumbBeingDragged,
 		isTimelineElementBeingDragged,
-		selectedElement
+		selectedElement,
+		thumbOffset
 	} from '../../../stores/store';
 
 	export let element: ITimelineElement = {} as ITimelineElement;
@@ -38,6 +39,7 @@
 	const tailwindVariables = getTailwindVariables();
 	const tailwindColors = tailwindVariables.theme.colors;
 	let elementRef: HTMLElement;
+	let cloneRef: HTMLElement;
 	let dragging = false;
 
 	// function dragElement(e: DragEvent) {
@@ -88,7 +90,20 @@
 		// avoid timeline thumb being dragged when clicking on element
 		e.stopPropagation();
 		$selectedElement = element.elementId;
-		console.log('click element -> e:', e);
+
+		// TODO: factor in left offset and that the tracks are at the bottom of the screen
+		cloneOffset = [cloneRef.offsetLeft - e.clientX, cloneRef.offsetTop - e.clientY];
+		console.log(
+			'click element -> cloneRef.offsetLeft:',
+			cloneRef.offsetLeft + $thumbOffset,
+			'cloneRef.offsetTop:',
+			cloneRef.offsetTop,
+			'e.clientX:',
+			e.clientX,
+			'e.clientY:',
+			e.clientY
+		);
+		console.log('click element -> e:', e, 'cloneOffset:', cloneOffset);
 	}
 
 	function onElementDrop(e: MouseEvent) {
@@ -114,6 +129,25 @@
 		console.log('onElementDrag in if -> e:', e);
 		dragging = true;
 		isTimelineElementBeingDragged.set(true);
+
+		// TODO: clone element
+		// TODO: hide original element
+		// TODO: put clone in position of original element
+		const mousePosition = {
+			x: e.clientX,
+			y: e.clientY
+		};
+		clonePositionLeft = mousePosition.x + cloneOffset[0] + 'px';
+		clonePositionTop = mousePosition.y + cloneOffset[1] + 'px';
+		console.log(
+			'onElementDrag in if -> clonePositionLeft:',
+			clonePositionLeft,
+			'clonePositionTop:',
+			clonePositionTop
+		);
+
+		// TODO: add drag event listeners to clone
+		// TODO: when dropping delete clone and move original to new position
 	}
 
 	// overwrite the event listener from parent element in timeline
@@ -126,6 +160,29 @@
 		}
 	}
 
+	let clonePositionLeft = '0px';
+	let clonePositionTop = '0px';
+	let cloneOffset = [0, 0];
+
+	function onCloneMove(e: MouseEvent) {
+		console.log('onCloneMove -> e:', e);
+		e.preventDefault();
+		if (e.buttons === 1) {
+			const mousePosition = {
+				x: e.clientX,
+				y: e.clientY
+			};
+			clonePositionLeft = mousePosition.x + cloneOffset[0] + 'px';
+			clonePositionTop = mousePosition.y + cloneOffset[1] + 'px';
+			console.log(
+				'onCloneMove in if -> clonePositionLeft:',
+				clonePositionLeft,
+				'clonePositionTop:',
+				clonePositionTop
+			);
+		}
+	}
+
 	function onElementDrag(e: MouseEvent) {
 		// only drag element if mouse is held down and the timeline thumb is currently not being dragged
 		if (e.buttons === 1 && !$isThumbBeingDragged) {
@@ -134,12 +191,6 @@
 			e.preventDefault();
 			// console.log('onElementDrag in if -> e:', e);
 			// dragging = true;
-
-			// TODO: clone element
-			// TODO: hide original element
-			// TODO: put clone in position of original element
-			// TODO: add drag event listeners to clone
-			// TODO: when dropping delete clone and move original to new position
 		}
 		// 	// avoid timeline thumb being dragged when dragging the mouse over it
 		// 	e.stopPropagation();
@@ -219,6 +270,14 @@
 
 <div
 	draggable="true"
+	class="clone h-[50px] mr-5 rounded hover:cursor-pointer absolute"
+	style="width: {elementWidth}px; background-color: blue; display: {dragging
+		? 'unset'
+		: 'none'}; transform: translateX({leftOffset}px); left: {clonePositionLeft}; top: {clonePositionTop};"
+	bind:this={cloneRef}
+></div>
+<div
+	draggable="true"
 	class="timeline-row-element h-[50px] mr-5 rounded hover:cursor-pointer"
 	style="width: {elementWidth}px; background-color: {isSelected
 		? tailwindColors.orange[500]
@@ -231,6 +290,7 @@
 	on:dragend={onElementDrop}
 	bind:this={elementRef}
 ></div>
+
 <!-- <div
 	class="clone h-[50px] mr-5 rounded absolute"
 	style="width: {elementWidth}px; background-color: {isSelected
