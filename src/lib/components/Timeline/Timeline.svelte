@@ -242,7 +242,7 @@
 			<TimelineThumb></TimelineThumb>
 
 			<!-- Timeline Tracks -->
-			<div class="timeline-tracks flex flex-col mb-3 pl-5">
+			<div class="timeline-tracks flex flex-col mb-3 pl-5 relative">
 				{#each $timelineTracks as track, i}
 					<!-- TODO: add a dropzone between each track, before first and after last -->
 					<!-- the dropzone is highlighted automatically if something is hovered over it -->

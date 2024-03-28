@@ -91,13 +91,16 @@
 		e.stopPropagation();
 		$selectedElement = element.elementId;
 
+		const boundRect = elementRef.getBoundingClientRect();
+
 		// TODO: factor in left offset and that the tracks are at the bottom of the screen
-		cloneOffset = [cloneRef.offsetLeft - e.clientX, cloneRef.offsetTop - e.clientY];
+		// TODO: get bounding cliint rect of original element and get left distance from it
+		cloneOffset = [boundRect.left - e.clientX, boundRect.top - e.clientY];
 		console.log(
-			'click element -> cloneRef.offsetLeft:',
-			cloneRef.offsetLeft + $thumbOffset,
-			'cloneRef.offsetTop:',
-			cloneRef.offsetTop,
+			'click element -> boundRect.left:',
+			boundRect.left,
+			'boundRect.top:',
+			boundRect.top,
 			'e.clientX:',
 			e.clientX,
 			'e.clientY:',
@@ -143,7 +146,11 @@
 			'onElementDrag in if -> clonePositionLeft:',
 			clonePositionLeft,
 			'clonePositionTop:',
-			clonePositionTop
+			clonePositionTop,
+			'mousePoistions x/y:',
+			mousePosition.x,
+			'/',
+			mousePosition.y
 		);
 
 		// TODO: add drag event listeners to clone
