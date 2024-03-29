@@ -92,10 +92,17 @@
 		$selectedElement = element.elementId;
 
 		const boundRect = elementRef.getBoundingClientRect();
+		const tracksEl = document.getElementsByClassName('timeline-tracks')[0];
+		const tracksBoundRect = tracksEl.getBoundingClientRect();
+		const elOffsetFromParent = {
+			x: boundRect.left - tracksBoundRect.left,
+			y: boundRect.top - tracksBoundRect.top
+		};
+		const mousePos = { x: e.clientX - tracksBoundRect.left, y: e.clientY - tracksBoundRect.top };
 
 		// TODO: factor in left offset and that the tracks are at the bottom of the screen
 		// TODO: get bounding cliint rect of original element and get left distance from it
-		cloneOffset = [boundRect.left - e.clientX, boundRect.top - e.clientY];
+		cloneOffset = [elOffsetFromParent.x - mousePos.x, elOffsetFromParent.y - mousePos.y];
 		console.log(
 			'click element -> boundRect.left:',
 			boundRect.left,
@@ -104,7 +111,17 @@
 			'e.clientX:',
 			e.clientX,
 			'e.clientY:',
-			e.clientY
+			e.clientY,
+			'tracksEl:',
+			tracksEl,
+			'tracksBoundRect.left:',
+			tracksBoundRect.left,
+			'tracksBoundRect.top:',
+			tracksBoundRect.top,
+			'elOffsetFromParent.x:',
+			elOffsetFromParent.x,
+			'elOffsetFromParent.y:',
+			elOffsetFromParent.y
 		);
 		console.log('click element -> e:', e, 'cloneOffset:', cloneOffset);
 	}
@@ -128,7 +145,7 @@
 		);
 	}
 
-	function drag(e: DragEvent) {
+	function drag(e: MouseEvent) {
 		console.log('onElementDrag in if -> e:', e);
 		dragging = true;
 		isTimelineElementBeingDragged.set(true);
@@ -157,6 +174,31 @@
 		// TODO: when dropping delete clone and move original to new position
 	}
 
+	function test(e: MouseEvent) {
+		if (e.buttons === 1 && !$isThumbBeingDragged) {
+			console.log('onElementDrag in if -> e:', e);
+			dragging = true;
+			isTimelineElementBeingDragged.set(true);
+
+			const mousePosition = {
+				x: e.clientX,
+				y: e.clientY
+			};
+			clonePositionLeft = mousePosition.x + cloneOffset[0] + 'px';
+			clonePositionTop = mousePosition.y + cloneOffset[1] + 'px';
+			console.log(
+				'onElementDrag in if -> clonePositionLeft:',
+				clonePositionLeft,
+				'clonePositionTop:',
+				clonePositionTop,
+				'mousePoistions x/y:',
+				mousePosition.x,
+				'/',
+				mousePosition.y
+			);
+		}
+	}
+
 	// overwrite the event listener from parent element in timeline
 	function onPointerMove(e: MouseEvent) {
 		if (e.buttons === 1 && !$isThumbBeingDragged) {
@@ -171,7 +213,7 @@
 	let clonePositionTop = '0px';
 	let cloneOffset = [0, 0];
 
-	function onCloneMove(e: MouseEvent) {
+	function onCloneMove(e: DragEvent) {
 		console.log('onCloneMove -> e:', e);
 		e.preventDefault();
 		if (e.buttons === 1) {
@@ -281,9 +323,23 @@
 	style="width: {elementWidth}px; background-color: blue; display: {dragging
 		? 'unset'
 		: 'none'}; transform: translateX({leftOffset}px); left: {clonePositionLeft}; top: {clonePositionTop};"
+	on:mousemove={test}
 	bind:this={cloneRef}
 ></div>
 <div
+	class="timeline-row-element h-[50px] mr-5 rounded hover:cursor-pointer"
+	style="width: {elementWidth}px; background-color: {isSelected
+		? tailwindColors.orange[500]
+		: tailwindColors.red[500]}; transform: translateX({leftOffset}px); display: {dragging
+		? 'none'
+		: 'unset'}"
+	on:mousedown={onElementClick}
+	on:pointermove={onPointerMove}
+	on:dragend={onElementDrop}
+	on:mousemove={test}
+	bind:this={elementRef}
+></div>
+<!-- <div
 	draggable="true"
 	class="timeline-row-element h-[50px] mr-5 rounded hover:cursor-pointer"
 	style="width: {elementWidth}px; background-color: {isSelected
@@ -296,7 +352,7 @@
 	on:drag={drag}
 	on:dragend={onElementDrop}
 	bind:this={elementRef}
-></div>
+></div> -->
 
 <!-- <div
 	class="clone h-[50px] mr-5 rounded absolute"
