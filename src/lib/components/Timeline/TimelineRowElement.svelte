@@ -41,6 +41,13 @@
 	let elementRef: HTMLElement;
 	let cloneRef: HTMLElement;
 	let dragging = false;
+	let clickInfo: {
+		offsetLeft: number;
+		offsetTop: number;
+		mouseX: number;
+		mouseY: number;
+	};
+	let tracksElBoundRect: DOMRect;
 
 	// function dragElement(e: DragEvent) {
 	// 	// e.preventDefault();
@@ -85,43 +92,48 @@
 	// 	// Clear temporary data
 	// 	dx = dy = 0;
 	// }
+	//
+
+	// get info about relative element and mouse position of clicked element
+	function getClickInfo(e: MouseEvent) {
+		const boundRect = elementRef.getBoundingClientRect();
+		const tracksEl = document.getElementsByClassName('timeline-tracks')[0];
+		tracksElBoundRect = tracksEl.getBoundingClientRect();
+
+		const mousePos = getRelativeMousePosition(e);
+		clickInfo = {
+			offsetLeft: boundRect.left - tracksElBoundRect.left,
+			offsetTop: boundRect.top - tracksElBoundRect.top,
+			mouseX: mousePos.x,
+			mouseY: mousePos.y
+		};
+		return clickInfo;
+	}
+
+	function getRelativeMousePosition(e: MouseEvent) {
+		return {
+			x: e.clientX - tracksElBoundRect.left,
+			y: e.clientY - tracksElBoundRect.top
+		};
+	}
 
 	function onElementClick(e: MouseEvent) {
 		// avoid timeline thumb being dragged when clicking on element
 		e.stopPropagation();
 		$selectedElement = element.elementId;
 
-		const boundRect = elementRef.getBoundingClientRect();
-		const tracksEl = document.getElementsByClassName('timeline-tracks')[0];
-		const tracksBoundRect = tracksEl.getBoundingClientRect();
-		const elOffsetFromParent = {
-			x: boundRect.left - tracksBoundRect.left,
-			y: boundRect.top - tracksBoundRect.top
-		};
-		const mousePos = { x: e.clientX - tracksBoundRect.left, y: e.clientY - tracksBoundRect.top };
+		const clickInfo = getClickInfo(e);
 
 		// TODO: factor in left offset and that the tracks are at the bottom of the screen
 		// TODO: get bounding cliint rect of original element and get left distance from it
-		cloneOffset = [elOffsetFromParent.x - mousePos.x, elOffsetFromParent.y - mousePos.y];
+		cloneOffset = [clickInfo.offsetLeft - clickInfo.mouseX, clickInfo.offsetTop - clickInfo.mouseY];
 		console.log(
-			'click element -> boundRect.left:',
-			boundRect.left,
-			'boundRect.top:',
-			boundRect.top,
+			'click element -> clickInfo:',
+			clickInfo,
 			'e.clientX:',
 			e.clientX,
 			'e.clientY:',
-			e.clientY,
-			'tracksEl:',
-			tracksEl,
-			'tracksBoundRect.left:',
-			tracksBoundRect.left,
-			'tracksBoundRect.top:',
-			tracksBoundRect.top,
-			'elOffsetFromParent.x:',
-			elOffsetFromParent.x,
-			'elOffsetFromParent.y:',
-			elOffsetFromParent.y
+			e.clientY
 		);
 		console.log('click element -> e:', e, 'cloneOffset:', cloneOffset);
 	}
@@ -167,7 +179,9 @@
 			'mousePoistions x/y:',
 			mousePosition.x,
 			'/',
-			mousePosition.y
+			mousePosition.y,
+			'clickInfo:',
+			clickInfo
 		);
 
 		// TODO: add drag event listeners to clone
@@ -180,10 +194,7 @@
 			dragging = true;
 			isTimelineElementBeingDragged.set(true);
 
-			const mousePosition = {
-				x: e.clientX,
-				y: e.clientY
-			};
+			const mousePosition = getRelativeMousePosition(e);
 			clonePositionLeft = mousePosition.x + cloneOffset[0] + 'px';
 			clonePositionTop = mousePosition.y + cloneOffset[1] + 'px';
 			console.log(
@@ -194,7 +205,9 @@
 				'mousePoistions x/y:',
 				mousePosition.x,
 				'/',
-				mousePosition.y
+				mousePosition.y,
+				'clickInfo:',
+				clickInfo
 			);
 		}
 	}
@@ -318,12 +331,12 @@
 </script>
 
 <div
-	draggable="true"
 	class="clone h-[50px] mr-5 rounded hover:cursor-pointer absolute"
 	style="width: {elementWidth}px; background-color: blue; display: {dragging
 		? 'unset'
-		: 'none'}; transform: translateX({leftOffset}px); left: {clonePositionLeft}; top: {clonePositionTop};"
+		: 'none'}; left: {clonePositionLeft}; top: {clonePositionTop};"
 	on:mousemove={test}
+	on:mouseup={onElementDrop}
 	bind:this={cloneRef}
 ></div>
 <div
