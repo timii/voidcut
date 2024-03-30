@@ -2,6 +2,7 @@
 	import type { ITimelineElement } from '$lib/interfaces/Timeline';
 	import { CONSTS } from '$lib/utils/consts';
 	import { getTailwindVariables } from '$lib/utils/utils';
+	import { onMount } from 'svelte';
 	import {
 		currentTimelineScale,
 		isThumbBeingDragged,
@@ -9,6 +10,7 @@
 		selectedElement,
 		thumbOffset
 	} from '../../../stores/store';
+	import * as htmlToImage from 'html-to-image';
 
 	export let element: ITimelineElement = {} as ITimelineElement;
 
@@ -48,6 +50,95 @@
 		mouseY: number;
 	};
 	let tracksElBoundRect: DOMRect;
+	let clonePositionLeft = '0px';
+	let clonePositionTop = '0px';
+	let cloneOffset = [0, 0];
+	let ctx: CanvasRenderingContext2D;
+	let canvas: HTMLCanvasElement;
+	let cloneImg: HTMLImageElement;
+
+	onMount(() => {
+		window.addEventListener('dragover', (e: DragEvent) => {
+			if ($isTimelineElementBeingDragged) {
+				e.preventDefault();
+				e.stopPropagation();
+				console.log('event listener on window while dragging');
+			}
+		});
+		// 	console.log('onElementDragStart');
+		// 	const node = document.createElement('div');
+		// 	node.style.width = '301px';
+		// 	node.style.height = '50px';
+		// 	node.style.backgroundColor = 'green';
+		// 	document.body.appendChild(node);
+		// 	// const test = elementRef.cloneNode();
+		// 	// // document.body.appendChild(test);
+		// 	// console.log('new element:', test);
+		// 	// // overwrite the default "ghost image" while dragging to be transparent by using an empty image
+		// 	// e.dataTransfer?.setDragImage(node, 100, 10);
+		// 	// const canvas = document.createElement('canvas');
+		// 	// const context = canvas.getContext('2d');
+		// 	// if (context) {
+		// 	// 	ctx = context;
+		// 	// 	const svg = `
+		// 	// 	<svg xmlns="http://www.w3.org/2000/svg" width="${canvas.width}" height="${canvas.height}">
+		// 	// 		<foreignObject width="100%" height="100%">
+		// 	// 			<div xmlns="http://www.w3.org/1999/xhtml">${node}</div>
+		// 	// 			</foreignObject>
+		// 	// 			</svg>`;
+		// 	// 	const svgBlob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
+		// 	// 	const svgObjectUrl = URL.createObjectURL(svgBlob);
+		// 	// 	const tempImg = new Image();
+		// 	// 	tempImg.addEventListener('load', function () {
+		// 	// 		console.log('onElementDragStart in onload');
+		// 	// 		ctx?.drawImage(tempImg, 0, 0);
+		// 	// 		URL.revokeObjectURL(svgObjectUrl);
+		// 	// 	});
+		// 	// 	tempImg.src = svgObjectUrl;
+		// 	// }
+		// 	await htmlToImage
+		// 		.toPng(node)
+		// 		.then((dataUrl) => {
+		// 			console.log('onElementDragStart after onload -> node:', node);
+		// 			cloneImg = new Image();
+		// 			cloneImg.onload = () => {
+		// 				document.body.appendChild(cloneImg);
+		// 				const canvas = document.createElement('canvas');
+		// 				canvas.width = cloneImg.width;
+		// 				canvas.height = cloneImg.height;
+		// 				const context = canvas.getContext('2d');
+		// 				if (context) {
+		// 					document.body.appendChild(canvas);
+		// 					// 		ctx = context;
+		// 					// 		const svg = `
+		// 					// <svg xmlns="http://www.w3.org/2000/svg" width="${canvas.width}" height="${canvas.height}">
+		// 					// 	<foreignObject width="100%" height="100%">
+		// 					// 		<div xmlns="http://www.w3.org/1999/xhtml">${node}</div>
+		// 					// 		</foreignObject>
+		// 					// 		</svg>`;
+		// 					// 		const svgBlob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
+		// 					// 		const svgObjectUrl = URL.createObjectURL(svgBlob);
+		// 					// const tempImg = new Image();
+		// 					// tempImg.addEventListener('load', function () {
+		// 					// console.log('onElementDragStart in onload');
+		// 					context.lineWidth = 4;
+		// 					context.moveTo(0, 0);
+		// 					context.lineTo(50, 50);
+		// 					context.moveTo(0, 50);
+		// 					context.lineTo(50, 0);
+		// 					context.stroke();
+		// 					// context.drawImage(cloneImg, 0, 0);
+		// 					// URL.revokeObjectURL(svgObjectUrl);
+		// 					// });
+		// 					// tempImg.src = svgObjectUrl;
+		// 				}
+		// 			};
+		// 			cloneImg.src = dataUrl;
+		// 		})
+		// 		.catch((error) => {
+		// 			console.error('oops, something went wrong!', error);
+		// 		});
+	});
 
 	// function dragElement(e: DragEvent) {
 	// 	// e.preventDefault();
@@ -148,6 +239,7 @@
 		);
 
 		dragging = false;
+		isTimelineElementBeingDragged.set(false);
 
 		console.log(
 			'drop element after delay -> e:',
@@ -157,18 +249,16 @@
 		);
 	}
 
-	function drag(e: MouseEvent) {
+	function drag(e: DragEvent) {
 		console.log('onElementDrag in if -> e:', e);
-		dragging = true;
-		isTimelineElementBeingDragged.set(true);
+		// dragging = true;
+		// isTimelineElementBeingDragged.set(true);
 
 		// TODO: clone element
 		// TODO: hide original element
 		// TODO: put clone in position of original element
-		const mousePosition = {
-			x: e.clientX,
-			y: e.clientY
-		};
+		const mousePosition = getRelativeMousePosition(e);
+
 		clonePositionLeft = mousePosition.x + cloneOffset[0] + 'px';
 		clonePositionTop = mousePosition.y + cloneOffset[1] + 'px';
 		console.log(
@@ -190,7 +280,7 @@
 
 	function test(e: MouseEvent) {
 		if (e.buttons === 1 && !$isThumbBeingDragged) {
-			console.log('onElementDrag in if -> e:', e);
+			// console.log('onElementDrag in if -> e:', e);
 			dragging = true;
 			isTimelineElementBeingDragged.set(true);
 
@@ -212,19 +302,23 @@
 		}
 	}
 
+	function onElementDragStart(e: DragEvent) {
+		// overwrite default "ghost image" while dragging
+		e.dataTransfer?.setDragImage(new Image(), 40, 20);
+
+		dragging = true;
+		isTimelineElementBeingDragged.set(true);
+	}
+
 	// overwrite the event listener from parent element in timeline
 	function onPointerMove(e: MouseEvent) {
-		if (e.buttons === 1 && !$isThumbBeingDragged) {
+		if (e.buttons === 1 && !$isThumbBeingDragged && !$isTimelineElementBeingDragged) {
 			isTimelineElementBeingDragged.set(true);
 		}
 		if (!$isThumbBeingDragged) {
 			e.stopPropagation();
 		}
 	}
-
-	let clonePositionLeft = '0px';
-	let clonePositionTop = '0px';
-	let cloneOffset = [0, 0];
 
 	function onCloneMove(e: DragEvent) {
 		console.log('onCloneMove -> e:', e);
@@ -340,16 +434,18 @@
 	bind:this={cloneRef}
 ></div>
 <div
+	draggable="true"
 	class="timeline-row-element h-[50px] mr-5 rounded hover:cursor-pointer"
 	style="width: {elementWidth}px; background-color: {isSelected
 		? tailwindColors.orange[500]
-		: tailwindColors.red[500]}; transform: translateX({leftOffset}px); display: {dragging
+		: tailwindColors.red[500]}; transform: translate3d({leftOffset}px, 0, 0); display: {dragging
 		? 'none'
 		: 'unset'}"
 	on:mousedown={onElementClick}
 	on:pointermove={onPointerMove}
+	on:dragstart={onElementDragStart}
 	on:dragend={onElementDrop}
-	on:mousemove={test}
+	on:drag={drag}
 	bind:this={elementRef}
 ></div>
 <!-- <div
