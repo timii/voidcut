@@ -434,7 +434,6 @@
 	bind:this={cloneRef}
 ></div>
 <div
-	draggable="true"
 	class="timeline-row-element h-[50px] mr-5 rounded hover:cursor-pointer"
 	style="width: {elementWidth}px; background-color: {isSelected
 		? tailwindColors.orange[500]
@@ -443,9 +442,8 @@
 		: 'unset'}"
 	on:mousedown={onElementClick}
 	on:pointermove={onPointerMove}
-	on:dragstart={onElementDragStart}
 	on:dragend={onElementDrop}
-	on:drag={drag}
+	on:mousemove={test}
 	bind:this={elementRef}
 ></div>
 <!-- <div
