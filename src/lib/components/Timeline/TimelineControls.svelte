@@ -5,6 +5,20 @@
 	import { get } from 'svelte/store';
 	import type { ITimelineTrack } from '$lib/interfaces/Timeline';
 	import { getIndexOfElementInTracks } from '$lib/utils/utils';
+
+	function increaseTimelineScale() {
+		currentTimelineScale.update((value) => value * 2);
+		console.log('increaseTimelineScale -> currentTimelineScale:', $currentTimelineScale);
+	}
+
+	function decreaseTimelineScale() {
+		currentTimelineScale.update((value) => value / 2);
+		console.log(
+			'increaseTimeldecreaseTimelineScaleineScale -> currentTimelineScale:',
+			$currentTimelineScale
+		);
+	}
+
 	function deleteSelectedElement() {
 		console.log(
 			'deleteSelectedElement clicked -> selectedElement:',
