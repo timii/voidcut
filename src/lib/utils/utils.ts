@@ -1,6 +1,6 @@
 import { MediaType, type IMedia, type IFileMetadata } from "$lib/interfaces/Media";
-import type { ITimelineElement, ITimelineTrack } from "$lib/interfaces/Timeline";
-import { availableMedia, isTimelineElementBeingDragged, isThumbBeingDragged, timelineTracks, currentPlaybackTime, playbackIntervalId, currentTimelineScale, currentThumbPosition, thumbOffset, horizontalScroll, selectedElement } from "../../stores/store";
+import type { ITimelineDraggedElement, ITimelineElement, ITimelineTrack } from "$lib/interfaces/Timeline";
+import { availableMedia, isTimelineElementBeingDragged, isThumbBeingDragged, timelineTracks, currentPlaybackTime, playbackIntervalId, currentTimelineScale, currentThumbPosition, thumbOffset, horizontalScroll, selectedElement, draggedElement } from "../../stores/store";
 import { CONSTS } from "./consts";
 import { adjustingInterval } from "./betterInterval";
 import { get } from "svelte/store";
@@ -173,6 +173,7 @@ function generateId() {
 export function resetAllBeingDragged() {
     isThumbBeingDragged.set(false)
     isTimelineElementBeingDragged.set(false)
+    draggedElement.set(null)
 }
 
 // remove interval that handles the current playback time

@@ -1,16 +1,16 @@
 <script lang="ts">
-	import type { ITimelineElement } from '$lib/interfaces/Timeline';
+	import type { ITimelineDraggedElement, ITimelineElement } from '$lib/interfaces/Timeline';
 	import { CONSTS } from '$lib/utils/consts';
 	import { getTailwindVariables } from '$lib/utils/utils';
 	import { onMount } from 'svelte';
 	import {
 		currentTimelineScale,
+		draggedElement,
 		isThumbBeingDragged,
 		isTimelineElementBeingDragged,
 		selectedElement,
 		thumbOffset
 	} from '../../../stores/store';
-	import * as htmlToImage from 'html-to-image';
 
 	export let element: ITimelineElement = {} as ITimelineElement;
 
@@ -53,9 +53,6 @@
 	let clonePositionLeft = '0px';
 	let clonePositionTop = '0px';
 	let cloneOffset = [0, 0];
-	let ctx: CanvasRenderingContext2D;
-	let canvas: HTMLCanvasElement;
-	let cloneImg: HTMLImageElement;
 
 	onMount(() => {
 		window.addEventListener('dragover', (e: DragEvent) => {
@@ -218,13 +215,20 @@
 		// TODO: factor in left offset and that the tracks are at the bottom of the screen
 		// TODO: get bounding cliint rect of original element and get left distance from it
 		cloneOffset = [clickInfo.offsetLeft - clickInfo.mouseX, clickInfo.offsetTop - clickInfo.mouseY];
+
+		// set the elementId of the dragged element store property
+		draggedElement.update((el) => {
+			return { ...el, elementId: element.elementId } as ITimelineDraggedElement;
+		});
 		console.log(
 			'click element -> clickInfo:',
 			clickInfo,
 			'e.clientX:',
 			e.clientX,
 			'e.clientY:',
-			e.clientY
+			e.clientY,
+			'draggedElement',
+			$draggedElement
 		);
 		console.log('click element -> e:', e, 'cloneOffset:', cloneOffset);
 	}
@@ -287,6 +291,19 @@
 			const mousePosition = getRelativeMousePosition(e);
 			clonePositionLeft = mousePosition.x + cloneOffset[0] + 'px';
 			clonePositionTop = mousePosition.y + cloneOffset[1] + 'px';
+			// TODO: set store variable for currently dragged element as a replacement of the dataTransfer when dragging
+			// Properties in the store variable -> left and top distance inside parent, width and height, elementId
+			draggedElement.update((el) => {
+				return {
+					...el,
+					left: mousePosition.x + cloneOffset[0],
+					top: mousePosition.y + cloneOffset[1],
+					width: elementWidth,
+					height: 50,
+					clickedX: cloneOffset[0],
+					clickedY: cloneOffset[1]
+				} as ITimelineDraggedElement;
+			});
 			console.log(
 				'onElementDrag in if -> clonePositionLeft:',
 				clonePositionLeft,
@@ -297,7 +314,9 @@
 				'/',
 				mousePosition.y,
 				'clickInfo:',
-				clickInfo
+				clickInfo,
+				'draggedElement',
+				$draggedElement
 			);
 		}
 	}

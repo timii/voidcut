@@ -1,5 +1,5 @@
 import type { IMedia } from '$lib/interfaces/Media';
-import type { ITimelineTrack } from '$lib/interfaces/Timeline';
+import type { ITimelineDraggedElement, ITimelineTrack } from '$lib/interfaces/Timeline';
 import { writable } from 'svelte/store';
 
 // Timeline
@@ -17,6 +17,7 @@ export const playbackIntervalId = writable(0); // store to hold the playback int
 export const timelineTracks = writable<ITimelineTrack[]>([])
 export const isThumbBeingDragged = writable(false);
 export const isTimelineElementBeingDragged = writable(false);
+export const draggedElement = writable<ITimelineDraggedElement | null>(null); // contains information about the dragged timeline element
 export const selectedElement = writable(""); // keep track which element is currently selected in the timeline
 
 // Workbench
