@@ -23,6 +23,7 @@
 	import type { ITimelineTrack } from '$lib/interfaces/Timeline';
 	import TimelineControls from './TimelineControls.svelte';
 	import { CONSTS } from '$lib/utils/consts';
+	import TimelineRowDivider from './TimelineRowDivider.svelte';
 
 	let hoverElement = false;
 	let scrollContainerEl: HTMLDivElement;
@@ -146,6 +147,23 @@
 		e.preventDefault();
 		e.stopPropagation();
 		hoverElement = true;
+
+		// const elemBelow = document.elementFromPoint(e.clientX, e.clientY);
+		// const elemsBelow = document.elementsFromPoint(e.clientX, e.clientY);
+		// console.log(
+		// 	'onHoverElement -> e:',
+		// 	e,
+		// 	'e.clientX/e.clientY',
+		// 	e.clientX,
+		// 	'/',
+		// 	e.clientY,
+		// 	'elements:',
+		// 	elemsBelow,
+		// 	'elementFromPoint',
+		// 	elemBelow,
+		// 	'closest element:',
+		// 	elemBelow?.closest('div')
+		// );
 	}
 
 	function onHoverOverDivider(e: DragEvent) {
@@ -160,8 +178,6 @@
 		e.preventDefault();
 		e.stopPropagation();
 		(e.target as HTMLDivElement).classList.remove('drag-over');
-
-		console.log('onDropOverDivider -> e', e, 'index:', index);
 
 		handleAddElementToTimeline(e, index);
 	}
@@ -247,7 +263,8 @@
 					<!-- TODO: add a dropzone between each track, before first and after last -->
 					<!-- the dropzone is highlighted automatically if something is hovered over it -->
 					{#if i === 0}
-						<div
+						<TimelineRowDivider></TimelineRowDivider>
+						<!-- <div
 							class="track-divider w-full bg-slate-500 h-[4px] mt-1 rounded-sm"
 							on:drop={(e) => {
 								onDropOverDivider(e, i);
@@ -257,10 +274,11 @@
 							}}
 							on:dragenter={onHoverOverDivider}
 							on:dragover={onHoverOverDivider}
-						></div>
+							></div> -->
 					{/if}
 					<TimelineRow {track}></TimelineRow>
-					<div
+					<TimelineRowDivider></TimelineRowDivider>
+					<!-- <div
 						class="track-divider w-full bg-slate-500 h-[4px] rounded-sm"
 						on:drop={(e) => {
 							onDropOverDivider(e, i + 1);
@@ -270,7 +288,7 @@
 						}}
 						on:dragenter={onHoverOverDivider}
 						on:dragover={onHoverOverDivider}
-					></div>
+					></div> -->
 				{/each}
 
 				<!-- <div class="bg-red-700 h-[50px] w-[2200px] mr-5"></div>
