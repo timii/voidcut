@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { ITimelineDraggedElement, ITimelineElement } from '$lib/interfaces/Timeline';
 	import { CONSTS } from '$lib/utils/consts';
-	import { getTailwindVariables } from '$lib/utils/utils';
+	import { getRelativeMousePosition, getTailwindVariables } from '$lib/utils/utils';
 	import { onMount } from 'svelte';
 	import {
 		currentTimelineScale,
@@ -188,7 +188,7 @@
 		const tracksEl = document.getElementsByClassName('timeline-tracks')[0];
 		tracksElBoundRect = tracksEl.getBoundingClientRect();
 
-		const mousePos = getRelativeMousePosition(e);
+		const mousePos = getRelativeMousePosition(e, tracksElBoundRect);
 		clickInfo = {
 			offsetLeft: boundRect.left - tracksElBoundRect.left,
 			offsetTop: boundRect.top - tracksElBoundRect.top,
@@ -196,13 +196,6 @@
 			mouseY: mousePos.y
 		};
 		return clickInfo;
-	}
-
-	function getRelativeMousePosition(e: MouseEvent) {
-		return {
-			x: e.clientX - tracksElBoundRect.left,
-			y: e.clientY - tracksElBoundRect.top
-		};
 	}
 
 	function onElementClick(e: MouseEvent) {
@@ -288,7 +281,7 @@
 			dragging = true;
 			isTimelineElementBeingDragged.set(true);
 
-			const mousePosition = getRelativeMousePosition(e);
+			const mousePosition = getRelativeMousePosition(e, tracksElBoundRect);
 			clonePositionLeft = mousePosition.x + cloneOffset[0] + 'px';
 			clonePositionTop = mousePosition.y + cloneOffset[1] + 'px';
 			// TODO: set store variable for currently dragged element as a replacement of the dataTransfer when dragging
@@ -300,8 +293,8 @@
 					top: mousePosition.y + cloneOffset[1],
 					width: elementWidth,
 					height: 50,
-					clickedX: cloneOffset[0],
-					clickedY: cloneOffset[1]
+					clickedX: Math.abs(cloneOffset[0]),
+					clickedY: Math.abs(cloneOffset[1])
 				} as ITimelineDraggedElement;
 			});
 			console.log(

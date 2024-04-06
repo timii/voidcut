@@ -57,8 +57,8 @@ export function handleTimelineMediaDrop(media: IMedia, index?: number) {
         mediaId: media.mediaId,
         type: media.type,
         elementId: generateId(),
-        playbackStartTime: 0,
-        // playbackStartTime: 4000, // TODO: remove only for testing
+        // playbackStartTime: 0,
+        playbackStartTime: 4000, // TODO: remove only for testing
         trimFromStart: 0,
         trimFromEnd: 0,
         videoOptions: {}
@@ -257,7 +257,6 @@ export function moveTimelineThumb(e: MouseEvent) {
     }
 
     currentThumbPosition.set(newPos);
-
     // calculate playback time using the the new thumb position and write it into the store
     const playbackTime = convertPxToPlaybackScale();
     currentPlaybackTime.set(playbackTime);
@@ -294,4 +293,12 @@ export function getIndexOfElementInTracks() {
             return [i, index];
         }
     }
+}
+
+// get relative mouse coordinates to the given element DOMRect
+export function getRelativeMousePosition(e: MouseEvent, el: DOMRect) {
+    return {
+        x: e.clientX - el.left,
+        y: e.clientY - el.top
+    };
 }
