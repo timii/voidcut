@@ -24,6 +24,7 @@
 		};
 	});
 
+	// check if an element is hovered over the divider
 	function isElementHovered(draggedEl: ITimelineDraggedElement | null) {
 		if (!draggedEl) return;
 		const curYPos = draggedEl.top + draggedEl.clickedY;

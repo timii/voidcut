@@ -53,6 +53,7 @@
 	let clonePositionLeft = '0px';
 	let clonePositionTop = '0px';
 	let cloneOffset = [0, 0];
+	let dropZonePositionLeft = 0;
 
 	onMount(() => {
 		window.addEventListener('dragover', (e: DragEvent) => {
@@ -246,36 +247,36 @@
 		);
 	}
 
-	function drag(e: DragEvent) {
-		console.log('onElementDrag in if -> e:', e);
-		// dragging = true;
-		// isTimelineElementBeingDragged.set(true);
+	// function drag(e: DragEvent) {
+	// 	console.log('onElementDrag in if -> e:', e);
+	// 	// dragging = true;
+	// 	// isTimelineElementBeingDragged.set(true);
 
-		// TODO: clone element
-		// TODO: hide original element
-		// TODO: put clone in position of original element
-		const mousePosition = getRelativeMousePosition(e);
+	// 	// TODO: clone element
+	// 	// TODO: hide original element
+	// 	// TODO: put clone in position of original element
+	// 	// const mousePosition = getRelativeMousePosition(e);
 
-		clonePositionLeft = mousePosition.x + cloneOffset[0] + 'px';
-		clonePositionTop = mousePosition.y + cloneOffset[1] + 'px';
-		console.log(
-			'onElementDrag in if -> clonePositionLeft:',
-			clonePositionLeft,
-			'clonePositionTop:',
-			clonePositionTop,
-			'mousePoistions x/y:',
-			mousePosition.x,
-			'/',
-			mousePosition.y,
-			'clickInfo:',
-			clickInfo
-		);
+	// 	// clonePositionLeft = mousePosition.x + cloneOffset[0] + 'px';
+	// 	// clonePositionTop = mousePosition.y + cloneOffset[1] + 'px';
+	// 	// console.log(
+	// 	// 	'onElementDrag in if -> clonePositionLeft:',
+	// 	// 	clonePositionLeft,
+	// 	// 	'clonePositionTop:',
+	// 	// 	clonePositionTop,
+	// 	// 	'mousePoistions x/y:',
+	// 	// 	mousePosition.x,
+	// 	// 	'/',
+	// 	// 	mousePosition.y,
+	// 	// 	'clickInfo:',
+	// 	// 	clickInfo
+	// 	// );
 
-		// TODO: add drag event listeners to clone
-		// TODO: when dropping delete clone and move original to new position
-	}
+	// 	// TODO: add drag event listeners to clone
+	// 	// TODO: when dropping delete clone and move original to new position
+	// }
 
-	function test(e: MouseEvent) {
+	function onElementDrag(e: MouseEvent) {
 		if (e.buttons === 1 && !$isThumbBeingDragged) {
 			// console.log('onElementDrag in if -> e:', e);
 			dragging = true;
@@ -283,6 +284,7 @@
 
 			const mousePosition = getRelativeMousePosition(e, tracksElBoundRect);
 			clonePositionLeft = mousePosition.x + cloneOffset[0] + 'px';
+			dropZonePositionLeft = mousePosition.x + cloneOffset[0] - 20;
 			clonePositionTop = mousePosition.y + cloneOffset[1] + 'px';
 			// TODO: set store variable for currently dragged element as a replacement of the dataTransfer when dragging
 			// Properties in the store variable -> left and top distance inside parent, width and height, elementId
@@ -351,99 +353,105 @@
 		}
 	}
 
-	function onElementDrag(e: MouseEvent) {
-		// only drag element if mouse is held down and the timeline thumb is currently not being dragged
-		if (e.buttons === 1 && !$isThumbBeingDragged) {
-			// avoid timeline thumb being dragged when dragging over element
-			e.stopPropagation();
-			e.preventDefault();
-			// console.log('onElementDrag in if -> e:', e);
-			// dragging = true;
-		}
-		// 	// avoid timeline thumb being dragged when dragging the mouse over it
-		// 	e.stopPropagation();
-		// 	// calculate new position using the mouse position on the x axis, the left thumb offset and the amount scrolled horizontally
-		// 	// TODO: we need to use a new calcualtion because we can't directly use the mouse position and instead calculate the difference the mouse moved to see where we need to move the element
-		// 	console.log(
-		// 		'onElementDrag -> event:',
-		// 		e,
-		// 		'elementRef:',
-		// 		elementRef,
-		// 		'element position',
-		// 		elementRef.offsetLeft
-		// 	);
-		// 	const elBoundingRect = elementRef.getBoundingClientRect();
-		// 	// get width of element
-		// 	const elWidth = elBoundingRect.width;
-		// 	const elLeftOffset = elBoundingRect.left;
-		// 	console.log(
-		// 		'onElementDrag -> elWidth:',
-		// 		elWidth,
-		// 		'elLeftOffset:',
-		// 		elLeftOffset,
-		// 		'leftOffset - thumbOffset:',
-		// 		elLeftOffset - $thumbOffset
-		// 	);
-		// 	const newPos = e.clientX - $thumbOffset + $horizontalScroll;
-		// 	// avoid the element to be moved further left than the tracks
-		// 	if (newPos >= 0) {
-		// 		const scrolledPxInSeconds = Math.round(
-		// 			(newPos / $currentTimelineScale) * CONSTS.secondsMultiplier
-		// 		);
-		// 		console.log('onElementDrag -> newPos:', newPos, 'in seconds:', scrolledPxInSeconds);
-		// 		element.playbackStartTime = scrolledPxInSeconds;
-		// 		// leftOffset = newPos;
-		// 		// TODO: calculate horizontal position when dragging
-		// 		// TODO: update timeline tracks with correct offset
-		// 		const indeces = getIndexOfElementInTracks();
-		// 		if (!indeces) {
-		// 			return;
-		// 		}
-		// 		const firstIndex = indeces[0];
-		// 		const secondIndex = indeces[1];
-		// 		timelineTracks.update(
-		// 			(tracks) => {
-		// 				const track = tracks[firstIndex];
-		// 				const newEl = track.elements[secondIndex];
-		// 				const obj: ITimelineElement = {
-		// 					...newEl
-		// 					// playbackStartTime: scrolledPxInSeconds
-		// 				};
-		// 				track.elements[secondIndex] = obj;
-		// 				tracks[firstIndex] = track;
-		// 				console.log('onElementDrag -> tracks after mapping:', tracks);
-		// 				return tracks;
-		// 			}
-		// 			// tracks.map(
-		// 			// (track) => track.elements.map((el) => el)
-		// 			// track.elements.map((el) => {
-		// 			// 	if (el.elementId === element.elementId) {
-		// 			// 		return {
-		// 			// 			...el,
-		// 			// 			playbackStartTime: newPos
-		// 			// 		};
-		// 			// 	}
-		// 			// 	return el;
-		// 			// })
-		// 			// )
-		// 		);
-		// 		if (!$isTimelineElementBeingDragged) {
-		// 			$isTimelineElementBeingDragged = true;
-		// 			console.log('isTimelineElementBeingDragged?:', $isTimelineElementBeingDragged);
-		// 		}
-		// 	}
-		// }
-	}
+	// function onElementDrag(e: MouseEvent) {
+	// 	// only drag element if mouse is held down and the timeline thumb is currently not being dragged
+	// 	if (e.buttons === 1 && !$isThumbBeingDragged) {
+	// 		// avoid timeline thumb being dragged when dragging over element
+	// 		e.stopPropagation();
+	// 		e.preventDefault();
+	// 		// console.log('onElementDrag in if -> e:', e);
+	// 		// dragging = true;
+	// 	}
+	// 	// 	// avoid timeline thumb being dragged when dragging the mouse over it
+	// 	// 	e.stopPropagation();
+	// 	// 	// calculate new position using the mouse position on the x axis, the left thumb offset and the amount scrolled horizontally
+	// 	// 	// TODO: we need to use a new calcualtion because we can't directly use the mouse position and instead calculate the difference the mouse moved to see where we need to move the element
+	// 	// 	console.log(
+	// 	// 		'onElementDrag -> event:',
+	// 	// 		e,
+	// 	// 		'elementRef:',
+	// 	// 		elementRef,
+	// 	// 		'element position',
+	// 	// 		elementRef.offsetLeft
+	// 	// 	);
+	// 	// 	const elBoundingRect = elementRef.getBoundingClientRect();
+	// 	// 	// get width of element
+	// 	// 	const elWidth = elBoundingRect.width;
+	// 	// 	const elLeftOffset = elBoundingRect.left;
+	// 	// 	console.log(
+	// 	// 		'onElementDrag -> elWidth:',
+	// 	// 		elWidth,
+	// 	// 		'elLeftOffset:',
+	// 	// 		elLeftOffset,
+	// 	// 		'leftOffset - thumbOffset:',
+	// 	// 		elLeftOffset - $thumbOffset
+	// 	// 	);
+	// 	// 	const newPos = e.clientX - $thumbOffset + $horizontalScroll;
+	// 	// 	// avoid the element to be moved further left than the tracks
+	// 	// 	if (newPos >= 0) {
+	// 	// 		const scrolledPxInSeconds = Math.round(
+	// 	// 			(newPos / $currentTimelineScale) * CONSTS.secondsMultiplier
+	// 	// 		);
+	// 	// 		console.log('onElementDrag -> newPos:', newPos, 'in seconds:', scrolledPxInSeconds);
+	// 	// 		element.playbackStartTime = scrolledPxInSeconds;
+	// 	// 		// leftOffset = newPos;
+	// 	// 		// TODO: calculate horizontal position when dragging
+	// 	// 		// TODO: update timeline tracks with correct offset
+	// 	// 		const indeces = getIndexOfElementInTracks();
+	// 	// 		if (!indeces) {
+	// 	// 			return;
+	// 	// 		}
+	// 	// 		const firstIndex = indeces[0];
+	// 	// 		const secondIndex = indeces[1];
+	// 	// 		timelineTracks.update(
+	// 	// 			(tracks) => {
+	// 	// 				const track = tracks[firstIndex];
+	// 	// 				const newEl = track.elements[secondIndex];
+	// 	// 				const obj: ITimelineElement = {
+	// 	// 					...newEl
+	// 	// 					// playbackStartTime: scrolledPxInSeconds
+	// 	// 				};
+	// 	// 				track.elements[secondIndex] = obj;
+	// 	// 				tracks[firstIndex] = track;
+	// 	// 				console.log('onElementDrag -> tracks after mapping:', tracks);
+	// 	// 				return tracks;
+	// 	// 			}
+	// 	// 			// tracks.map(
+	// 	// 			// (track) => track.elements.map((el) => el)
+	// 	// 			// track.elements.map((el) => {
+	// 	// 			// 	if (el.elementId === element.elementId) {
+	// 	// 			// 		return {
+	// 	// 			// 			...el,
+	// 	// 			// 			playbackStartTime: newPos
+	// 	// 			// 		};
+	// 	// 			// 	}
+	// 	// 			// 	return el;
+	// 	// 			// })
+	// 	// 			// )
+	// 	// 		);
+	// 	// 		if (!$isTimelineElementBeingDragged) {
+	// 	// 			$isTimelineElementBeingDragged = true;
+	// 	// 			console.log('isTimelineElementBeingDragged?:', $isTimelineElementBeingDragged);
+	// 	// 		}
+	// 	// 	}
+	// 	// }
+	// }
 </script>
 
 <div
-	class="clone h-[50px] mr-5 rounded hover:cursor-pointer absolute"
+	class="clone h-[50px] mr-5 rounded hover:cursor-pointer absolute z-20"
 	style="width: {elementWidth}px; background-color: blue; display: {dragging
 		? 'unset'
 		: 'none'}; left: {clonePositionLeft}; top: {clonePositionTop};"
-	on:mousemove={test}
+	on:mousemove={onElementDrag}
 	on:mouseup={onElementDrop}
 	bind:this={cloneRef}
+></div>
+<div
+	class="clone-drop-zone h-[50px] mr-5 rounded outline-dashed z-10"
+	style="width: {elementWidth}px; display: {dragging
+		? 'unset'
+		: 'none'}; background-color: green; transform: translate3d({dropZonePositionLeft}px, 0, 0);"
 ></div>
 <div
 	class="timeline-row-element h-[50px] mr-5 rounded hover:cursor-pointer"
@@ -455,7 +463,7 @@
 	on:mousedown={onElementClick}
 	on:pointermove={onPointerMove}
 	on:dragend={onElementDrop}
-	on:mousemove={test}
+	on:mousemove={onElementDrag}
 	bind:this={elementRef}
 ></div>
 <!-- <div
