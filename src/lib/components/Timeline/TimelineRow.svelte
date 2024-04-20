@@ -47,8 +47,8 @@
 		console.log('isElementHovered -> elementHoveredOverRow:', elementHoveredOverRow);
 		// if element is hovered over row show drop zone element
 		if (elementHoveredOverRow) {
-			// limit the drop zone offset to 0 so it doesn't go too far to the left
-			dropZonePositionLeft = Math.max(draggedEl.left - 20, 0);
+			// limit the drop zone offset to the left so it doesnt' further left than the track
+			dropZonePositionLeft = Math.max(draggedEl.left, 20);
 
 			if (elementWidth === 0) {
 				// calculate element width using the dragged element width
@@ -67,12 +67,19 @@
 </script>
 
 <div class="timeline-row bg-ruler-color h-[50px] w-full mr-5 rounded flex" bind:this={rowRef}>
-	<div
+	<!-- <div
 		class="clone-drop-zone h-[50px] mr-5 rounded outline-dashed z-10"
 		style="width: {elementWidth}px; display: {elementHoveredOverRow &&
 		$isTimelineElementBeingDragged
 			? 'unset'
 			: 'none'}; background-color: green; transform: translate3d({dropZonePositionLeft}px, 0, 0);"
+	></div> -->
+	<div
+		class="clone-drop-zone h-[50px] mr-5 rounded outline-dashed z-10 absolute"
+		style="width: {elementWidth}px; display: {elementHoveredOverRow &&
+		$isTimelineElementBeingDragged
+			? 'unset'
+			: 'none'}; background-color: green; left: {dropZonePositionLeft}px;"
 	></div>
 	{#each track.elements as element}
 		<TimelineRowElement {element}></TimelineRowElement>
