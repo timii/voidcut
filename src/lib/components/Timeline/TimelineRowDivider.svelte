@@ -6,6 +6,7 @@
 
 	let dividerRef: HTMLElement;
 
+	// call function everytime the store variable changes
 	$: isElementHovered($draggedElement);
 
 	let tracksElBoundRect: DOMRect;
@@ -27,21 +28,23 @@
 	// check if an element is hovered over the divider
 	function isElementHovered(draggedEl: ITimelineDraggedElement | null) {
 		if (!draggedEl) return;
+
+		// current mouse position on the y axis
 		const curYPos = draggedEl.top + draggedEl.clickedY;
 		elementOverDivider =
 			curYPos >= offsetInParent.top && curYPos <= offsetInParent.top + dividerElBoundRect.height;
-		console.log(
-			'isElementHovered -> draggedEl',
-			draggedEl,
-			'dividerBounds:',
-			dividerElBoundRect,
-			'offsetInParent:',
-			offsetInParent,
-			'curYPos:',
-			curYPos,
-			'elementOverDivider:',
-			elementOverDivider
-		);
+		// console.log(
+		// 	'isElementHovered -> draggedEl',
+		// 	draggedEl,
+		// 	'dividerBounds:',
+		// 	dividerElBoundRect,
+		// 	'offsetInParent:',
+		// 	offsetInParent,
+		// 	'curYPos:',
+		// 	curYPos,
+		// 	'elementOverDivider:',
+		// 	elementOverDivider
+		// );
 	}
 </script>
 

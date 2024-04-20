@@ -23,6 +23,9 @@
 	leftOffset = (element.playbackStartTime / CONSTS.secondsMultiplier) * $currentTimelineScale;
 
 	$: elementWidth = (element.duration / CONSTS.secondsMultiplier) * $currentTimelineScale;
+
+	// call function everytime the store variable changes
+	$: isElementHovered($draggedElement);
 	console.log(
 		'TimelineRowElement -> element:',
 		element,
@@ -50,10 +53,12 @@
 		mouseY: number;
 	};
 	let tracksElBoundRect: DOMRect;
+	// TODO: change to be a number instead
 	let clonePositionLeft = '0px';
 	let clonePositionTop = '0px';
 	let cloneOffset = [0, 0];
 	let dropZonePositionLeft = 0;
+	let elementHoveredOverRow = false;
 
 	onMount(() => {
 		window.addEventListener('dragover', (e: DragEvent) => {
@@ -63,80 +68,26 @@
 				console.log('event listener on window while dragging');
 			}
 		});
-		// 	console.log('onElementDragStart');
-		// 	const node = document.createElement('div');
-		// 	node.style.width = '301px';
-		// 	node.style.height = '50px';
-		// 	node.style.backgroundColor = 'green';
-		// 	document.body.appendChild(node);
-		// 	// const test = elementRef.cloneNode();
-		// 	// // document.body.appendChild(test);
-		// 	// console.log('new element:', test);
-		// 	// // overwrite the default "ghost image" while dragging to be transparent by using an empty image
-		// 	// e.dataTransfer?.setDragImage(node, 100, 10);
-		// 	// const canvas = document.createElement('canvas');
-		// 	// const context = canvas.getContext('2d');
-		// 	// if (context) {
-		// 	// 	ctx = context;
-		// 	// 	const svg = `
-		// 	// 	<svg xmlns="http://www.w3.org/2000/svg" width="${canvas.width}" height="${canvas.height}">
-		// 	// 		<foreignObject width="100%" height="100%">
-		// 	// 			<div xmlns="http://www.w3.org/1999/xhtml">${node}</div>
-		// 	// 			</foreignObject>
-		// 	// 			</svg>`;
-		// 	// 	const svgBlob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
-		// 	// 	const svgObjectUrl = URL.createObjectURL(svgBlob);
-		// 	// 	const tempImg = new Image();
-		// 	// 	tempImg.addEventListener('load', function () {
-		// 	// 		console.log('onElementDragStart in onload');
-		// 	// 		ctx?.drawImage(tempImg, 0, 0);
-		// 	// 		URL.revokeObjectURL(svgObjectUrl);
-		// 	// 	});
-		// 	// 	tempImg.src = svgObjectUrl;
-		// 	// }
-		// 	await htmlToImage
-		// 		.toPng(node)
-		// 		.then((dataUrl) => {
-		// 			console.log('onElementDragStart after onload -> node:', node);
-		// 			cloneImg = new Image();
-		// 			cloneImg.onload = () => {
-		// 				document.body.appendChild(cloneImg);
-		// 				const canvas = document.createElement('canvas');
-		// 				canvas.width = cloneImg.width;
-		// 				canvas.height = cloneImg.height;
-		// 				const context = canvas.getContext('2d');
-		// 				if (context) {
-		// 					document.body.appendChild(canvas);
-		// 					// 		ctx = context;
-		// 					// 		const svg = `
-		// 					// <svg xmlns="http://www.w3.org/2000/svg" width="${canvas.width}" height="${canvas.height}">
-		// 					// 	<foreignObject width="100%" height="100%">
-		// 					// 		<div xmlns="http://www.w3.org/1999/xhtml">${node}</div>
-		// 					// 		</foreignObject>
-		// 					// 		</svg>`;
-		// 					// 		const svgBlob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
-		// 					// 		const svgObjectUrl = URL.createObjectURL(svgBlob);
-		// 					// const tempImg = new Image();
-		// 					// tempImg.addEventListener('load', function () {
-		// 					// console.log('onElementDragStart in onload');
-		// 					context.lineWidth = 4;
-		// 					context.moveTo(0, 0);
-		// 					context.lineTo(50, 50);
-		// 					context.moveTo(0, 50);
-		// 					context.lineTo(50, 0);
-		// 					context.stroke();
-		// 					// context.drawImage(cloneImg, 0, 0);
-		// 					// URL.revokeObjectURL(svgObjectUrl);
-		// 					// });
-		// 					// tempImg.src = svgObjectUrl;
-		// 				}
-		// 			};
-		// 			cloneImg.src = dataUrl;
-		// 		})
-		// 		.catch((error) => {
-		// 			console.error('oops, something went wrong!', error);
-		// 		});
 	});
+
+	// TODO: refactor to be a util function (including the function in the divider)
+	// check if element is currently hovered over row
+	function isElementHovered(draggedEl: ITimelineDraggedElement | null) {
+		if (!draggedEl) return;
+
+		// current mouse position on the y axis
+		const curYPos = draggedEl.top + draggedEl.clickedY;
+		elementHoveredOverRow =
+			curYPos >= clickInfo.offsetTop && curYPos <= clickInfo.offsetTop + tracksElBoundRect.height;
+		console.log('isElementHovered -> elementHoveredOverRow:', elementHoveredOverRow);
+		// if element is hovered over row show drop zone element
+		if (elementHoveredOverRow) {
+			// const mousePosition = getRelativeMousePosition(e, tracksElBoundRect);
+			// dropZonePositionLeft = mousePosition.x + cloneOffset[0] - 20;
+			dropZonePositionLeft = draggedEl.left - 20;
+			console.log('isElementHovered -> in if dropZoneLeft:', elementHoveredOverRow);
+		}
+	}
 
 	// function dragElement(e: DragEvent) {
 	// 	// e.preventDefault();
@@ -185,8 +136,8 @@
 
 	// get info about relative element and mouse position of clicked element
 	function getClickInfo(e: MouseEvent) {
-		const boundRect = elementRef.getBoundingClientRect();
 		const tracksEl = document.getElementsByClassName('timeline-tracks')[0];
+		const boundRect = elementRef.getBoundingClientRect();
 		tracksElBoundRect = tracksEl.getBoundingClientRect();
 
 		const mousePos = getRelativeMousePosition(e, tracksElBoundRect);
@@ -284,7 +235,7 @@
 
 			const mousePosition = getRelativeMousePosition(e, tracksElBoundRect);
 			clonePositionLeft = mousePosition.x + cloneOffset[0] + 'px';
-			dropZonePositionLeft = mousePosition.x + cloneOffset[0] - 20;
+			// dropZonePositionLeft = mousePosition.x + cloneOffset[0] - 20;
 			clonePositionTop = mousePosition.y + cloneOffset[1] + 'px';
 			// TODO: set store variable for currently dragged element as a replacement of the dataTransfer when dragging
 			// Properties in the store variable -> left and top distance inside parent, width and height, elementId
@@ -449,7 +400,7 @@
 ></div>
 <div
 	class="clone-drop-zone h-[50px] mr-5 rounded outline-dashed z-10"
-	style="width: {elementWidth}px; display: {dragging
+	style="width: {elementWidth}px; display: {elementHoveredOverRow
 		? 'unset'
 		: 'none'}; background-color: green; transform: translate3d({dropZonePositionLeft}px, 0, 0);"
 ></div>
