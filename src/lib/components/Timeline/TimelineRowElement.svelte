@@ -24,8 +24,8 @@
 
 	$: elementWidth = (element.duration / CONSTS.secondsMultiplier) * $currentTimelineScale;
 
-	// call function everytime the store variable changes
-	$: isElementHovered($draggedElement);
+	// // call function everytime the store variable changes
+	// $: isElementHovered($draggedElement);
 	console.log(
 		'TimelineRowElement -> element:',
 		element,
@@ -57,8 +57,8 @@
 	let clonePositionLeft = '0px';
 	let clonePositionTop = '0px';
 	let cloneOffset = [0, 0];
-	let dropZonePositionLeft = 0;
-	let elementHoveredOverRow = false;
+	// let dropZonePositionLeft = 0;
+	// let elementHoveredOverRow = false;
 
 	onMount(() => {
 		window.addEventListener('dragover', (e: DragEvent) => {
@@ -70,24 +70,23 @@
 		});
 	});
 
-	// TODO: refactor to be a util function (including the function in the divider)
-	// check if element is currently hovered over row
-	function isElementHovered(draggedEl: ITimelineDraggedElement | null) {
-		if (!draggedEl) return;
+	// // TODO: refactor to be a util function (including the function in the divider)
+	// // check if element is currently hovered over row
+	// function isElementHovered(draggedEl: ITimelineDraggedElement | null) {
+	// 	if (!draggedEl) return;
 
-		// current mouse position on the y axis
-		const curYPos = draggedEl.top + draggedEl.clickedY;
-		elementHoveredOverRow =
-			curYPos >= clickInfo.offsetTop && curYPos <= clickInfo.offsetTop + tracksElBoundRect.height;
-		console.log('isElementHovered -> elementHoveredOverRow:', elementHoveredOverRow);
-		// if element is hovered over row show drop zone element
-		if (elementHoveredOverRow) {
-			// const mousePosition = getRelativeMousePosition(e, tracksElBoundRect);
-			// dropZonePositionLeft = mousePosition.x + cloneOffset[0] - 20;
-			dropZonePositionLeft = draggedEl.left - 20;
-			console.log('isElementHovered -> in if dropZoneLeft:', elementHoveredOverRow);
-		}
-	}
+	// 	// current mouse position on the y axis
+	// 	const curYPos = draggedEl.top + draggedEl.clickedY;
+	// 	elementHoveredOverRow =
+	// 		curYPos >= draggedEl.top && curYPos <= draggedEl.top + tracksElBoundRect.height;
+	// 	console.log('isElementHovered -> elementHoveredOverRow:', elementHoveredOverRow);
+	// 	// if element is hovered over row show drop zone element
+	// 	if (elementHoveredOverRow) {
+	// 		// limit the drop zone offset to 0 so it doesn't go too far to the left
+	// 		dropZonePositionLeft = Math.max(draggedEl.left - 20, 0);
+	// 		console.log('isElementHovered -> in if dropZoneLeft:', dropZonePositionLeft);
+	// 	}
+	// }
 
 	// function dragElement(e: DragEvent) {
 	// 	// e.preventDefault();
@@ -229,7 +228,7 @@
 
 	function onElementDrag(e: MouseEvent) {
 		if (e.buttons === 1 && !$isThumbBeingDragged) {
-			// console.log('onElementDrag in if -> e:', e);
+			console.log('onElementDrag in if -> e:', e, 'tracksElBoundRect:', tracksElBoundRect);
 			dragging = true;
 			isTimelineElementBeingDragged.set(true);
 
@@ -398,12 +397,12 @@
 	on:mouseup={onElementDrop}
 	bind:this={cloneRef}
 ></div>
-<div
+<!-- <div
 	class="clone-drop-zone h-[50px] mr-5 rounded outline-dashed z-10"
-	style="width: {elementWidth}px; display: {elementHoveredOverRow
+	style="width: {elementWidth}px; display: {elementHoveredOverRow && $isTimelineElementBeingDragged
 		? 'unset'
 		: 'none'}; background-color: green; transform: translate3d({dropZonePositionLeft}px, 0, 0);"
-></div>
+></div> -->
 <div
 	class="timeline-row-element h-[50px] mr-5 rounded hover:cursor-pointer"
 	style="width: {elementWidth}px; background-color: {isSelected
