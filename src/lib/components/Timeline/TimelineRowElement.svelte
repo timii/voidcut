@@ -70,24 +70,6 @@
 		});
 	});
 
-	// // TODO: refactor to be a util function (including the function in the divider)
-	// // check if element is currently hovered over row
-	// function isElementHovered(draggedEl: ITimelineDraggedElement | null) {
-	// 	if (!draggedEl) return;
-
-	// 	// current mouse position on the y axis
-	// 	const curYPos = draggedEl.top + draggedEl.clickedY;
-	// 	elementHoveredOverRow =
-	// 		curYPos >= draggedEl.top && curYPos <= draggedEl.top + tracksElBoundRect.height;
-	// 	console.log('isElementHovered -> elementHoveredOverRow:', elementHoveredOverRow);
-	// 	// if element is hovered over row show drop zone element
-	// 	if (elementHoveredOverRow) {
-	// 		// limit the drop zone offset to 0 so it doesn't go too far to the left
-	// 		dropZonePositionLeft = Math.max(draggedEl.left - 20, 0);
-	// 		console.log('isElementHovered -> in if dropZoneLeft:', dropZonePositionLeft);
-	// 	}
-	// }
-
 	// function dragElement(e: DragEvent) {
 	// 	// e.preventDefault();
 	// 	// e.stopPropagation();
@@ -179,15 +161,27 @@
 
 	function onElementDrop(e: MouseEvent) {
 		e.preventDefault();
+
+		dragging = false;
+		isTimelineElementBeingDragged.set(false);
+
+		const draggedEl = $draggedElement;
+		if (!draggedEl) return;
+
 		console.log(
 			'drop element -> e:',
 			e,
 			'get(isTimelineElementBeingDragged)',
-			$isTimelineElementBeingDragged
+			$isTimelineElementBeingDragged,
+			'draggedElement:',
+			draggedEl,
+			'tracksElBoundRect:',
+			tracksElBoundRect
 		);
 
-		dragging = false;
-		isTimelineElementBeingDragged.set(false);
+		// create and dispatch custom event
+		const event = new CustomEvent(CONSTS.customEventNameDropTimelineElement);
+		window.dispatchEvent(event);
 
 		console.log(
 			'drop element after delay -> e:',
@@ -246,7 +240,9 @@
 					width: elementWidth,
 					height: 50,
 					clickedX: Math.abs(cloneOffset[0]),
-					clickedY: Math.abs(cloneOffset[1])
+					clickedY: Math.abs(cloneOffset[1]),
+					absoluteLeft: e.clientX,
+					absoluteTop: e.clientY
 				} as ITimelineDraggedElement;
 			});
 			console.log(

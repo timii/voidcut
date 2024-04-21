@@ -18,11 +18,13 @@ export interface ITimelineTrack {
 }
 
 export interface ITimelineDraggedElement {
-    left: number;  // amount of pixels from the left of the currently dragged element
-    top: number;  // amount of pixels from the top of the currently dragged element
-    width: number;  // width of the currently dragged element
-    height: number;  // height of the currently dragged element
-    elementId: string; // id of currently dragged element,
+    left: number;  // amount of pixels from the left inside the parent container
+    top: number;  // amount of pixels from the top inside the parent container
+    absoluteLeft: number;  // amount of pixels from the left inside the viewport
+    absoluteTop: number;  // amount of pixels from the top inside the viewport
+    width: number;
+    height: number;
+    elementId: string; // timline element id
     clickedX: number;  // where in the element the mouse clicked
     clickedY: number;  // where in the element the mouse clicked
 }

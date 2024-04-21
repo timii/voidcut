@@ -37,7 +37,7 @@
 		const events = ['mouseup', 'dragend'];
 		events.forEach((e) => {
 			window.addEventListener(e, () => {
-				// delay resetting the store values to workaround when mouse down event fires after mouse butto isn't held down anymore
+				// delay resetting the store values to workaround when mouse down event fires after mouse button isn't held down anymore
 				setTimeout(() => {
 					resetAllBeingDragged();
 					console.log(e + ' mouseup');

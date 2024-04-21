@@ -1,8 +1,9 @@
 <script lang="ts">
 	import type { ITimelineDraggedElement } from '$lib/interfaces/Timeline';
 	import { onMount } from 'svelte';
-	import { draggedElement } from '../../../stores/store';
+	import { draggedElement, isTimelineElementBeingDragged } from '../../../stores/store';
 	import colors from 'tailwindcss/colors';
+	import { CONSTS } from '$lib/utils/consts';
 
 	let dividerRef: HTMLElement;
 
@@ -23,6 +24,16 @@
 			left: dividerElBoundRect.left - tracksElBoundRect.left,
 			top: dividerElBoundRect.top - tracksElBoundRect.top
 		};
+
+		// listen to event when a timeline element is dropped
+		window.addEventListener(CONSTS.customEventNameDropTimelineElement, () => {
+			console.log(
+				`${CONSTS.customEventNameDropTimelineElement} event triggered in divider -> isElementHovered:`,
+				elementOverDivider
+			);
+
+			// TODO: add/move timeline element to new index in store variable
+		});
 	});
 
 	// check if an element is hovered over the divider
@@ -50,6 +61,8 @@
 
 <div
 	class="track-divider w-ful h-[4px] rounded-sm"
-	style="background-color: {elementOverDivider ? 'red' : colors.slate[500]}"
+	style="background-color: {elementOverDivider && $isTimelineElementBeingDragged
+		? 'red'
+		: colors.slate[500]}"
 	bind:this={dividerRef}
 ></div>

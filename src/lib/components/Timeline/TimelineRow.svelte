@@ -27,6 +27,16 @@
 	onMount(() => {
 		const tracksEl = document.getElementsByClassName('timeline-tracks')[0];
 		tracksElBoundRect = tracksEl.getBoundingClientRect();
+
+		// listen to event when a timeline element is dropped
+		window.addEventListener(CONSTS.customEventNameDropTimelineElement, () => {
+			console.log(
+				`${CONSTS.customEventNameDropTimelineElement} event triggered in divider -> elementHoveredOverRow:`,
+				elementHoveredOverRow
+			);
+
+			// TODO : add/move timeline element to correct position in the row and move other elements if necessary
+		});
 	});
 
 	// TODO: refactor to be a util function (including the function in the divider)
@@ -74,6 +84,7 @@
 			? 'unset'
 			: 'none'}; background-color: green; transform: translate3d({dropZonePositionLeft}px, 0, 0);"
 	></div> -->
+	<!-- element that is shown when an timeline element is being dragged -->
 	<div
 		class="clone-drop-zone h-[50px] mr-5 rounded outline-dashed z-10 absolute"
 		style="width: {elementWidth}px; display: {elementHoveredOverRow &&
