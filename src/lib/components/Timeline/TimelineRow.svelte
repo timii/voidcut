@@ -4,7 +4,8 @@
 	import {
 		currentTimelineScale,
 		draggedElement,
-		isTimelineElementBeingDragged
+		isTimelineElementBeingDragged,
+		timelineTracks
 	} from '../../../stores/store';
 	import TimelineRowElement from './TimelineRowElement.svelte';
 	import { CONSTS } from '$lib/utils/consts';
@@ -35,7 +36,41 @@
 				elementHoveredOverRow
 			);
 
+			if (!elementHoveredOverRow) return;
+
+			if (!$draggedElement) return;
+
+			// TODO: remove track offset to the left and make it into a const to use everywhere
+			// get position of dropped element along the x axis
+			const xWithoutOffset = $draggedElement.left - 20;
+			const x = xWithoutOffset < 20 ? 0 : xWithoutOffset;
+			const elementId = $draggedElement.elementId;
+			console.log('drop-timeline-element -> dropped element on the x axis:', x);
+
 			// TODO : add/move timeline element to correct position in the row and move other elements if necessary
+			timelineTracks.update((tracks) => {
+				// find dragged element using the element id
+				let foundEl = undefined;
+				let i = 0;
+				while (!foundEl && i < tracks.length) {
+					foundEl = tracks[i].elements.find((el) => el.elementId === elementId);
+					i++;
+				}
+
+				if (foundEl) {
+					// convert the x value from px into ms
+					const xInMs = Math.round((x / $currentTimelineScale) * CONSTS.secondsMultiplier) || 0;
+					// set the new playback start time (in ms)
+					foundEl.playbackStartTime = xInMs;
+					console.log('drop-timeline-element -> foundEl:', foundEl, 'x in ms:', xInMs);
+					return tracks;
+				} else {
+					return tracks;
+				}
+				// const foundEl = tracks.find((track) =>
+				// 	track.elements.find((el) => el.elementId === elementId)
+				// );
+			});
 		});
 	});
 
@@ -57,6 +92,7 @@
 		console.log('isElementHovered -> elementHoveredOverRow:', elementHoveredOverRow);
 		// if element is hovered over row show drop zone element
 		if (elementHoveredOverRow) {
+			// TODO: move the hardcoded value into a const
 			// limit the drop zone offset to the left so it doesnt' further left than the track
 			dropZonePositionLeft = Math.max(draggedEl.left, 20);
 
