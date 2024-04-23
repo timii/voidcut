@@ -263,7 +263,7 @@
 					<!-- TODO: add a dropzone between each track, before first and after last -->
 					<!-- the dropzone is highlighted automatically if something is hovered over it -->
 					{#if i === 0}
-						<TimelineRowDivider></TimelineRowDivider>
+						<TimelineRowDivider index={i}></TimelineRowDivider>
 						<!-- <div
 							class="track-divider w-full bg-slate-500 h-[4px] mt-1 rounded-sm"
 							on:drop={(e) => {
@@ -275,9 +275,12 @@
 							on:dragenter={onHoverOverDivider}
 							on:dragover={onHoverOverDivider}
 							></div> -->
+						<TimelineRow {track}></TimelineRow>
+						<TimelineRowDivider index={i + 1}></TimelineRowDivider>
+					{:else}
+						<TimelineRow {track}></TimelineRow>
+						<TimelineRowDivider index={i + 1}></TimelineRowDivider>
 					{/if}
-					<TimelineRow {track}></TimelineRow>
-					<TimelineRowDivider></TimelineRowDivider>
 					<!-- <div
 						class="track-divider w-full bg-slate-500 h-[4px] rounded-sm"
 						on:drop={(e) => {
