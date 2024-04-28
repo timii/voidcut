@@ -50,21 +50,25 @@
 				let elementIndexInTrack = -1;
 				let trackIndex = 0;
 				while (elementIndexInTrack === -1 && trackIndex < tracks.length) {
-					trackIndex++;
 					console.log(
 						'element dropped on divider -> in while tracks:',
 						JSON.parse(JSON.stringify(tracks)),
 						'trackIndex:',
-						trackIndex - 1
+						trackIndex
 					);
-					elementIndexInTrack = tracks[trackIndex - 1].elements.findIndex(
+					elementIndexInTrack = tracks[trackIndex].elements.findIndex(
 						(el) => el.elementId === elementId
 					);
+					if (elementIndexInTrack === -1) {
+						trackIndex++;
+					}
 				}
 
 				if (elementIndexInTrack === -1) {
 					return tracks;
 				}
+
+				const dividerAdjacentToTrack = index === trackIndex || index === trackIndex + 1;
 
 				console.log(
 					'element dropped on divider -> track index:',
@@ -73,6 +77,8 @@
 					elementIndexInTrack,
 					'divider index:',
 					index,
+					'divider adjacent to track:',
+					index === trackIndex || index === trackIndex + 1,
 					'tracks before:',
 					JSON.parse(JSON.stringify(tracks))
 				);
@@ -87,8 +93,9 @@
 					JSON.parse(JSON.stringify(tracks))
 				);
 
-				// add new track at divider index
 				// TODO: check for array bounds
+
+				// add new track
 				tracks.splice(index, 0, track);
 				console.log(
 					'element dropped on divider -> tracks after new track has been added:',
