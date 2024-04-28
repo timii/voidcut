@@ -9,8 +9,10 @@
 	} from '../../../stores/store';
 	import TimelineRowElement from './TimelineRowElement.svelte';
 	import { CONSTS } from '$lib/utils/consts';
+	import { cleanUpEmptyTracks } from '$lib/utils/utils';
 
 	export let track: ITimelineTrack;
+	export let index: number;
 	console.log('TimelineRow -> track:', track);
 
 	// call function everytime the store variable changes
@@ -44,32 +46,100 @@
 			// get position of dropped element along the x axis
 			const xWithoutOffset = $draggedElement.left - 20;
 			const x = xWithoutOffset < 20 ? 0 : xWithoutOffset;
+
 			const elementId = $draggedElement.elementId;
 			console.log('drop-timeline-element -> dropped element on the x axis:', x);
 
-			// TODO : add/move timeline element to correct position in the row and move other elements if necessary
+			// move timeline element to correct position in the row
+			// TODO: move other elements if necessary
 			timelineTracks.update((tracks) => {
 				// find dragged element using the element id
-				let foundEl = undefined;
-				let i = 0;
-				while (!foundEl && i < tracks.length) {
-					foundEl = tracks[i].elements.find((el) => el.elementId === elementId);
-					i++;
+				// let foundEl = undefined;
+				// let i = 0;
+				// while (!foundEl && i < tracks.length) {
+				// 	foundEl = tracks[i].elements.find((el) => el.elementId === elementId);
+				// 	i++;
+				// }
+
+				// find dragged element index using the element id
+				let elementIndexInTrack = -1;
+				let trackIndex = 0;
+				while (elementIndexInTrack === -1 && trackIndex < tracks.length) {
+					console.log(
+						'element dropped on track -> in while tracks:',
+						JSON.parse(JSON.stringify(tracks)),
+						'trackIndex:',
+						trackIndex
+					);
+					elementIndexInTrack = tracks[trackIndex].elements.findIndex(
+						(el) => el.elementId === elementId
+					);
+					if (elementIndexInTrack === -1) {
+						trackIndex++;
+					}
 				}
 
-				if (foundEl) {
-					// convert the x value from px into ms
-					const xInMs = Math.round((x / $currentTimelineScale) * CONSTS.secondsMultiplier) || 0;
-					// set the new playback start time (in ms)
-					foundEl.playbackStartTime = xInMs;
-					console.log('drop-timeline-element -> foundEl:', foundEl, 'x in ms:', xInMs);
-					return tracks;
-				} else {
+				console.log(
+					'element dropped on track -> after while elementIndexOnTrack:',
+					elementIndexInTrack,
+					'old trackIndex:',
+					trackIndex,
+					'new track index:',
+					index
+				);
+
+				if (elementIndexInTrack === -1) {
 					return tracks;
 				}
-				// const foundEl = tracks.find((track) =>
-				// 	track.elements.find((el) => el.elementId === elementId)
-				// );
+
+				const foundEl = tracks[trackIndex].elements[elementIndexInTrack];
+
+				console.log(
+					'element dropped on track -> after while foundEl:',
+					foundEl,
+					'trackIndex:',
+					trackIndex
+				);
+
+				// TODO: check track index of dragged element and if its the same as the current row just change the playback start time, else we also need to remove it from the current row and move it into the new one with the updated playback start time
+
+				// convert the x value from px into ms
+				const xInMs = Math.round((x / $currentTimelineScale) * CONSTS.secondsMultiplier) || 0;
+
+				// set the new playback start time (in ms)
+				foundEl.playbackStartTime = xInMs;
+				console.log(
+					'element dropped on track after new playbacktime set -> foundEl:',
+					foundEl,
+					'x in ms:',
+					xInMs
+				);
+
+				// if the element is moved to a different track
+				if (index !== trackIndex) {
+					// remove dragged element from old track
+					tracks[trackIndex].elements.splice(elementIndexInTrack, 1);
+					console.log(
+						'element dropped on track -> tracks after element removed from track:',
+						JSON.parse(JSON.stringify(tracks))
+					);
+
+					// add element into new track
+					tracks[index].elements.push(foundEl);
+					console.log(
+						'element dropped on track -> tracks after element added to new track:',
+						JSON.parse(JSON.stringify(tracks))
+					);
+
+					// clean up old track if its empty now
+					cleanUpEmptyTracks(tracks);
+					console.log(
+						'element dropped on divider -> tracks after empty track is removed:',
+						JSON.parse(JSON.stringify(tracks))
+					);
+				}
+
+				return tracks;
 			});
 		});
 	});
