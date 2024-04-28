@@ -73,10 +73,11 @@ export function handleTimelineMediaDrop(media: IMedia, index?: number) {
     // } else {
 
     // create a new track and add the new element into it
-    const timelineTrack: ITimelineTrack = {
-        trackId: generateId(),
-        elements: [timelineEl]
-    }
+    // const timelineTrack: ITimelineTrack = {
+    //     trackId: generateId(),
+    //     elements: [timelineEl]
+    // }
+    const timelineTrack = createTrackWithElement(timelineEl)
 
     console.log("handleTimelineMediaDrop -> index:", index)
     if (index === undefined) {
@@ -85,6 +86,7 @@ export function handleTimelineMediaDrop(media: IMedia, index?: number) {
     } else {
         // add new track object at given index
         timelineTracks.update(arr => {
+            // TODO: remove test
             const test = [...arr]
             console.log("handleTimelineMediaDrop -> add at given index:", test.toSpliced(index, 0, timelineTrack))
             return arr.toSpliced(index, 0, timelineTrack)
@@ -94,6 +96,13 @@ export function handleTimelineMediaDrop(media: IMedia, index?: number) {
 
     // console.log('handleTimelineMediaDrop -> tracks', timelineTrack);
     // timelineTracks.subscribe(value => console.log("handleTimelineMediaDrop -> timelineTracks:", value))
+}
+
+export function createTrackWithElement(element: ITimelineElement) {
+    return {
+        trackId: generateId(),
+        elements: [element]
+    } as ITimelineTrack
 }
 
 // get metadata from a given file 
@@ -223,6 +232,7 @@ export function resumePlayback() {
     // playbackIntervalId.set(intervalId)
 }
 
+// TODO: make both functions more generic instead of always using the thumb position and instead use a number that can be passe via parameters
 // convert the current thumb position (in px) to the playback time (in ms) using the current timeline scale
 export function convertPxToPlaybackScale() {
     return Math.round((get(currentThumbPosition) / get(currentTimelineScale)) * CONSTS.secondsMultiplier) || 0
@@ -301,4 +311,16 @@ export function getRelativeMousePosition(e: MouseEvent, el: DOMRect) {
         x: e.clientX - el.left,
         y: e.clientY - el.top
     };
+}
+
+// go through a given array of tracks and remove tracks that don't have any elements
+export function cleanUpEmptyTracks(tracks: ITimelineTrack[]) {
+    // check if there is an empty track in the array. If yes get the index
+    const index = tracks.findIndex(track => !track.elements || track.elements.length === 0)
+
+    if (index === -1) {
+        return tracks
+    }
+
+    tracks.splice(index, 1)
 }
