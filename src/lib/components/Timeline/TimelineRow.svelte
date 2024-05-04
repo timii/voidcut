@@ -192,7 +192,8 @@
 		e.preventDefault();
 		e.stopPropagation();
 		hoverElement = true;
-		testLeft = e.clientX;
+		// subtract hald the media pool element width so drop zone starts at the left of the element
+		testLeft = e.clientX - CONSTS.mediaPoolElementWidth;
 
 		if (dropZoneWidth) {
 			return;
@@ -241,6 +242,8 @@
 			? 'unset'
 			: 'none'}; background-color: green; transform: translate3d({dropZonePositionLeft}px, 0, 0);"
 	></div> -->
+
+	<!-- element that is shown when a media pool element is being dragged -->
 	<div
 		class="clone-drop-zone h-[50px] mr-5 rounded outline-dashed z-10 absolute"
 		style="width: {dropZoneWidth}px; display: {hoverElement
