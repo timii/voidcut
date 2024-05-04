@@ -15,11 +15,11 @@
 	}
 </script>
 
-<div
-	class="flex flex-col items-center element-container"
-	draggable="true"
-	on:dragstart={onDragElement}
->
-	<div class="w-32 h-24 bg-red-500 rounded media"></div>
+<div class="flex flex-col items-center element-container">
+	<div
+		class="w-{CONSTS.mediaPoolElementWidth} h-24 bg-red-500 rounded media"
+		draggable="true"
+		on:dragstart={onDragElement}
+	></div>
 	<span>{file.name}</span>
 </div>
