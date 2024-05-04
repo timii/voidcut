@@ -16,10 +16,10 @@
 </script>
 
 <div
-	class="element-container flex flex-col items-center"
+	class="flex flex-col items-center element-container"
 	draggable="true"
 	on:dragstart={onDragElement}
 >
-	<div class="media h-24 w-32 rounded bg-red-500"></div>
+	<div class="w-32 h-24 bg-red-500 rounded media"></div>
 	<span>{file.name}</span>
 </div>

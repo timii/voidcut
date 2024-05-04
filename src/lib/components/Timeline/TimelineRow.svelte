@@ -9,7 +9,9 @@
 	} from '../../../stores/store';
 	import TimelineRowElement from './TimelineRowElement.svelte';
 	import { CONSTS } from '$lib/utils/consts';
-	import { cleanUpEmptyTracks } from '$lib/utils/utils';
+	import { cleanUpEmptyTracks, getTailwindVariables } from '$lib/utils/utils';
+	import colors from 'tailwindcss/colors';
+	import type { IMedia } from '$lib/interfaces/Media';
 
 	export let track: ITimelineTrack;
 	export let index: number;
@@ -26,6 +28,9 @@
 	let elementHoveredOverRow = false;
 	let tracksElBoundRect: DOMRect;
 	let elementWidth = 0;
+	let hoverElement = false;
+	let testLeft = 0;
+	let dropZoneWidth = 0;
 
 	onMount(() => {
 		const tracksEl = document.getElementsByClassName('timeline-tracks')[0];
@@ -180,9 +185,55 @@
 			elementWidth = 0;
 		}
 	}
+
+	function onHoverElement(e: DragEvent) {
+		console.log('hover media element over row -> e:', e);
+		// prevent default behavior
+		e.preventDefault();
+		e.stopPropagation();
+		hoverElement = true;
+		testLeft = e.clientX;
+
+		if (dropZoneWidth) {
+			return;
+		}
+
+		// get data from dropped element
+		let mediaDataString = e.dataTransfer?.getData(CONSTS.mediaPoolTransferKey);
+
+		if (!mediaDataString) {
+			return;
+		}
+
+		// parse it back to be a object again
+		const mediaData: IMedia = JSON.parse(mediaDataString);
+		const duration = mediaData.duration;
+		if (!duration) {
+			return;
+		}
+		dropZoneWidth = Math.round((duration / CONSTS.secondsMultiplier) * $currentTimelineScale);
+		console.log('hover media element over row -> e:', e, 'mediaData:', mediaData);
+	}
+
+	function onDropElement(e: DragEvent) {
+		// prevent default behavior
+		e.preventDefault();
+		e.stopPropagation();
+		hoverElement = false;
+
+		// handleAddElementToTimeline(e);
+	}
 </script>
 
-<div class="timeline-row bg-ruler-color h-[50px] w-full mr-5 rounded flex" bind:this={rowRef}>
+<div
+	class="timeline-row bg-ruler-color h-[50px] w-full mr-5 rounded flex"
+	style="background-color: {hoverElement ? 'red' : '#42424e'}"
+	on:drop={onDropElement}
+	on:dragleave={onDropElement}
+	on:dragenter={onHoverElement}
+	on:dragover={onHoverElement}
+	bind:this={rowRef}
+>
 	<!-- <div
 		class="clone-drop-zone h-[50px] mr-5 rounded outline-dashed z-10"
 		style="width: {elementWidth}px; display: {elementHoveredOverRow &&
@@ -190,6 +241,13 @@
 			? 'unset'
 			: 'none'}; background-color: green; transform: translate3d({dropZonePositionLeft}px, 0, 0);"
 	></div> -->
+	<div
+		class="clone-drop-zone h-[50px] mr-5 rounded outline-dashed z-10 absolute"
+		style="width: {dropZoneWidth}px; display: {hoverElement
+			? 'unset'
+			: 'none'}; background-color: green; left: {testLeft}px;"
+	></div>
+
 	<!-- element that is shown when an timeline element is being dragged -->
 	<div
 		class="clone-drop-zone h-[50px] mr-5 rounded outline-dashed z-10 absolute"

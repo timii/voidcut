@@ -27,4 +27,5 @@ export interface ITimelineDraggedElement {
     elementId: string; // timline element id
     clickedX: number;  // where in the element the mouse clicked
     clickedY: number;  // where in the element the mouse clicked
+    data: ITimelineElement  // all the information about the dragged element
 }

@@ -20,6 +20,7 @@
 	let dividerElBoundRect: DOMRect;
 	let offsetInParent: { left: number; top: number };
 	let elementOverDivider = false;
+	let hoverElement = false;
 
 	onMount(() => {
 		const tracksEl = document.getElementsByClassName('timeline-tracks')[0];
@@ -109,29 +110,7 @@
 					JSON.parse(JSON.stringify(tracks))
 				);
 
-				// remove element from previous track
-				// TODO: handle case with multiple elements on one track
-				// if only one element on track -> remove track
-				// else move only element and keep tracks
-				// tracks = tracks.splice(i, 1);
-
-				// console.log(
-				// 	'element dropped on divider -> tracks after remove:',
-				// 	JSON.parse(JSON.stringify(tracks))
-				// );
-
-				// // TODO: add new track into tracks array at new index
-				// tracks.splice(index, 0, track);
-
-				// console.log(
-				// 	'element dropped on divider -> tracks at the end:',
-				// 	JSON.parse(JSON.stringify(tracks))
-				// );
-
 				return tracks;
-
-				// remove element from current track and create new track with the dropped element
-				// TODO: add/move timeline element to new index in store variable
 			});
 		});
 	});
@@ -157,12 +136,32 @@
 		// 	elementOverDivider
 		// );
 	}
+
+	function onHoverElement(e: DragEvent) {
+		// prevent default behavior
+		e.preventDefault();
+		e.stopPropagation();
+		hoverElement = true;
+	}
+
+	function onDropElement(e: DragEvent) {
+		// prevent default behavior
+		e.preventDefault();
+		e.stopPropagation();
+		hoverElement = false;
+
+		// handleAddElementToTimeline(e);
+	}
 </script>
 
 <div
 	class="track-divider w-ful h-[4px] rounded-sm"
-	style="background-color: {elementOverDivider && $isTimelineElementBeingDragged
+	style="background-color: {(elementOverDivider && $isTimelineElementBeingDragged) || hoverElement
 		? 'red'
 		: colors.slate[500]}"
+	on:drop={onDropElement}
+	on:dragleave={onDropElement}
+	on:dragenter={onHoverElement}
+	on:dragover={onHoverElement}
 	bind:this={dividerRef}
 ></div>
