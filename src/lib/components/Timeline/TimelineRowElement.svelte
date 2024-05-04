@@ -242,7 +242,8 @@
 					clickedX: Math.abs(cloneOffset[0]),
 					clickedY: Math.abs(cloneOffset[1]),
 					absoluteLeft: e.clientX,
-					absoluteTop: e.clientY
+					absoluteTop: e.clientY,
+					data: element
 				} as ITimelineDraggedElement;
 			});
 			console.log(
@@ -254,6 +255,8 @@
 				mousePosition.x,
 				'/',
 				mousePosition.y,
+				'cloneOffset:',
+				cloneOffset,
 				'clickInfo:',
 				clickInfo,
 				'draggedElement',
@@ -400,7 +403,7 @@
 		: 'none'}; background-color: green; transform: translate3d({dropZonePositionLeft}px, 0, 0);"
 ></div> -->
 <div
-	class="timeline-row-element h-[50px] mr-5 rounded hover:cursor-pointer"
+	class="timeline-row-element h-[50px] mr-5 rounded hover:cursor-pointer absolute"
 	style="width: {elementWidth}px; background-color: {isSelected
 		? tailwindColors.orange[500]
 		: tailwindColors.red[500]}; transform: translate3d({leftOffset}px, 0, 0); display: {dragging
@@ -412,6 +415,7 @@
 	on:mousemove={onElementDrag}
 	bind:this={elementRef}
 ></div>
+
 <!-- <div
 	draggable="true"
 	class="timeline-row-element h-[50px] mr-5 rounded hover:cursor-pointer"

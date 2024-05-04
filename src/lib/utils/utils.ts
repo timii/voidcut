@@ -48,7 +48,7 @@ export async function handleFileUpload(files: FileList) {
 }
 
 // handle given media when it's drag and dropped into the timeline
-export function handleTimelineMediaDrop(media: IMedia, index?: number) {
+export function handleTimelineMediaDrop(media: IMedia, rowIndex?: number, elIndex?: number, startTime?: number) {
     // console.log("handleTimelineMediaDrop -> media:", media)
 
     // convert media type to timeline element type
@@ -57,8 +57,8 @@ export function handleTimelineMediaDrop(media: IMedia, index?: number) {
         mediaId: media.mediaId,
         type: media.type,
         elementId: generateId(),
-        // playbackStartTime: 0,
-        playbackStartTime: 4000, // TODO: remove only for testing
+        playbackStartTime: startTime ? startTime : 0,
+        // playbackStartTime: 4000, // TODO: remove only for testing
         trimFromStart: 0,
         trimFromEnd: 0,
         videoOptions: {}
@@ -79,17 +79,22 @@ export function handleTimelineMediaDrop(media: IMedia, index?: number) {
     // }
     const timelineTrack = createTrackWithElement(timelineEl)
 
-    console.log("handleTimelineMediaDrop -> index:", index)
-    if (index === undefined) {
+    console.log("handleTimelineMediaDrop -> index:", elIndex)
+    // TODO: refactor this whole if else
+    if (elIndex === undefined) {
         // append new track object into timeline tracks
         timelineTracks.update(arr => [...arr, timelineTrack])
     } else {
-        // add new track object at given index
+        // add new timeline element into given row index
         timelineTracks.update(arr => {
             // TODO: remove test
-            const test = [...arr]
-            console.log("handleTimelineMediaDrop -> add at given index:", test.toSpliced(index, 0, timelineTrack))
-            return arr.toSpliced(index, 0, timelineTrack)
+            // const test = [...arr]
+            // console.log("handleTimelineMediaDrop -> add at given index:", test.toSpliced(elIndex, 0, timelineTrack))
+            const trackIndex = rowIndex !== undefined && rowIndex >= 0 ? rowIndex : 0
+            arr[trackIndex].elements.splice(elIndex, 0, timelineEl)
+            return arr
+            // return arr.toSpliced(elIndex, 0, timelineTrack)
+
         })
     }
     // }

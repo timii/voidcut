@@ -5,11 +5,16 @@
 		currentTimelineScale,
 		draggedElement,
 		isTimelineElementBeingDragged,
+		thumbOffset,
 		timelineTracks
 	} from '../../../stores/store';
 	import TimelineRowElement from './TimelineRowElement.svelte';
 	import { CONSTS } from '$lib/utils/consts';
-	import { cleanUpEmptyTracks, getTailwindVariables } from '$lib/utils/utils';
+	import {
+		cleanUpEmptyTracks,
+		getTailwindVariables,
+		handleTimelineMediaDrop
+	} from '$lib/utils/utils';
 	import colors from 'tailwindcss/colors';
 	import type { IMedia } from '$lib/interfaces/Media';
 
@@ -29,7 +34,6 @@
 	let tracksElBoundRect: DOMRect;
 	let elementWidth = 0;
 	let hoverElement = false;
-	let testLeft = 0;
 	let dropZoneWidth = 0;
 
 	onMount(() => {
@@ -193,7 +197,7 @@
 		e.stopPropagation();
 		hoverElement = true;
 		// subtract hald the media pool element width so drop zone starts at the left of the element
-		testLeft = e.clientX - CONSTS.mediaPoolElementWidth;
+		dropZonePositionLeft = e.clientX - CONSTS.mediaPoolElementWidth;
 
 		if (dropZoneWidth) {
 			return;
@@ -213,7 +217,7 @@
 			return;
 		}
 		dropZoneWidth = Math.round((duration / CONSTS.secondsMultiplier) * $currentTimelineScale);
-		console.log('hover media element over row -> e:', e, 'mediaData:', mediaData);
+		// console.log('hover media element over row -> e:', e, 'mediaData:', mediaData);
 	}
 
 	function onDropElement(e: DragEvent) {
@@ -222,7 +226,38 @@
 		e.stopPropagation();
 		hoverElement = false;
 
-		// handleAddElementToTimeline(e);
+		// get data from dropped element
+		let mediaDataString = e.dataTransfer?.getData(CONSTS.mediaPoolTransferKey);
+
+		if (!mediaDataString) {
+			return;
+		}
+
+		// parse it back to be a object again
+		const mediaData: IMedia = JSON.parse(mediaDataString);
+		const duration = mediaData.duration;
+
+		if (!duration) {
+			return;
+		}
+
+		// only handle files when actually dropped
+		if (!mediaData || e.type === 'dragleave') {
+			return;
+		}
+
+		// timelineTracks.update((tracks) => {
+		// 	tracks[index].elements.push;
+
+		// 	return tracks;
+		// });
+		console.log('drop element -> left:', dropZonePositionLeft, dropZonePositionLeft - $thumbOffset);
+		const startTimeInPx = dropZonePositionLeft - $thumbOffset;
+		const startTimeInMs = (startTimeInPx / $currentTimelineScale) * 1000;
+		// TODO: make second index dynamic
+		handleTimelineMediaDrop(mediaData, index, 1, startTimeInMs);
+
+		// handleTimelineMediaDrop(mediaData, index);
 	}
 </script>
 
@@ -248,7 +283,7 @@
 		class="clone-drop-zone h-[50px] mr-5 rounded outline-dashed z-10 absolute"
 		style="width: {dropZoneWidth}px; display: {hoverElement
 			? 'unset'
-			: 'none'}; background-color: green; left: {testLeft}px;"
+			: 'none'}; background-color: green; left: {dropZonePositionLeft}px;"
 	></div>
 
 	<!-- element that is shown when an timeline element is being dragged -->

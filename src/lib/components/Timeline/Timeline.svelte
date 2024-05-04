@@ -182,7 +182,7 @@
 		handleAddElementToTimeline(e, index);
 	}
 
-	//
+	// TODO: add comment
 	function handleAddElementToTimeline(e: DragEvent, index?: number) {
 		// get data from dropped element
 		let mediaDataString = e.dataTransfer?.getData(CONSTS.mediaPoolTransferKey);
@@ -226,13 +226,13 @@
 	}
 </script>
 
-<div class="timeline-container flex flex-col h-full gap-2">
+<div class="flex flex-col h-full gap-2 timeline-container">
 	<!-- Timeline Controls -->
 	<TimelineControls></TimelineControls>
 
 	<!-- Timeline Scroll Container -->
 	<div
-		class="timeline-scroll-container h-full flex flex-col gap-1 w-full overflow-x-scroll overflow-y-scroll"
+		class="flex flex-col w-full h-full gap-1 overflow-x-scroll overflow-y-scroll timeline-scroll-container"
 		on:drop={onDropElement}
 		on:dragleave={onDropElement}
 		on:dragenter={onHoverElement}
@@ -248,7 +248,7 @@
 		<!-- if container doesn't overflow -> set width of element to be 100% in px -->
 		<!-- and pass the calcualted width to the ruler to use it in there on the container element -->
 		<div
-			class="timeline-content min-w-full h-auto relative"
+			class="relative h-auto min-w-full timeline-content"
 			style="height: {isOverflowingY ? 'auto' : '100%'};"
 		>
 			<!-- Timeline Ruler -->
@@ -258,7 +258,7 @@
 			<TimelineThumb></TimelineThumb>
 
 			<!-- Timeline Tracks -->
-			<div class="timeline-tracks flex flex-col mb-3 pl-5 relative">
+			<div class="relative flex flex-col pl-5 mb-3 timeline-tracks">
 				{#each $timelineTracks as track, i}
 					<!-- TODO: add a dropzone between each track, before first and after last -->
 					<!-- the dropzone is highlighted automatically if something is hovered over it -->
@@ -275,10 +275,10 @@
 							on:dragenter={onHoverOverDivider}
 							on:dragover={onHoverOverDivider}
 							></div> -->
-						<TimelineRow {track}></TimelineRow>
+						<TimelineRow {track} index={i}></TimelineRow>
 						<TimelineRowDivider index={i + 1}></TimelineRowDivider>
 					{:else}
-						<TimelineRow {track}></TimelineRow>
+						<TimelineRow {track} index={i}></TimelineRow>
 						<TimelineRowDivider index={i + 1}></TimelineRowDivider>
 					{/if}
 					<!-- <div
