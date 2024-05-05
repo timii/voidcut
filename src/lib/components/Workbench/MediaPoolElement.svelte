@@ -4,6 +4,8 @@
 
 	export let file: IMedia;
 
+	let elementRef: HTMLElement;
+
 	// attach necessary information to dataTransfer object
 	function onDragElement(e: DragEvent) {
 		// console.log('drag element -> e', e, 'media data:', file);
@@ -13,13 +15,20 @@
 		e.dataTransfer?.setData('text', 'placeholderText');
 		// console.log('drag element after setData -> e', e.dataTransfer);
 	}
+	function onDragged(e: DragEvent) {
+		const clientRect = elementRef.getBoundingClientRect();
+		console.log('onDragged -> e:', e, 'elementRef:', elementRef, 'clientRect:', clientRect);
+	}
 </script>
 
 <div class="flex flex-col items-center element-container">
 	<div
-		class="w-{CONSTS.mediaPoolElementWidth} h-24 bg-red-500 rounded media"
+		class="h-24 bg-red-500 rounded media"
+		style="width: {CONSTS.mediaPoolElementWidth}px;"
 		draggable="true"
 		on:dragstart={onDragElement}
+		on:drag={onDragged}
+		bind:this={elementRef}
 	></div>
 	<span>{file.name}</span>
 </div>
