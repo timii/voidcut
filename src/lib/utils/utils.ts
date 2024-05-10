@@ -329,3 +329,18 @@ export function cleanUpEmptyTracks(tracks: ITimelineTrack[]) {
 
     tracks.splice(index, 1)
 }
+
+// format a given time to a string in the format HH:MM:SS
+export function formatPlaybackTime(time: number) {
+    const milliseconds = Math.floor((time % 1000) / 10)
+    const seconds = Math.floor((time / 1000) % 60)
+    const minutes = Math.floor((time / (1000 * 60)) % 60)
+    const hours = Math.floor((time / (1000 * 60 * 60)) % 24);
+
+    const hoursString = `${(hours < 10) ? "0" + hours : hours}`;
+    const minutesString = (minutes < 10) ? "0" + minutes : minutes;
+    const secondsString = (seconds < 10) ? "0" + seconds : seconds;
+    const millisecondsString = `${(milliseconds < 10) ? "0" + milliseconds : milliseconds}`;
+
+    return hoursString + ":" + minutesString + ":" + secondsString + "." + millisecondsString;
+}
