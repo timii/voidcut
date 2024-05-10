@@ -45,7 +45,7 @@
 			console.log('in for each map -> currentElTime:', currentElTime);
 			if (currentElTime >= 0) {
 				// set currentTime of element to current playback time (in seconds)
-				htmlEl.currentTime = $currentPlaybackTime / CONSTS.secondsMultiplier;
+				htmlEl.currentTime = currentElTime / CONSTS.secondsMultiplier;
 				// play/pause the element depending the "previewPlaying" store value
 				playing ? htmlEl.play() : htmlEl.pause();
 			}
