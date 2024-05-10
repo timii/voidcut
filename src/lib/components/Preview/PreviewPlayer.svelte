@@ -109,7 +109,7 @@
 	}
 </script>
 
-<div class="preview-player bg-black h-full w-full relative">
+<div class="relative w-full h-full bg-black preview-player">
 	<!-- for each element in the timeline show a video/audio/image element -->
 	{#each timelineElements as element, i}
 		{#if element.type === MediaType.Video}
@@ -117,7 +117,7 @@
 				data-id={element.elementId}
 				preload="auto"
 				controls
-				class="h-full w-full absolute top-0 left-0"
+				class="absolute top-0 left-0 w-full h-full pointer-events-none"
 				bind:this={playerElementsMap[element.elementId].el}
 			>
 				<source src={element.src} type="video/mp4" />
