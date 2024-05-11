@@ -178,6 +178,13 @@
 
 		return flatArr.length > 0 ? flatArr : [];
 	}
+
+	// Check if given element should be displayed or not
+	function displayMediaElement(time: number, el: IPlayerElement) {
+		return time - el.playbackStartTime >= 0 && time - el.playbackStartTime <= el.duration
+			? 'unset'
+			: 'none';
+	}
 </script>
 
 <div class="relative w-full h-full bg-black preview-player">
@@ -189,6 +196,7 @@
 				preload="auto"
 				controls
 				class="absolute top-0 left-0 w-full h-full pointer-events-none"
+				style="display: {displayMediaElement($currentPlaybackTime, element)};"
 				bind:this={playerElementsMap[element.elementId].el}
 			>
 				<source src={element.src} type="video/mp4" />
