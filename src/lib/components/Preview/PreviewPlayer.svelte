@@ -17,8 +17,79 @@
 	let playerElementsMap: IPlayerElementsMap = {};
 	$: filterPlayerElementsMap(playerElementsMap);
 
-	// handle playing and pausing elements when the previewPlaying store value change
+	// handle playing and pausing elements when the previewPlaying store value changes
 	$: handlePlayingElements($previewPlaying);
+
+	// handle playing and pausing elements when the currentPlaybackTime store value changes
+	$: test($currentPlaybackTime);
+
+	function test(playbackTime: number) {
+		console.log(
+			'currentPlaybackTime change in player -> playbackTime:',
+			playbackTime,
+			'map:',
+			playerElementsMap
+		);
+
+		const playing = $previewPlaying;
+		if (!playing) {
+			return;
+		}
+
+		// for each update of the playback time go through the whole map and check if the element
+		// needs to be played or paused
+		Object.values(playerElementsMap).forEach((el) => {
+			// ignore image elements
+			if (el.properties.type === MediaType.Image) {
+				return;
+			}
+			console.log('in for each map -> el:', el);
+
+			// type the el property to get correct typing
+			const htmlEl = el.el as HTMLMediaElement;
+
+			const curPlaybackTime = $currentPlaybackTime;
+			// TODO: check if current element is within the playback time
+			const beforeElStart = curPlaybackTime < el.properties.playbackStartTime;
+			const afterElEnd =
+				curPlaybackTime >= el.properties.playbackStartTime + el.properties.duration;
+			const atElTime = !beforeElStart && !afterElEnd;
+			const isVideoPlaying = !htmlEl.paused;
+			const curElTime =
+				($currentPlaybackTime - el.properties.playbackStartTime) / CONSTS.secondsMultiplier;
+			const elTimeOutOfSync =
+				curElTime < htmlEl.currentTime - 0.2 || curElTime > htmlEl.currentTime + 0.2;
+
+			// if media element time and playback time are out of sync
+			if (elTimeOutOfSync) {
+				htmlEl.currentTime = curElTime;
+			}
+
+			console.log(
+				'currentPlaybackTime change in player -> elTimeOutOfSync:',
+				elTimeOutOfSync,
+				'atElTime:',
+				atElTime,
+				'isVideoPlaying:',
+				isVideoPlaying,
+				'curElTime:',
+				curElTime,
+				'htmlEl.currentTime:',
+				htmlEl.currentTime
+			);
+
+			if (!atElTime) {
+				if (isVideoPlaying) htmlEl.pause();
+				return;
+			}
+
+			if (!isVideoPlaying) {
+				htmlEl.play();
+			}
+
+			// playing ? htmlEl.play() : htmlEl.pause();
+		});
+	}
 
 	// TODO: not implemented
 	function handlePlayingElements(playing: boolean) {
