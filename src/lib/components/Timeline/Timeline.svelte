@@ -260,7 +260,6 @@
 			<!-- Timeline Tracks -->
 			<div class="relative flex flex-col pl-5 mb-3 timeline-tracks">
 				{#each $timelineTracks as track, i}
-					<!-- TODO: add a dropzone between each track, before first and after last -->
 					<!-- the dropzone is highlighted automatically if something is hovered over it -->
 					{#if i === 0}
 						<TimelineRowDivider index={i}></TimelineRowDivider>
