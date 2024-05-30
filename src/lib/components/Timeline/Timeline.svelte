@@ -248,7 +248,7 @@
 		<!-- if container doesn't overflow -> set width of element to be 100% in px -->
 		<!-- and pass the calcualted width to the ruler to use it in there on the container element -->
 		<div
-			class="relative h-auto min-w-full timeline-content"
+			class="relative h-auto min-w-full w-max timeline-content"
 			style="height: {isOverflowingY ? 'auto' : '100%'};"
 		>
 			<!-- Timeline Ruler -->
