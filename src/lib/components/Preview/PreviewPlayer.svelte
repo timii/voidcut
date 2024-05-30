@@ -193,6 +193,7 @@
 		{#if element.type === MediaType.Video}
 			<video
 				data-id={element.elementId}
+				data-duration={element.duration}
 				preload="auto"
 				controls
 				class="absolute top-0 left-0 w-full h-full pointer-events-none"
@@ -200,9 +201,9 @@
 					$currentPlaybackTime,
 					element
 				)}; z-index:{timelineElements.length - i};"
+				src={element.src}
 				bind:this={playerElementsMap[element.elementId].el}
 			>
-				<source src={element.src} type="video/mp4" />
 			</video>
 			<!-- TODO: implement audio and image -->
 		{:else if element.type === MediaType.Audio}
