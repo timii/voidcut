@@ -196,7 +196,10 @@
 				preload="auto"
 				controls
 				class="absolute top-0 left-0 w-full h-full pointer-events-none"
-				style="display: {displayMediaElement($currentPlaybackTime, element)};"
+				style="display: {displayMediaElement(
+					$currentPlaybackTime,
+					element
+				)}; z-index:{timelineElements.length - i};"
 				bind:this={playerElementsMap[element.elementId].el}
 			>
 				<source src={element.src} type="video/mp4" />
