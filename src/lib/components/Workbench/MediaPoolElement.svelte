@@ -17,7 +17,7 @@
 	}
 	function onDragged(e: DragEvent) {
 		const clientRect = elementRef.getBoundingClientRect();
-		console.log('onDragged -> e:', e, 'elementRef:', elementRef, 'clientRect:', clientRect);
+		// console.log('onDragged -> e:', e, 'elementRef:', elementRef, 'clientRect:', clientRect);
 	}
 </script>
 

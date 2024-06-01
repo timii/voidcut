@@ -8,7 +8,12 @@
 	} from '../../../stores/store';
 	import colors from 'tailwindcss/colors';
 	import { CONSTS } from '$lib/utils/consts';
-	import { cleanUpEmptyTracks, createTrackWithElement } from '$lib/utils/utils';
+	import {
+		cleanUpEmptyTracks,
+		createTrackWithElement,
+		handleTimelineMediaDrop
+	} from '$lib/utils/utils';
+	import type { IMedia } from '$lib/interfaces/Media';
 
 	export let index: number;
 
@@ -150,6 +155,21 @@
 		e.stopPropagation();
 		hoverElement = false;
 
+		// get data from dropped element
+		let mediaDataString = e.dataTransfer?.getData(CONSTS.mediaPoolTransferKey);
+		if (!mediaDataString) {
+			return;
+		}
+
+		// parse it back to be an object again
+		const mediaData: IMedia = JSON.parse(mediaDataString);
+
+		// only handle files when actually dropped
+		if (mediaData && e.type !== 'dragleave') {
+			handleTimelineMediaDrop(mediaData, index);
+		}
+
+		// TODO: implement
 		// handleAddElementToTimeline(e);
 	}
 </script>

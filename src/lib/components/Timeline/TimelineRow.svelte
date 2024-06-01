@@ -236,7 +236,7 @@
 			return;
 		}
 
-		// parse it back to be a object again
+		// parse it back to be an object again
 		const mediaData: IMedia = JSON.parse(mediaDataString);
 		const duration = mediaData.duration;
 

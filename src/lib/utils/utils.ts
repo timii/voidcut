@@ -82,8 +82,13 @@ export function handleTimelineMediaDrop(media: IMedia, rowIndex?: number, elInde
     console.log("handleTimelineMediaDrop -> index:", elIndex)
     // TODO: refactor this whole if else
     if (elIndex === undefined) {
-        // append new track object into timeline tracks
-        timelineTracks.update(arr => [...arr, timelineTrack])
+        if (rowIndex !== undefined) {
+            // add new track object at given row index
+            timelineTracks.update(arr => arr.toSpliced(rowIndex, 0, timelineTrack))
+        } else {
+            // append new track object into timeline tracks
+            timelineTracks.update(arr => [...arr, timelineTrack])
+        }
     } else {
         // add new timeline element into given row index
         timelineTracks.update(arr => {
