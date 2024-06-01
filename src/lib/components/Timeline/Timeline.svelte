@@ -240,7 +240,7 @@
 		on:pointermove={moveTimelineThumb}
 		on:mousedown={moveTimelineThumb}
 		on:scroll={onTimelineScroll}
-		style="background-color: {hoverElement && $timelineTracks.length === 0 ? '#2e2e35' : ''};"
+		style="background-color: {hoverElement ? '#2e2e35' : ''};"
 		bind:this={scrollContainerEl}
 	>
 		<!-- Timeline Content -->
@@ -258,7 +258,7 @@
 			<TimelineThumb></TimelineThumb>
 
 			<!-- Timeline Tracks -->
-			<div class="relative flex flex-col pl-5 mb-3 timeline-tracks">
+			<div class="relative flex flex-col pl-5 mb-8 timeline-tracks">
 				{#each $timelineTracks as track, i}
 					<!-- the dropzone is highlighted automatically if something is hovered over it -->
 					{#if i === 0}
@@ -280,6 +280,7 @@
 						<TimelineRow {track} index={i}></TimelineRow>
 						<TimelineRowDivider index={i + 1}></TimelineRowDivider>
 					{/if}
+
 					<!-- <div
 						class="track-divider w-full bg-slate-500 h-[4px] rounded-sm"
 						on:drop={(e) => {

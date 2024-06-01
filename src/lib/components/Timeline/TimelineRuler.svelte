@@ -14,6 +14,11 @@
 		amountOfTicks = Math.ceil(widthInMs / CONSTS.secondsMultiplier);
 	}
 
+	// ignore the hovered element
+	function onHoverElement(e: DragEvent) {
+		e.stopPropagation();
+	}
+
 	// calculate number of seconds of max playback time
 	// let amountOfTicks = $maxPlaybackTime / 1000;
 	// console.log('maxPlaybackTimeVal:', maxPlaybackTimeVal);
@@ -23,6 +28,8 @@
 	class="timeline-ruler sticky top-0 left-0 h-7 pl-5 bg-background-color border-ruler-color border-t-2 flex z-[1] cursor-grab select-none w-fit min-w-full"
 	on:mousedown={moveTimelineThumb}
 	on:mousemove={moveTimelineThumb}
+	on:dragenter={onHoverElement}
+	on:dragover={onHoverElement}
 >
 	<!-- {#each { length: amountOfTicks / 1000 } as _, i} -->
 	{#each { length: amountOfTicks } as _, i}
