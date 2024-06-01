@@ -197,7 +197,7 @@
 		e.stopPropagation();
 		hoverElement = true;
 		// subtract hald the media pool element width so drop zone starts at the left of the element
-		dropZonePositionLeft = e.clientX - CONSTS.mediaPoolElementWidth;
+		dropZonePositionLeft = Math.max(e.clientX - CONSTS.mediaPoolElementWidth, 20);
 
 		if (dropZoneWidth) {
 			return;
@@ -225,6 +225,9 @@
 		e.preventDefault();
 		e.stopPropagation();
 		hoverElement = false;
+
+		// reset so the width of the next hovered element is calculated new again
+		dropZoneWidth = 0;
 
 		// get data from dropped element
 		let mediaDataString = e.dataTransfer?.getData(CONSTS.mediaPoolTransferKey);
