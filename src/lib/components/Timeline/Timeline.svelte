@@ -226,6 +226,7 @@
 	<!-- Timeline Scroll Container -->
 	<div
 		class="flex flex-col w-full h-full gap-1 overflow-x-scroll overflow-y-scroll timeline-scroll-container"
+		id="timeline-scroll-container"
 		on:drop={onDropElement}
 		on:dragleave={onDropElement}
 		on:dragenter={onHoverElement}

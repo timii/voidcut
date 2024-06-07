@@ -1,21 +1,12 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import {
-		currentThumbPosition,
-		isThumbBeingDragged,
-		thumbOffset,
-		currentPlaybackTime,
-		currentTimelineScale
-	} from '../../../stores/store';
-	import {
-		convertPlaybackToPxScale,
-		convertPxToPlaybackScale,
-		moveTimelineThumb
-	} from '$lib/utils/utils';
+	import { currentThumbPosition, thumbOffset, currentPlaybackTime } from '../../../stores/store';
+	import { convertPlaybackToPxScale, moveTimelineThumb } from '$lib/utils/utils';
 
 	let thumbPosition = $currentThumbPosition;
 	let thumbOffsetLeft = 0;
 	let thumbElementRef: HTMLElement;
+	let scrollInterval: number | undefined;
 
 	onMount(() => {
 		// calculate left offset of thumb element
@@ -30,15 +21,63 @@
 			$currentThumbPosition = convertPlaybackToPxScale();
 			// console.log('in timelineThumb after -> $currentThumbPosition,', $currentThumbPosition);
 		})();
+
+	function scrollTimeline(e: MouseEvent) {
+		e.preventDefault();
+
+		// const thumbBoundingRect = document.getElementById('timeline-thumb')?.getBoundingClientRect();
+		// if (!thumbBoundingRect) {
+		// return;
+		// }
+
+		const timelineScrollContainer = document.getElementById('timeline-scroll-container');
+
+		// }
+		// if the thumb is at the left or right edge of the screen (with some buffers) scroll the timeline horizontally
+		// left edge
+		scrollInterval = setInterval(() => {
+			const thumbBoundingRect = document.getElementById('timeline-thumb')?.getBoundingClientRect();
+
+			if (thumbBoundingRect && thumbBoundingRect.x < 16 && thumbBoundingRect.x > 0) {
+				// console.log(
+				// 	'thumb in if',
+				// 	thumbBoundingRect,
+				// 	'timelineScrollContainer:',
+				// 	timelineScrollContainer,
+				// 	'scrollContainerBoundingRect:',
+				// 	scrollContainerBoundingRect,
+				// 	'scrollLeft:',
+				// 	timelineScrollContainer?.scrollLeft
+				// );
+				requestAnimationFrame(() => {
+					const scrollValue = -10;
+					timelineScrollContainer?.scrollBy(scrollValue, 0);
+					// avoid the thumb going too far to the left
+					currentThumbPosition.update((value) => Math.max(0, value + scrollValue));
+				});
+				// timelineScrollContainer?.scrollBy(-1, 0)
+			}
+		}, 50);
+		// }
+	}
+
+	function stopScrolling(e: MouseEvent) {
+		if (scrollInterval !== undefined) {
+			clearInterval(scrollInterval);
+		}
+	}
 </script>
 
 <div
 	class="timeline-thumb w-[12px] h-[calc(100%+28px)] absolute ml-5 z-10 -left-[6px] -top-7 cursor-grab duration-0"
+	id="timeline-thumb"
 	bind:this={thumbElementRef}
 	style="transform: translateX({$currentThumbPosition}px)"
 	on:mousemove={moveTimelineThumb}
+	on:mousedown={scrollTimeline}
+	on:mouseup={stopScrolling}
 >
-	<div class="thumb-container w-full h-full flex flex-col items-center relative">
+	<div class="relative flex flex-col items-center w-full h-full thumb-container">
 		<div
 			class="thumb-header w-full h-[25px] bg-green-600 rounded-b-[50px] rounded-t-[20px] sticky top-0"
 		></div>
