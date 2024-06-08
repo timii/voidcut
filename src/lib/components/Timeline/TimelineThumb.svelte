@@ -31,6 +31,7 @@
 		// }
 
 		const timelineScrollContainer = document.getElementById('timeline-scroll-container');
+		const scrollContainerBoundingRect = timelineScrollContainer?.getBoundingClientRect();
 
 		// }
 		// if the thumb is at the left or right edge of the screen (with some buffers) scroll the timeline horizontally
@@ -38,7 +39,12 @@
 		scrollInterval = setInterval(() => {
 			const thumbBoundingRect = document.getElementById('timeline-thumb')?.getBoundingClientRect();
 
-			if (thumbBoundingRect && thumbBoundingRect.x < 16 && thumbBoundingRect.x > 0) {
+			if (!thumbBoundingRect) {
+				return;
+			}
+
+			// if the thumb is dragged to the left edge of the timeline scroll to the left
+			if (thumbBoundingRect.x < 16) {
 				// console.log(
 				// 	'thumb in if',
 				// 	thumbBoundingRect,
@@ -55,7 +61,31 @@
 					// avoid the thumb going too far to the left
 					currentThumbPosition.update((value) => Math.max(0, value + scrollValue));
 				});
-				// timelineScrollContainer?.scrollBy(-1, 0)
+			}
+
+			if (!scrollContainerBoundingRect) {
+				return;
+			}
+
+			// if the thumb is dragged to the right edge of the timeline scroll to the right
+			if (scrollContainerBoundingRect.width - thumbBoundingRect.x < 16) {
+				console.log(
+					'thumb in if',
+					thumbBoundingRect,
+					'timelineScrollContainer:',
+					timelineScrollContainer,
+					'scrollContainerBoundingRect:',
+					scrollContainerBoundingRect,
+					'scrollLeft:',
+					timelineScrollContainer?.scrollLeft
+				);
+				// TODO: implement right side scrolling
+				requestAnimationFrame(() => {
+					const scrollValue = 10;
+					timelineScrollContainer?.scrollBy(scrollValue, 0);
+					// avoid the thumb going too far to the right (maximum end of most right element)
+					currentThumbPosition.update((value) => Math.max(0, value + scrollValue));
+				});
 			}
 		}, 50);
 		// }
