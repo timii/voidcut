@@ -32,19 +32,33 @@
 
 		const timelineScrollContainer = document.getElementById('timeline-scroll-container');
 		const scrollContainerBoundingRect = timelineScrollContainer?.getBoundingClientRect();
+		const startScrollWidth = timelineScrollContainer?.scrollWidth;
 
 		// }
 		// if the thumb is at the left or right edge of the screen (with some buffers) scroll the timeline horizontally
 		// left edge
 		scrollInterval = setInterval(() => {
-			const thumbBoundingRect = document.getElementById('timeline-thumb')?.getBoundingClientRect();
+			const thumbElement = document.getElementById('timeline-thumb');
+			const thumbBoundingRect = thumbElement?.getBoundingClientRect();
 
 			if (!thumbBoundingRect) {
 				return;
 			}
 
+			if (!scrollContainerBoundingRect || !timelineScrollContainer) {
+				return;
+			}
+
+			// avoid the timeline container to keep on expanding if the thumb is dragged to the right edge
+			if (
+				startScrollWidth === undefined ||
+				timelineScrollContainer?.scrollWidth > startScrollWidth
+			) {
+				return;
+			}
+
 			// if the thumb is dragged to the left edge of the timeline scroll to the left
-			if (thumbBoundingRect.x < 16) {
+			if (thumbBoundingRect.x < 16 && thumbBoundingRect.x >= 0) {
 				// console.log(
 				// 	'thumb in if',
 				// 	thumbBoundingRect,
@@ -63,22 +77,38 @@
 				});
 			}
 
-			if (!scrollContainerBoundingRect) {
-				return;
-			}
+			const timelineFullyScrolled =
+				timelineScrollContainer.scrollWidth - timelineScrollContainer.scrollLeft ===
+				timelineScrollContainer.clientWidth;
 
 			// if the thumb is dragged to the right edge of the timeline scroll to the right
-			if (scrollContainerBoundingRect.width - thumbBoundingRect.x < 16) {
-				console.log(
-					'thumb in if',
-					thumbBoundingRect,
-					'timelineScrollContainer:',
-					timelineScrollContainer,
-					'scrollContainerBoundingRect:',
-					scrollContainerBoundingRect,
-					'scrollLeft:',
-					timelineScrollContainer?.scrollLeft
-				);
+			if (scrollContainerBoundingRect.width - thumbBoundingRect.x < 16 && !timelineFullyScrolled) {
+				// console.log(
+				// 	'thumb in if',
+				// 	thumbBoundingRect,
+				// 	'thumbElement:',
+				// 	thumbElement,
+				// 	'timelineScrollContainer:',
+				// 	timelineScrollContainer,
+				// 	'scrollContainerBoundingRect:',
+				// 	scrollContainerBoundingRect,
+				// 	'scrollLeft:',
+				// 	timelineScrollContainer.scrollLeft,
+				// 	'scrollWidth:',
+				// 	timelineScrollContainer.scrollWidth,
+				// 	'clientWidth:',
+				// 	timelineScrollContainer.clientWidth,
+				// 	'scrollWidth - scrollLeft:',
+				// 	timelineScrollContainer.scrollWidth - timelineScrollContainer.scrollLeft,
+				// 	'timelineFullyScrolled:',
+				// 	timelineFullyScrolled,
+				// 	'scrollContainerBoundingRect.width:',
+				// 	scrollContainerBoundingRect.width,
+				// 	'thumbBoundingRect.x:',
+				// 	thumbBoundingRect.x,
+				// 	'scrollContainerBoundingRect.width - thumbBoundingRect.x:',
+				// 	scrollContainerBoundingRect.width - thumbBoundingRect.x
+				// );
 				// TODO: implement right side scrolling
 				requestAnimationFrame(() => {
 					const scrollValue = 10;
