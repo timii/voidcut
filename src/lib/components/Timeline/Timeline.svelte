@@ -12,6 +12,7 @@
 	import TimelineRuler from './TimelineRuler.svelte';
 	import TimelineThumb from './TimelineThumb.svelte';
 	import {
+		currentThumbPosition,
 		currentTimelineScale,
 		horizontalScroll,
 		maxPlaybackTime,
@@ -207,14 +208,17 @@
 			const verticalScrollValue = target.scrollTop;
 			$horizontalScroll = horizontalScrollValue;
 			$verticalScroll = verticalScrollValue;
-			// console.log(
-			// 	'timeline scrolled -> e:',
-			// 	e,
-			// 	'horizontal:',
-			// 	horizontalScrollValue,
-			// 	'vertical:',
-			// 	verticalScrollValue
-			// );
+
+			// TODO: clamp thumb to either edge when scrolling (number needs to be calculated relactively to scroll amount)
+			currentThumbPosition.set(horizontalScrollValue);
+			console.log(
+				'timeline scrolled -> e:',
+				e,
+				'horizontal:',
+				horizontalScrollValue,
+				'vertical:',
+				verticalScrollValue
+			);
 		}
 	}
 </script>
