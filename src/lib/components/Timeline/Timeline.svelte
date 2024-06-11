@@ -32,6 +32,7 @@
 	let isOverflowingY = false;
 	let amountOfTicks = 0;
 	let amountOfTicksRounded = 0;
+	let thumbElementRef: HTMLElement | null = null;
 
 	onMount(() => {
 		// listen to selected events in the window
@@ -202,6 +203,10 @@
 
 	// listen to scrolling in the timeline
 	function onTimelineScroll(e: Event) {
+		if (thumbElementRef === null) {
+			thumbElementRef = document.getElementById('timeline-thumb');
+		}
+
 		if (e.currentTarget) {
 			const target = e.currentTarget as HTMLElement;
 			const horizontalScrollValue = target.scrollLeft;
@@ -209,15 +214,28 @@
 			$horizontalScroll = horizontalScrollValue;
 			$verticalScroll = verticalScrollValue;
 
+			const thumbBoundingRect = thumbElementRef?.getBoundingClientRect();
+			if (!thumbBoundingRect) {
+				return;
+			}
+
+			// if the thumb x position is smaller than 0 it is out of the view and we clamp the thumb to the left side
+			if (thumbBoundingRect.x < 0) {
+				// subtract 16 from the scrol position to have no padding on the left side of the thumb
+				currentThumbPosition.set(horizontalScrollValue - 16);
+			}
 			// TODO: clamp thumb to either edge when scrolling (number needs to be calculated relactively to scroll amount)
-			currentThumbPosition.set(horizontalScrollValue);
 			console.log(
 				'timeline scrolled -> e:',
 				e,
 				'horizontal:',
 				horizontalScrollValue,
 				'vertical:',
-				verticalScrollValue
+				verticalScrollValue,
+				'thumbElementRef:',
+				thumbElementRef,
+				'thumbBoundingRect:',
+				thumbBoundingRect
 			);
 		}
 	}
