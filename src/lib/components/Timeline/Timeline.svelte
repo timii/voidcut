@@ -219,10 +219,16 @@
 				return;
 			}
 
-			// if the thumb x position is smaller than 0 it is out of the view and we clamp the thumb to the left side
+			// if the thumbs x position is smaller than 0 it is out of the view and we clamp the thumb to the left side
 			if (thumbBoundingRect.x < 0) {
 				// subtract 16 from the scrol position to have no padding on the left side of the thumb
 				currentThumbPosition.set(horizontalScrollValue - 16);
+			}
+
+			// if the thumbs x position is bigger than the width of the timeline (- the width of the timeline) we clamp it to the right side
+			if (thumbBoundingRect.x > scrollContainerEl.clientWidth - 12) {
+				// new thumb position is the amount scrolled + the width of the timeline (- the width of the thumb + left padding)
+				currentThumbPosition.set(horizontalScrollValue + scrollContainerEl.clientWidth - 28);
 			}
 			// TODO: clamp thumb to either edge when scrolling (number needs to be calculated relactively to scroll amount)
 			console.log(
@@ -235,7 +241,11 @@
 				'thumbElementRef:',
 				thumbElementRef,
 				'thumbBoundingRect:',
-				thumbBoundingRect
+				thumbBoundingRect,
+				'scrollContainerEl:',
+				scrollContainerEl,
+				'scrollContainerEl.clientWidth:',
+				scrollContainerEl.clientWidth
 			);
 		}
 	}
