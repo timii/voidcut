@@ -2,16 +2,22 @@
 	import { onMount } from 'svelte';
 	import { currentThumbPosition, thumbOffset, currentPlaybackTime } from '../../../stores/store';
 	import { convertPlaybackToPxScale, moveTimelineThumb } from '$lib/utils/utils';
+	import { CONSTS } from '$lib/utils/consts';
 
 	let thumbPosition = $currentThumbPosition;
 	let thumbOffsetLeft = 0;
 	let thumbElementRef: HTMLElement;
 	let scrollInterval: number | undefined;
+	let timelineScrollContainer: HTMLElement | null;
 
 	onMount(() => {
 		// calculate left offset of thumb element
 		thumbOffsetLeft = thumbElementRef.offsetLeft + Math.round(thumbElementRef.offsetWidth / 2);
 		$thumbOffset = thumbOffsetLeft;
+
+		if (!timelineScrollContainer) {
+			timelineScrollContainer = document.getElementById('timeline-scroll-container');
+		}
 	});
 
 	// dynamically calculate thumb position when playback time in store updates
@@ -20,6 +26,28 @@
 			// console.log('in timelineThumb before -> $currentThumbPosition,', $currentThumbPosition);
 			$currentThumbPosition = convertPlaybackToPxScale();
 			// console.log('in timelineThumb after -> $currentThumbPosition,', $currentThumbPosition);
+
+			// TODO: scroll timeline if thumb is outside of view
+
+			const thumbBoundingRect = thumbElementRef?.getBoundingClientRect();
+			const scrollContainerBoundingRect = timelineScrollContainer?.getBoundingClientRect();
+
+			if (!thumbBoundingRect) {
+				return;
+			}
+
+			if (!scrollContainerBoundingRect || !timelineScrollContainer) {
+				return;
+			}
+
+			const timelineFullyScrolled =
+				timelineScrollContainer.scrollWidth - timelineScrollContainer.scrollLeft ===
+				timelineScrollContainer.clientWidth;
+
+			// check if thumb is on the right edge
+			if (scrollContainerBoundingRect.width - thumbBoundingRect.x < 64 && !timelineFullyScrolled) {
+				console.log('thumb is on the right edge');
+			}
 		})();
 
 	function scrollTimeline(e: MouseEvent) {
@@ -30,7 +58,9 @@
 		// return;
 		// }
 
-		const timelineScrollContainer = document.getElementById('timeline-scroll-container');
+		if (!timelineScrollContainer) {
+			timelineScrollContainer = document.getElementById('timeline-scroll-container');
+		}
 		const scrollContainerBoundingRect = timelineScrollContainer?.getBoundingClientRect();
 		const startScrollWidth = timelineScrollContainer?.scrollWidth;
 
@@ -117,7 +147,7 @@
 					currentThumbPosition.update((value) => Math.max(0, value + scrollValue));
 				});
 			}
-		}, 50);
+		}, CONSTS.timelineScrollIntervalTimer);
 		// }
 	}
 
