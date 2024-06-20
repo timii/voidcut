@@ -47,6 +47,7 @@
 			// check if thumb is on the right edge
 			if (scrollContainerBoundingRect.width - thumbBoundingRect.x < 64 && !timelineFullyScrolled) {
 				console.log('thumb is on the right edge');
+				timelineScrollContainer.scrollBy(2, 0);
 			}
 		})();
 
