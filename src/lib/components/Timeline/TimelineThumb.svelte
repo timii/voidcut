@@ -52,6 +52,14 @@
 			) {
 				timelineScrollContainer.scrollBy(2, 0);
 			}
+
+			// if the thumb goes further right than the timeline width stop the playback
+			if (
+				(timelineFullyScrolled || scrollContainerBoundingRect.width - thumbBoundingRect.x < 0) &&
+				$previewPlaying === true
+			) {
+				pausePlayback();
+			}
 		})();
 
 	function scrollTimeline(e: MouseEvent) {
