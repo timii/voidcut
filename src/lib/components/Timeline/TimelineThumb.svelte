@@ -1,7 +1,13 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { currentThumbPosition, thumbOffset, currentPlaybackTime } from '../../../stores/store';
-	import { convertPlaybackToPxScale, moveTimelineThumb } from '$lib/utils/utils';
+	import {
+		currentThumbPosition,
+		thumbOffset,
+		currentPlaybackTime,
+		previewPlaying,
+		isThumbBeingDragged
+	} from '../../../stores/store';
+	import { convertPlaybackToPxScale, moveTimelineThumb, pausePlayback } from '$lib/utils/utils';
 	import { CONSTS } from '$lib/utils/consts';
 
 	let thumbPosition = $currentThumbPosition;
@@ -23,11 +29,12 @@
 	// dynamically calculate thumb position when playback time in store updates
 	$: $currentPlaybackTime,
 		(() => {
+			if ($isThumbBeingDragged === true) {
+				return;
+			}
 			// console.log('in timelineThumb before -> $currentThumbPosition,', $currentThumbPosition);
 			$currentThumbPosition = convertPlaybackToPxScale();
 			// console.log('in timelineThumb after -> $currentThumbPosition,', $currentThumbPosition);
-
-			// TODO: scroll timeline if thumb is outside of view
 
 			const thumbBoundingRect = thumbElementRef?.getBoundingClientRect();
 			const scrollContainerBoundingRect = timelineScrollContainer?.getBoundingClientRect();
@@ -43,6 +50,29 @@
 			const timelineFullyScrolled =
 				timelineScrollContainer.scrollWidth - timelineScrollContainer.scrollLeft ===
 				timelineScrollContainer.clientWidth;
+
+			console.log(
+				'currentPlaybacktime Changed in thumb timelineScrollContainer:',
+				timelineScrollContainer,
+				'scrollContainerBoundingRect:',
+				scrollContainerBoundingRect,
+				'scrollLeft:',
+				timelineScrollContainer.scrollLeft,
+				'scrollWidth:',
+				timelineScrollContainer.scrollWidth,
+				'clientWidth:',
+				timelineScrollContainer.clientWidth,
+				'scrollWidth - scrollLeft:',
+				timelineScrollContainer.scrollWidth - timelineScrollContainer.scrollLeft,
+				'timelineFullyScrolled:',
+				timelineFullyScrolled,
+				'scrollContainerBoundingRect.width:',
+				scrollContainerBoundingRect.width,
+				'thumbBoundingRect.x:',
+				thumbBoundingRect.x,
+				'scrollContainerBoundingRect.width - thumbBoundingRect.x:',
+				scrollContainerBoundingRect.width - thumbBoundingRect.x
+			);
 
 			// check if thumb is on the right edge
 			if (
