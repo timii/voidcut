@@ -349,3 +349,8 @@ export function formatPlaybackTime(time: number) {
 
     return hoursString + ":" + minutesString + ":" + secondsString + "." + millisecondsString;
 }
+
+// check if a given element is fully scrolled
+export function isElementFullyScrolled(el: HTMLElement): boolean {
+    return el.scrollWidth - el.scrollLeft === el.clientWidth
+}

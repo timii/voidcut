@@ -7,7 +7,12 @@
 		previewPlaying,
 		isThumbBeingDragged
 	} from '../../../stores/store';
-	import { convertPlaybackToPxScale, moveTimelineThumb, pausePlayback } from '$lib/utils/utils';
+	import {
+		convertPlaybackToPxScale,
+		isElementFullyScrolled,
+		moveTimelineThumb,
+		pausePlayback
+	} from '$lib/utils/utils';
 	import { CONSTS } from '$lib/utils/consts';
 
 	let thumbPosition = $currentThumbPosition;
@@ -47,32 +52,30 @@
 				return;
 			}
 
-			const timelineFullyScrolled =
-				timelineScrollContainer.scrollWidth - timelineScrollContainer.scrollLeft ===
-				timelineScrollContainer.clientWidth;
+			const timelineFullyScrolled = isElementFullyScrolled(timelineScrollContainer);
 
-			console.log(
-				'currentPlaybacktime Changed in thumb timelineScrollContainer:',
-				timelineScrollContainer,
-				'scrollContainerBoundingRect:',
-				scrollContainerBoundingRect,
-				'scrollLeft:',
-				timelineScrollContainer.scrollLeft,
-				'scrollWidth:',
-				timelineScrollContainer.scrollWidth,
-				'clientWidth:',
-				timelineScrollContainer.clientWidth,
-				'scrollWidth - scrollLeft:',
-				timelineScrollContainer.scrollWidth - timelineScrollContainer.scrollLeft,
-				'timelineFullyScrolled:',
-				timelineFullyScrolled,
-				'scrollContainerBoundingRect.width:',
-				scrollContainerBoundingRect.width,
-				'thumbBoundingRect.x:',
-				thumbBoundingRect.x,
-				'scrollContainerBoundingRect.width - thumbBoundingRect.x:',
-				scrollContainerBoundingRect.width - thumbBoundingRect.x
-			);
+			// console.log(
+			// 	'currentPlaybacktime Changed in thumb timelineScrollContainer:',
+			// 	timelineScrollContainer,
+			// 	'scrollContainerBoundingRect:',
+			// 	scrollContainerBoundingRect,
+			// 	'scrollLeft:',
+			// 	timelineScrollContainer.scrollLeft,
+			// 	'scrollWidth:',
+			// 	timelineScrollContainer.scrollWidth,
+			// 	'clientWidth:',
+			// 	timelineScrollContainer.clientWidth,
+			// 	'scrollWidth - scrollLeft:',
+			// 	timelineScrollContainer.scrollWidth - timelineScrollContainer.scrollLeft,
+			// 	'timelineFullyScrolled:',
+			// 	timelineFullyScrolled,
+			// 	'scrollContainerBoundingRect.width:',
+			// 	scrollContainerBoundingRect.width,
+			// 	'thumbBoundingRect.x:',
+			// 	thumbBoundingRect.x,
+			// 	'scrollContainerBoundingRect.width - thumbBoundingRect.x:',
+			// 	scrollContainerBoundingRect.width - thumbBoundingRect.x
+			// );
 
 			// check if thumb is on the right edge
 			if (
@@ -149,9 +152,7 @@
 				});
 			}
 
-			const timelineFullyScrolled =
-				timelineScrollContainer.scrollWidth - timelineScrollContainer.scrollLeft ===
-				timelineScrollContainer.clientWidth;
+			const timelineFullyScrolled = isElementFullyScrolled(timelineScrollContainer);
 
 			// if the thumb is dragged to the right edge of the timeline scroll to the right
 			if (scrollContainerBoundingRect.width - thumbBoundingRect.x < 16 && !timelineFullyScrolled) {
