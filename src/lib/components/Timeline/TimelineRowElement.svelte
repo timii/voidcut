@@ -14,8 +14,7 @@
 
 	export let element: ITimelineElement = {} as ITimelineElement;
 
-	// check if selected element matches id of this element
-	$: isSelected = $selectedElement === element.elementId;
+	$: isSelected = getSelectedElement($selectedElement);
 
 	// dynamically calculate left offset of element
 	$: leftOffset = (element.playbackStartTime / CONSTS.secondsMultiplier) * $currentTimelineScale;
@@ -57,6 +56,7 @@
 	let clonePositionLeft = '0px';
 	let clonePositionTop = '0px';
 	let cloneOffset = [0, 0];
+	// let isSelected = false;
 	// let dropZonePositionLeft = 0;
 	// let elementHoveredOverRow = false;
 
@@ -115,6 +115,21 @@
 	// }
 	//
 
+	function getSelectedElement(el: string) {
+		const curELEqualsSelectedEl = el === element.elementId;
+
+		if (curELEqualsSelectedEl) {
+			// unselect this element if its currently selected and the new id is the same as this element
+			if (isSelected) {
+				selectedElement.set('');
+				return false;
+			} else {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	// get info about relative element and mouse position of clicked element
 	function getClickInfo(e: MouseEvent) {
 		const tracksEl = document.getElementsByClassName('timeline-tracks')[0];
@@ -134,7 +149,10 @@
 	function onElementClick(e: MouseEvent) {
 		// avoid timeline thumb being dragged when clicking on element
 		e.stopPropagation();
-		$selectedElement = element.elementId;
+
+		// first clear store value and set correct value afterwards to trigger store change to all subscribers
+		selectedElement.set('');
+		selectedElement.set(element.elementId);
 
 		const clickInfo = getClickInfo(e);
 
