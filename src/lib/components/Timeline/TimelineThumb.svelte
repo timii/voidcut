@@ -202,10 +202,10 @@
 </script>
 
 <div
-	class="timeline-thumb w-[12px] h-[calc(100%+28px)] absolute ml-5 z-10 -left-[6px] -top-7 cursor-grab duration-0"
+	class="timeline-thumb w-[12px] h-[calc(100%+28px)] fixed ml-5 z-10 cursor-grab duration-0"
 	id="timeline-thumb"
 	bind:this={thumbElementRef}
-	style="transform: translateX({$currentThumbPosition}px)"
+	style="transform: translate({-6 + $currentThumbPosition}px, -28px)"
 	on:mousemove={moveTimelineThumb}
 	on:mousedown={scrollTimeline}
 	on:mouseup={stopScrolling}
