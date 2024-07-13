@@ -84,15 +84,11 @@
 		);
 		console.log('videoData:', videoData);
 
-		// let i = 1;
-		// for (const data of videoData) {
-		// 	await ffmpeg.writeFile(`test${i}.avi`, data);
-		// 	console.log('in for of -> data', data, 'i:', i);
-		// 	i++;
-		// }
+		for (const [i, data] of videoData.entries()) {
+			await ffmpeg.writeFile(`test${i + 1}.mp4`, data);
+			console.log('in for of -> data', data, 'i:', i + 1);
+		}
 
-		await ffmpeg.writeFile('test1.mp4', videoData[0]);
-		await ffmpeg.writeFile('test2.mp4', videoData[1]);
 		await ffmpeg.exec([
 			'-i',
 			'test1.mp4',
@@ -100,9 +96,8 @@
 			'test2.mp4',
 			'-filter_complex',
 			'concat=n=2:v=1:a=1',
-			// '-vn',
 			'-y',
-			'-vsync',
+			'-fps_mode',
 			'vfr',
 			'input.mp4'
 		]);
