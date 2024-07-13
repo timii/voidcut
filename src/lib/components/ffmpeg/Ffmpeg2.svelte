@@ -10,6 +10,48 @@
 	let ffmpeg: FFmpeg;
 	let progress = tweened(0);
 	let files: File[] = [];
+
+	const readFromBlobOrFile = (blob: Blob | File): Promise<Uint8Array> =>
+		new Promise((resolve, reject) => {
+			const fileReader = new FileReader();
+			fileReader.onload = () => {
+				const { result } = fileReader;
+				if (result instanceof ArrayBuffer) {
+					resolve(new Uint8Array(result));
+				} else {
+					resolve(new Uint8Array());
+				}
+			};
+			fileReader.onerror = (event) => {
+				reject(Error(`File could not be read! Code=${event?.target?.error?.code || -1}`));
+			};
+			fileReader.readAsArrayBuffer(blob);
+		});
+
+	async function fetchFile(file?: string | File | Blob): Promise<Uint8Array> {
+		let data: ArrayBuffer | number[];
+
+		if (typeof file === 'string') {
+			/* From base64 format */
+			if (/data:_data\/([a-zA-Z]*);base64,([^"]*)/.test(file)) {
+				data = atob(file.split(',')[1])
+					.split('')
+					.map((c) => c.charCodeAt(0));
+				/* From remote server/URL */
+			} else {
+				data = await (await fetch(file)).arrayBuffer();
+			}
+		} else if (file instanceof URL) {
+			data = await (await fetch(file)).arrayBuffer();
+		} else if (file instanceof File || file instanceof Blob) {
+			data = await readFromBlobOrFile(file);
+		} else {
+			return new Uint8Array();
+		}
+
+		return new Uint8Array(data);
+	}
+
 	async function loadFFmpeg() {
 		const baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm';
 
@@ -57,14 +99,14 @@
 			'-i',
 			'test2.mp4',
 			'-filter_complex',
-			'concat=n=2:v=1:a=0',
-			'-vn',
+			'concat=n=2:v=1:a=1',
+			// '-vn',
 			'-y',
 			'-vsync',
 			'vfr',
-			'input.m4a'
+			'input.mp4'
 		]);
-		const data = await ffmpeg.readFile('input.m4a');
+		const data = await ffmpeg.readFile('input.mp4');
 		console.log('convert done');
 		state = 'convert.done';
 		return data as Uint8Array;
