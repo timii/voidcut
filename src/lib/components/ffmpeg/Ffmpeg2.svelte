@@ -2,6 +2,8 @@
 	import { tweened } from 'svelte/motion';
 	import { FFmpeg } from '@ffmpeg/ffmpeg';
 	import { onMount } from 'svelte';
+	import { availableMedia, timelineTracks } from '../../../stores/store';
+	import { convertDataUrlToUIntArray } from '$lib/utils/utils';
 
 	type State = 'loading' | 'loaded' | 'convert.start' | 'convert.error' | 'convert.done';
 
@@ -52,15 +54,24 @@
 		return new Uint8Array(data);
 	}
 
+	// initialize FFmpeg, setup logging and load necessary packages
 	async function loadFFmpeg() {
-		const baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm';
-
+		// create a new ffmpeg instance
 		ffmpeg = new FFmpeg();
 
-		ffmpeg.on('log', ({ message }) => {
-			console.log(message);
+		// listen to log events and print them into the console
+		ffmpeg.on('log', ({ type, message }) => {
+			console.log('[LOG] type:', type, 'message:', message);
 		});
 
+		// listen to progress events and print them into the console
+		ffmpeg.on('progress', ({ progress, time }) => {
+			console.log('[PROGRESS] progress:', progress * 100, 'time:', time / 1000000);
+		});
+
+		// load ffmpeg-core inside web worker
+		// it is required to call this method first as it initializes WebAssembly and other essential variables
+		const baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm';
 		await ffmpeg.load({
 			coreURL: `${baseURL}/ffmpeg-core.js`,
 			wasmURL: `${baseURL}/ffmpeg-core.wasm`
@@ -71,42 +82,68 @@
 
 	async function callFFmpeg() {
 		state = 'convert.start';
-		console.log('callFFmpeg -> files:', files);
+		// console.log('callFFmpeg -> files:', files);
+		const timelineElements = $timelineTracks[0].elements;
+		const mediaElements = timelineElements.map((el) => {
+			return $availableMedia.find((media) => media.mediaId === el.mediaId);
+		});
+		const mediaUrls = mediaElements.map((el) => el?.src);
+		const videoData = mediaUrls.map((el) => convertDataUrlToUIntArray(el as string));
+		console.log(
+			'callFFmpeg -> tracks:',
+			$timelineTracks,
+			'media:',
+			$availableMedia,
+			'mediaElements:',
+			mediaElements,
+			'mediaUrls:',
+			mediaUrls
+		);
 		// const videoData = await fetchFile(
 		// 	'https://raw.githubusercontent.com/ffmpegwasm/testdata/master/video-15s.avi'
 		// );
-		const videoData: Uint8Array[] = await Promise.all(
-			files.map(async (file) => {
-				const data = await fetchFile(file);
-				console.log('in map -> data', data);
-				return data;
-			})
-		);
+		// const videoData: Uint8Array[] = await Promise.all(
+		// 	files.map(async (file) => {
+		// 		const data = await fetchFile(file);
+		// 		console.log('in map -> data', data);
+		// 		return data;
+		// 	})
+		// );
 		console.log('videoData:', videoData);
 
+		const inputFileNames: string[] = [];
+
 		for (const [i, data] of videoData.entries()) {
-			await ffmpeg.writeFile(`test${i + 1}.mp4`, data);
-			console.log('in for of -> data', data, 'i:', i + 1);
+			const fileName = `test${i + 1}.mp4`;
+			await ffmpeg.writeFile(fileName, data);
+			inputFileNames.push('-i', fileName);
+			console.log('in for of -> data', data, 'i:', i + 1, 'filename:', fileName);
 		}
 
+		console.log('inputFileNames:', inputFileNames);
+
+		const outputFileName = 'input.mp4';
+
 		await ffmpeg.exec([
-			'-i',
-			'test1.mp4',
-			'-i',
-			'test2.mp4',
+			// '-i',
+			// 'test1.mp4',
+			// '-i',
+			// 'test2.mp4',
+			...inputFileNames,
 			'-filter_complex',
-			'concat=n=2:v=1:a=1',
+			`concat=n=${videoData.length}:v=1:a=1`,
 			'-y',
 			'-fps_mode',
 			'vfr',
-			'input.mp4'
+			outputFileName
 		]);
-		const data = await ffmpeg.readFile('input.mp4');
+		const data = await ffmpeg.readFile(outputFileName);
 		console.log('convert done');
 		state = 'convert.done';
 		return data as Uint8Array;
 	}
 
+	// download the ouput from FFmpeg
 	function downloadVideo(data: Uint8Array) {
 		const a = document.createElement('a');
 		a.href = URL.createObjectURL(new Blob([data.buffer], { type: 'video/mp4' }));
@@ -124,6 +161,7 @@
 	}
 
 	onMount(() => {
+		// setup everything for FFmpeg in the background on load
 		loadFFmpeg();
 	});
 
