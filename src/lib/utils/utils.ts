@@ -183,6 +183,22 @@ function convertFileToDataUrl(file: File): Promise<string> {
     })
 }
 
+// convert a base64 string into a binary UInt8Array
+// source: https://gist.github.com/borismus/1032746
+export function convertDataUrlToUIntArray(dataUrl: string) {
+    const BASE64_MARKER = ';base64,';
+    const base64Index = dataUrl.indexOf(BASE64_MARKER) + BASE64_MARKER.length;
+    const base64 = dataUrl.substring(base64Index);
+    const raw = window.atob(base64);
+    const rawLength = raw.length;
+    const array = new Uint8Array(new ArrayBuffer(rawLength));
+
+    for (let i = 0; i < rawLength; i++) {
+        array[i] = raw.charCodeAt(i);
+    }
+    return array;
+}
+
 // generate a unique id
 function generateId() {
     return crypto.randomUUID() as string

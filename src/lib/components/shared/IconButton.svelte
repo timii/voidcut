@@ -7,7 +7,7 @@
 
 <button
 	on:click={onClickCallback}
-	class="cursor-pointer rounded p-[2px] hover:bg-background-color-lighter"
+	class="cursor-pointer rounded p-[2px] bg-background-color-lighter hover:bg-background-color-lightest"
 >
 	<img src={icon} {alt} width={size} />
 </button>

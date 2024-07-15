@@ -4,7 +4,20 @@
 	import Preview from '$lib/components/preview/Preview.svelte';
 	import { currentTimelineScale, maxPlaybackTime, thumbOffset, windowWidth } from '../stores/store';
 	import { CONSTS } from '$lib/utils/consts';
+	import Header from '$lib/components/header/Header.svelte';
+	import { onMount } from 'svelte';
+	import { initializeFfmpeg } from '$lib/utils/ffmpeg';
 
+	// TODO: add onMount hook that resets the Dragging storte values on mouse up for the whole window
+	onMount(async () => {
+		// initialize all the ffmpeg stuff in the background
+		// using async in this onMount is only fine if we don't
+		// need to return a destroy function
+		// see: https://stackoverflow.com/questions/62087073/svelte-3-async-onmount-or-a-valid-alternative#comment120532176_62118425
+		await initializeFfmpeg();
+	});
+
+	//  listen to window changes and update the store variable on change
 	function onWindowResize(width: number) {
 		const widthInMs = Math.round(
 			((width - $thumbOffset) / $currentTimelineScale) * CONSTS.secondsMultiplier
@@ -20,6 +33,7 @@
 </script>
 
 <main class="flex flex-col w-screen h-screen max-h-screen gap-1 max-w-screen">
+	<Header></Header>
 	<div class="flex flex-1 basis-2/3 shrink-0">
 		<div class="flex-1 p-4 border-2 workbench basis-1/3">
 			<MediaPool></MediaPool>
@@ -33,5 +47,4 @@
 	</div>
 </main>
 
-<!-- listen to window changes and update the store variable on change -->
 <svelte:window on:resize={() => onWindowResize(innerWidth)} />
