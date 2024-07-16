@@ -6,7 +6,7 @@
 	import { CONSTS } from '$lib/utils/consts';
 	import Header from '$lib/components/header/Header.svelte';
 	import { onMount } from 'svelte';
-	import { initializeFfmpeg } from '$lib/utils/ffmpeg';
+	import { initializeFfmpeg } from '$lib/utils/ffmpeg.utils';
 
 	// TODO: add onMount hook that resets the Dragging storte values on mouse up for the whole window
 	onMount(async () => {

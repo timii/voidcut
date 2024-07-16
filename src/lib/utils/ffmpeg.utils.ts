@@ -1,5 +1,7 @@
 import { FFmpeg } from "@ffmpeg/ffmpeg";
-import { ffmpegLoaded } from "../../stores/store";
+import { availableMedia, ffmpegLoaded, timelineTracks } from "../../stores/store";
+import { get } from "svelte/store";
+import { convertDataUrlToUIntArray } from "./utils";
 
 let ffmpeg: FFmpeg
 
@@ -34,17 +36,103 @@ export async function initializeFfmpeg() {
 export async function callFfmpeg() {
     console.log('callFfmpeg called');
 
-    // get all timeline elements and their properties
+    // get and map timeline elements so they can be used in ffmpeg
+    const videoData = mapTimelineElementsToUIntArray()
+    console.log('[FFMPEG] mapping of timeline elements successful');
 
     // map elements into ffmpeg flags and parameters
+    const { outputFileName, flags } = createFfmpegFlags(videoData)
+    console.log('[FFMPEG] creating ffmpeg flags successful');
 
-    // write necessary elements into ffmpeg.wasm filysystem
+    // write necessary elements into ffmpeg.wasm filesystem
+    await writeFilesToFfmpeg(videoData)
+    console.log('[FFMPEG] writing into ffmpeg filesystem successful');
 
-    // execute ffmpeg 
+    // execute ffmpeg with the created flags
+    await ffmpeg.exec(flags)
+    console.log('[FFMPEG] executing ffmpeg commands successful');
 
-    // handle error cases when executing
+    // TODO: handle error cases when executing
 
     // read output file from ffmpeg.wasm
+    const outputData = await ffmpeg.readFile(outputFileName) as Uint8Array;
+    console.log('[FFMPEG] reading created output file successful');
 
     // download read file
+    downloadOutput(outputData, outputFileName)
+    console.log('[FFMPEG] downloading output file successful');
+}
+
+// get and map timeline elements and prepare them so they can be used in ffmpeg
+function mapTimelineElementsToUIntArray(): Uint8Array[] {
+    // get all timeline elements and their properties
+    const timelineElements = get(timelineTracks).flatMap(track => track.elements)
+    console.log('callFfmpeg -> timelineElements:', timelineElements);
+
+    // map each element to a media element in the pool to get the source dataUrl
+    const mediaElements = timelineElements.map((el) => {
+        return get(availableMedia).find((media) => media.mediaId === el.mediaId)!;
+    });
+    console.log('callFfmpeg -> mediaElements:', mediaElements);
+
+    // map media elements and convert their source data url into UInt8Array that 
+    // can be used in ffmpeg
+    const videoData = mediaElements.map((el) => convertDataUrlToUIntArray(el.src));
+    console.log('callFfmpeg -> videoData:', videoData);
+
+    return videoData
+}
+
+// use the mapped timeline elements to dynamically create the necessary 
+// ffmpeg flags and parameters 
+function createFfmpegFlags(videoData: Uint8Array[]): { outputFileName: string, flags: string[] } {
+
+    const flags: string[] = [];
+
+    videoData.forEach((data, i) => {
+        const fileName = createFileName(i + 1);
+
+        // push the -i flag with the input data
+        flags.push('-i', fileName);
+    })
+
+    // TODO: dynamically set an output file type and name
+    const outputFileName = 'output.mp4';
+
+    // TODO: change the flags to be dynamic
+    flags.push(
+        '-filter_complex',
+        `concat=n=${videoData.length}:v=1:a=1`,
+        '-y',
+        '-fps_mode',
+        'vfr',
+        outputFileName)
+
+    return { outputFileName, flags }
+}
+
+// write given video data into ffmpeg.wasm filesystem
+async function writeFilesToFfmpeg(videoData: Uint8Array[]) {
+    for (const [i, data] of videoData.entries()) {
+        const fileName = createFileName(i + 1);
+        await ffmpeg.writeFile(fileName, data);
+    }
+}
+
+// create a input file name using the given index
+function createFileName(index: number) {
+    // TODO: handle different input file types
+    return `input${index}.mp4`;
+}
+
+// convert output data into blob and download it
+function downloadOutput(data: Uint8Array, outputFileName: string) {
+    const a = document.createElement('a');
+    // TODO: dynamic output file type instead of hardcoding 'video/mp4'
+    a.href = URL.createObjectURL(new Blob([data.buffer], { type: 'video/mp4' }));
+    a.download = outputFileName;
+
+    setTimeout(() => {
+        a.click();
+    }, 1000);
 }
