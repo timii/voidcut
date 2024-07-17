@@ -102,11 +102,14 @@ function createFfmpegFlags(videoData: Uint8Array[]): { outputFileName: string, f
     // TODO: change the flags to be dynamic
     flags.push(
         '-filter_complex',
-        `concat=n=${videoData.length}:v=1:a=1`,
-        '-y',
+        // `concat=n=${videoData.length}:v=1:a=1`,
+        "[0:v]drawbox=t=fill:enable='between(t,5,20)'[bg];[1:v]setpts=PTS+5/TB[fg];[bg][fg]overlay=x=(W-w)/2:y=(H-h)/2:eof_action=pass;[1:a]adelay=5s:all=1[a1];[0:a][a1]amix",
+        '-y', // overwrite output files without asking
         '-fps_mode',
         'vfr',
         outputFileName)
+
+    // ffmpeg -i main.mp4 -i miniclip.mp4 -filter_complex "[0:v]drawbox=t=fill:enable='between(t,5,6.4)'[bg];[1:v]setpts=PTS+5/TB[fg];[bg][fg]overlay=x=(W-w)/2:y=(H-h)/2:eof_action=pass;[1:a]adelay=5s:all=1[a1];[0:a][a1]amix" output.mp4
 
     return { outputFileName, flags }
 }
