@@ -1,7 +1,8 @@
 import { FFmpeg } from "@ffmpeg/ffmpeg";
 import { availableMedia, ffmpegLoaded, timelineTracks } from "../../stores/store";
 import { get } from "svelte/store";
-import { convertDataUrlToUIntArray } from "./utils";
+import { convertDataUrlToUIntArray, msToS, sToMS } from "./utils";
+import { type IFfmpegElement } from "$lib/interfaces/Ffmpeg";
 
 let ffmpeg: FFmpeg
 
@@ -64,11 +65,12 @@ export async function callFfmpeg() {
 }
 
 // get and map timeline elements and prepare them so they can be used in ffmpeg
-function mapTimelineElementsToUIntArray(): Uint8Array[] {
+function mapTimelineElementsToUIntArray(): IFfmpegElement[] {
     // get all timeline elements and their properties
     const timelineElements = get(timelineTracks).flatMap(track => track.elements)
     console.log('callFfmpeg -> timelineElements:', timelineElements);
 
+    // TODO: refactor following two maps into one
     // map each element to a media element in the pool to get the source dataUrl
     const mediaElements = timelineElements.map((el) => {
         return get(availableMedia).find((media) => media.mediaId === el.mediaId)!;
@@ -80,12 +82,22 @@ function mapTimelineElementsToUIntArray(): Uint8Array[] {
     const videoData = mediaElements.map((el) => convertDataUrlToUIntArray(el.src));
     console.log('callFfmpeg -> videoData:', videoData);
 
-    return videoData
+    const mappedElements: IFfmpegElement[] = videoData.map((data, i) => {
+        const timelineElement = timelineElements[i]
+        return {
+            videoData: data,
+            duration: timelineElement.duration,
+            offset: timelineElement.playbackStartTime
+        }
+    })
+    console.log('callFfmpeg -> mappedElements:', mappedElements);
+
+    return mappedElements
 }
 
 // use the mapped timeline elements to dynamically create the necessary 
 // ffmpeg flags and parameters 
-function createFfmpegFlags(videoData: Uint8Array[]): { outputFileName: string, flags: string[] } {
+function createFfmpegFlags(videoData: IFfmpegElement[]): { outputFileName: string, flags: string[] } {
 
     const flags: string[] = [];
 
@@ -99,11 +111,20 @@ function createFfmpegFlags(videoData: Uint8Array[]): { outputFileName: string, f
     // TODO: dynamically set an output file type and name
     const outputFileName = 'output.mp4';
 
+    const offset = +msToS(videoData[1].offset).toFixed(2)
+    const duration = +msToS(videoData[1].duration).toFixed(2)
+    const offsetPlusDuration = +(offset + duration).toFixed(2)
+    console.log("createFfmpegFlags -> offset:", offset, duration, offsetPlusDuration)
+
     // TODO: change the flags to be dynamic
     flags.push(
         '-filter_complex',
         // `concat=n=${videoData.length}:v=1:a=1`,
-        "[0:v]drawbox=t=fill:enable='between(t,5,20)'[bg];[1:v]setpts=PTS+5/TB[fg];[bg][fg]overlay=x=(W-w)/2:y=(H-h)/2:eof_action=pass;[1:a]adelay=5s:all=1[a1];[0:a][a1]amix",
+        `[0:v]drawbox=t=fill:enable='between(t,${offset},${offsetPlusDuration})'[bg];
+        [1:v]setpts=PTS+${offset}/TB[fg];
+        [bg][fg]overlay=x=(W-w)/2:y=(H-h)/2:eof_action=pass;
+        [1:a]adelay=${offset}s:all=1[a1];
+        [0:a][a1]amix`,
         '-y', // overwrite output files without asking
         '-fps_mode',
         'vfr',
@@ -115,10 +136,10 @@ function createFfmpegFlags(videoData: Uint8Array[]): { outputFileName: string, f
 }
 
 // write given video data into ffmpeg.wasm filesystem
-async function writeFilesToFfmpeg(videoData: Uint8Array[]) {
-    for (const [i, data] of videoData.entries()) {
+async function writeFilesToFfmpeg(videoData: IFfmpegElement[]) {
+    for (const [i, el] of videoData.entries()) {
         const fileName = createFileName(i + 1);
-        await ffmpeg.writeFile(fileName, data);
+        await ffmpeg.writeFile(fileName, el.videoData);
     }
 }
 
