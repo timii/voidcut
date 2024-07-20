@@ -119,18 +119,17 @@ function createFfmpegFlags(videoData: IFfmpegElement[]): { outputFileName: strin
     // TODO: change the flags to be dynamic
     flags.push(
         '-filter_complex',
-        // `concat=n=${videoData.length}:v=1:a=1`,
-        `[0:v]drawbox=t=fill:enable='between(t,${offset},${offsetPlusDuration})'[bg];
-        [1:v]setpts=PTS+${offset}/TB[fg];
-        [bg][fg]overlay=x=(W-w)/2:y=(H-h)/2:eof_action=pass;
-        [1:a]adelay=${offset}s:all=1[a1];
-        [0:a][a1]amix`,
+        `[0:v]setpts=expr=PTS+5/TB[1];
+        [0:a]adelay=delays=5s:all=1[2];
+        [1:v][1]overlay[out_v];
+        [2][1:a]amix[out_a]`,
+        '-map', '[out_v]',
+        '-map', '[out_a]',
         '-y', // overwrite output files without asking
-        '-fps_mode',
-        'vfr',
+        '-fps_mode', 'vfr',
         outputFileName)
 
-    // ffmpeg -i main.mp4 -i miniclip.mp4 -filter_complex "[0:v]drawbox=t=fill:enable='between(t,5,6.4)'[bg];[1:v]setpts=PTS+5/TB[fg];[bg][fg]overlay=x=(W-w)/2:y=(H-h)/2:eof_action=pass;[1:a]adelay=5s:all=1[a1];[0:a][a1]amix" output.mp4
+    // ffmpeg -i testvideo1.mp4 -i testvideo2.mp4 -filter_complex "[0:v]setpts=expr=PTS+15/TB[1];[0:a]adelay=delays=15s:all=1[2];[1:v][1]overlay[out_v];[2][1:a]amix[out_a]" -map "[out_a]" -map "[out_v]" out.mp4
 
     return { outputFileName, flags }
 }
