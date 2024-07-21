@@ -41,6 +41,10 @@ export async function callFfmpeg() {
     const videoData = mapTimelineElementsToUIntArray()
     console.log('[FFMPEG] mapping of timeline elements successful');
 
+    // create blank video with only black screen
+    await createBlankVideo(videoData)
+    console.log('[FFMPEG] creation of blank video successful');
+
     // map elements into ffmpeg flags and parameters
     const { outputFileName, flags } = createFfmpegFlags(videoData)
     console.log('[FFMPEG] creating ffmpeg flags successful');
@@ -95,13 +99,30 @@ function mapTimelineElementsToUIntArray(): IFfmpegElement[] {
     return mappedElements
 }
 
+async function createBlankVideo(videoData: IFfmpegElement[]) {
+    // TODO: dynamically get max video length of all elements 
+
+    // TODO:
+    // get total length of all elements together
+    // create a "video" with just a black screen and now audio with the length from the step before
+    // use just overlays at different times for the individual elements
+    const flags: string[] = []
+    flags.push(
+        "-f", "lavfi", "-i", "color=size=1280x720:rate=25:color=black", "-f", "lavfi", "-i", "anullsrc=channel_layout=stereo:sample_rate=44100", "-t", "20", "blank.mp4"
+    )
+
+    await ffmpeg.exec(flags)
+}
+
 // use the mapped timeline elements to dynamically create the necessary 
 // ffmpeg flags and parameters 
 function createFfmpegFlags(videoData: IFfmpegElement[]): { outputFileName: string, flags: string[] } {
 
     const flags: string[] = [];
 
-    videoData.forEach((data, i) => {
+    // include the blank video as the first input
+    flags.push('-i', 'blank.mp4')
+
         const fileName = createFileName(i + 1);
 
         // push the -i flag with the input data
