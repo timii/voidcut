@@ -123,34 +123,103 @@ function createFfmpegFlags(videoData: IFfmpegElement[]): { outputFileName: strin
     // include the blank video as the first input
     flags.push('-i', 'blank.mp4')
 
+    // loop backwards through the array to fix the order of overlaying
+    for (let i = videoData.length - 1; i >= 0; i--) {
         const fileName = createFileName(i + 1);
 
-        // push the -i flag with the input data
+        // push the -i flag with the input name
         flags.push('-i', fileName);
-    })
+    }
 
     // TODO: dynamically set an output file type and name
     const outputFileName = 'output.mp4';
 
-    const offset = +msToS(videoData[1].offset).toFixed(2)
-    const duration = +msToS(videoData[1].duration).toFixed(2)
-    const offsetPlusDuration = +(offset + duration).toFixed(2)
-    console.log("createFfmpegFlags -> offset:", offset, duration, offsetPlusDuration)
+    // const offset = +msToS(videoData[1].offset).toFixed(2)
+    // const duration = +msToS(videoData[1].duration).toFixed(2)
+    // const offsetPlusDuration = +(offset + duration).toFixed(2)
+    // console.log("createFfmpegFlags -> offset:", offset, duration, offsetPlusDuration)
+    console.log("createFfmpegFlags -> flags:", flags)
+
+    flags.push('-filter_complex')
+
+    let filterNumber = 0
+    let amixInputNumbers: number[] = []
+    let overlayInputs: string[] = []
+    let amixOutput: number
+    let filterComplexString = ''
+    // go over each element and map offsets to video and audio delays
+    // for (let i = 0; i < videoData.length; i++) {
+    for (let i = videoData.length - 1; i >= 0; i--) {
+        // videoData.forEach((data, inputIndex) => {
+        const data = videoData[i]
+        const offsetInS = +msToS(data.offset).toFixed(2)
+        const durationInS = +msToS(data.duration).toFixed(2)
+        console.log("createFfmpegFlags in for each -> inputIndex:", i, "data:", data)
+        const inputIndex = videoData.length - i
+
+        // set the video delay using the offset in seconds
+        filterComplexString += `[${inputIndex}:v]setpts=expr=PTS+${offsetInS}/TB[${filterNumber}];`
+        if (overlayInputs.length === 0) {
+            overlayInputs[0] = `${inputIndex}:v`
+        }
+        overlayInputs[1] = `${filterNumber}`
+        filterNumber += 1
+        console.log("createFfmpegFlags in for each -> filterComplexString:", filterComplexString)
+
+        filterComplexString += `[${overlayInputs[0]}][${overlayInputs[1]}]overlay=eof_action=repeat[${filterNumber}];`
+        overlayInputs[0] = `${filterNumber}`
+        filterNumber += 1
+        console.log("createFfmpegFlags in for each -> filterComplexString:", filterComplexString)
+
+        filterComplexString += `[${inputIndex}:a]adelay=delays=${offsetInS}s:all=1[${filterNumber}];`
+        amixInputNumbers.push(filterNumber)
+        filterNumber += 1
+        console.log("createFfmpegFlags in for each -> filterComplexString:", filterComplexString)
+    }
+
+    // mix all the audio streams together
+    const amixInputsString: string = amixInputNumbers.reduce((prev, curr) => {
+        prev += `[${curr}]`
+        return prev
+    }, '')
+    const amixInputs: string = '[0:a]' + amixInputsString
+    filterComplexString += `${amixInputs}amix=inputs=${videoData.length + 1}[${filterNumber}]`
+    amixOutput = filterNumber
+    console.log("createFfmpegFlags after for each -> filterComplexString:", filterComplexString)
+
+    flags.push(filterComplexString)
+
+    console.log("createFfmpegFlags -> flags:", flags)
+
+    // map output of last overlay to ouput file
+    flags.push('-map', `[${overlayInputs[0]}]`)
+    // map output of amix to ouput file
+    flags.push('-map', `[${amixOutput}]`)
+
+    flags.push(`${outputFileName}`)
+
+    console.log("createFfmpegFlags -> flags:", flags)
+
+    // ffmpeg -i output.mp4 -i testvideo1.mp4 -i testvideo2.mp4 -filter_complex "[1:v]setpts=expr=PTS+5/TB[2];[1:a]adelay=delays=5s:all=1[3];[2:v]setpts=expr=PTS+0/TB[4];[2:a]adelay=delays=0s:all=1[6];[0:v][4]overlay=eof_action=pass[5];[5][2]overlay=eof_action=pass[out_v];[0:a][3][6]amix=inputs=3[out_a]" -map "[out_a]" -map "[out_v]" out.mp4
 
     // TODO: change the flags to be dynamic
-    flags.push(
-        '-filter_complex',
-        `[0:v]setpts=expr=PTS+5/TB[1];
-        [0:a]adelay=delays=5s:all=1[2];
-        [1:v][1]overlay[out_v];
-        [2][1:a]amix[out_a]`,
-        '-map', '[out_v]',
-        '-map', '[out_a]',
-        '-y', // overwrite output files without asking
-        '-fps_mode', 'vfr',
-        outputFileName)
+    // flags.push(
+    //     '-filter_complex',
+    //     `[0:v]setpts=expr=PTS+10/TB[1];
+    //     [0:a]adelay=delays=10s:all=1[2];
+    //     [1:a]adelay=delays=0s:all=1[5];
+    //     [1:v]setpts=expr=PTS+0/TB[4];
+    //     [4][1]overlay=eof_action=repeat[out_v];[2][5]amix[out_a]`, // change eof_action to try what works
+    //     '-map', '[out_v]',
+    //     '-map', '[out_a]',
+    //     '-y', // overwrite output files without asking
+    //     '-fps_mode', 'vfr',
+    //     outputFileName)
 
-    // ffmpeg -i testvideo1.mp4 -i testvideo2.mp4 -filter_complex "[0:v]setpts=expr=PTS+15/TB[1];[0:a]adelay=delays=15s:all=1[2];[1:v][1]overlay[out_v];[2][1:a]amix[out_a]" -map "[out_a]" -map "[out_v]" out.mp4
+    // [1:v]setpts=expr=PTS-STARTPTS,tpad=start_duration=10[4];
+
+
+    // ffmpeg -i testvideo1.mp4 -i testvideo2.mp4 -filter_complex "[0:v]setpts=expr=PTS+0/TB[1];[0:a]adelay=delays=0s:all=1[2];[1:a]adelay=delays=10s:all=1[5];[1:v]setpts=expr=PTS-STARTPTS,tpad=start_duration=10[4];[4][1]overlay=eof_action=pass[out_v];[2][5]amix[out_a]" -map "[out_a]" -map "[out_v]" out.mp4
 
     return { outputFileName, flags }
 }
