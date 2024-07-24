@@ -171,7 +171,8 @@ function createFfmpegFlags(videoData: IFfmpegElement[]): { outputFileName: strin
         filterNumber += 1
         console.log("createFfmpegFlags in for each -> filterComplexString:", filterComplexString)
 
-        filterComplexString += `[${inputIndex}:a]adelay=delays=${offsetInS}s:all=1[${filterNumber}];`
+        // filterComplexString += `[${inputIndex}:a]adelay=delays=${offsetInS}s:all=1[${filterNumber}];`
+        filterComplexString += `[${inputIndex}:a]adelay=delays=${data.offset}:all=1[${filterNumber}];`
         amixInputNumbers.push(filterNumber)
         filterNumber += 1
         console.log("createFfmpegFlags in for each -> filterComplexString:", filterComplexString)
