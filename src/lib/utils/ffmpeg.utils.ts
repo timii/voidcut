@@ -159,14 +159,24 @@ function createFfmpegFlags(videoData: IFfmpegElement[]): { outputFileName: strin
 
         // set the video delay using the offset in seconds
         filterComplexString += `[${inputIndex}:v]setpts=expr=PTS+${offsetInS}/TB[${filterNumber}];`
+
         if (overlayInputs.length === 0) {
             overlayInputs[0] = `${inputIndex}:v`
+        }
+
+        let overlayEofAction = 'pass'
+        let repeatLast = '1'
+        if (i === 0) {
+            // overlayEofAction = 'repeat'
+            repeatLast = '0'
         }
         overlayInputs[1] = `${filterNumber}`
         filterNumber += 1
         console.log("createFfmpegFlags in for each -> filterComplexString:", filterComplexString)
 
-        filterComplexString += `[${overlayInputs[0]}][${overlayInputs[1]}]overlay=eof_action=repeat[${filterNumber}];`
+        // filterComplexString += `[${overlayInputs[0]}][${overlayInputs[1]}]overlay=eof_action=${overlayEofAction}[${filterNumber}];`
+        // filterComplexString += `[${overlayInputs[0]}][${overlayInputs[1]}]overlay=repeatlast=${repeatLast}:enable='between(t,${offsetInS},${offsetInS + durationInS})'[${filterNumber}];`
+        filterComplexString += `[${overlayInputs[0]}][${overlayInputs[1]}]overlay=enable='between(t,${offsetInS},${offsetInS + durationInS})'[${filterNumber}];`
         overlayInputs[0] = `${filterNumber}`
         filterNumber += 1
         console.log("createFfmpegFlags in for each -> filterComplexString:", filterComplexString)
