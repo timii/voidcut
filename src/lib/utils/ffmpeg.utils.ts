@@ -134,10 +134,6 @@ function createFfmpegFlags(videoData: IFfmpegElement[]): { outputFileName: strin
     // TODO: dynamically set an output file type and name
     const outputFileName = 'output.mp4';
 
-    // const offset = +msToS(videoData[1].offset).toFixed(2)
-    // const duration = +msToS(videoData[1].duration).toFixed(2)
-    // const offsetPlusDuration = +(offset + duration).toFixed(2)
-    // console.log("createFfmpegFlags -> offset:", offset, duration, offsetPlusDuration)
     console.log("createFfmpegFlags -> flags:", flags)
 
     flags.push('-filter_complex')
@@ -161,8 +157,9 @@ function createFfmpegFlags(videoData: IFfmpegElement[]): { outputFileName: strin
         filterComplexString += `[${inputIndex}:v]setpts=expr=PTS+${offsetInS}/TB[${filterNumber}];`
 
         if (overlayInputs.length === 0) {
-            overlayInputs[0] = `${inputIndex}:v`
+            overlayInputs[0] = `0:v`
         }
+        overlayInputs[1] = `${filterNumber}`
 
         let overlayEofAction = 'pass'
         let repeatLast = '1'
@@ -170,18 +167,17 @@ function createFfmpegFlags(videoData: IFfmpegElement[]): { outputFileName: strin
             // overlayEofAction = 'repeat'
             repeatLast = '0'
         }
-        overlayInputs[1] = `${filterNumber}`
+
         filterNumber += 1
         console.log("createFfmpegFlags in for each -> filterComplexString:", filterComplexString)
 
-        // filterComplexString += `[${overlayInputs[0]}][${overlayInputs[1]}]overlay=eof_action=${overlayEofAction}[${filterNumber}];`
-        // filterComplexString += `[${overlayInputs[0]}][${overlayInputs[1]}]overlay=repeatlast=${repeatLast}:enable='between(t,${offsetInS},${offsetInS + durationInS})'[${filterNumber}];`
+        // overlay the element between the offset and offset + duration
         filterComplexString += `[${overlayInputs[0]}][${overlayInputs[1]}]overlay=enable='between(t,${offsetInS},${offsetInS + durationInS})'[${filterNumber}];`
         overlayInputs[0] = `${filterNumber}`
         filterNumber += 1
         console.log("createFfmpegFlags in for each -> filterComplexString:", filterComplexString)
 
-        // filterComplexString += `[${inputIndex}:a]adelay=delays=${offsetInS}s:all=1[${filterNumber}];`
+        // set the audio delay using the offset in ms
         filterComplexString += `[${inputIndex}:a]adelay=delays=${data.offset}:all=1[${filterNumber}];`
         amixInputNumbers.push(filterNumber)
         filterNumber += 1
