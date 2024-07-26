@@ -370,3 +370,13 @@ export function formatPlaybackTime(time: number) {
 export function isElementFullyScrolled(el: HTMLElement): boolean {
     return el.scrollWidth - el.scrollLeft === el.clientWidth
 }
+
+// convert a given value in milliseconds to seconds
+export function msToS(value: number) {
+    return value / 1000
+}
+
+// convert a given value in seconds to milliseconds
+export function sToMS(value: number) {
+    return value * 1000
+}

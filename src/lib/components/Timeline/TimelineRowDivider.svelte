@@ -168,9 +168,6 @@
 		if (mediaData && e.type !== 'dragleave') {
 			handleTimelineMediaDrop(mediaData, index);
 		}
-
-		// TODO: implement
-		// handleAddElementToTimeline(e);
 	}
 </script>
 

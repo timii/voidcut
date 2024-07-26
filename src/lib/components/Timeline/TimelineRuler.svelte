@@ -9,7 +9,7 @@
 	$: updateAmountOfTicks($windowWidth);
 
 	function updateAmountOfTicks(widthInMs: number) {
-		console.log('updateAmountOfTicks -> width:', widthInMs);
+		// console.log('updateAmountOfTicks -> width:', widthInMs);
 
 		amountOfTicks = Math.ceil(widthInMs / CONSTS.secondsMultiplier);
 	}

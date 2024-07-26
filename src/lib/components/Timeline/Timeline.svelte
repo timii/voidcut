@@ -230,7 +230,6 @@
 				// new thumb position is the amount scrolled + the width of the timeline (- the width of the thumb + left padding)
 				currentThumbPosition.set(horizontalScrollValue + scrollContainerEl.clientWidth - 28);
 			}
-			// TODO: clamp thumb to either edge when scrolling (number needs to be calculated relactively to scroll amount)
 			console.log(
 				'timeline scrolled -> e:',
 				e,

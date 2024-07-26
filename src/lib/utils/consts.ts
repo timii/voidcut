@@ -5,5 +5,6 @@ export const CONSTS = {
     mediaPoolElementWidth: 128,
     mediaPoolTransferKey: 'media-data',
     timelineElTransferKey: 'timeline-move-data',
-    customEventNameDropTimelineElement: 'drop-timeline-element'
+    customEventNameDropTimelineElement: 'drop-timeline-element',
+    timelineScrollIntervalTimer: 50
 }

@@ -24,12 +24,12 @@
 	$: test($currentPlaybackTime);
 
 	function test(playbackTime: number) {
-		console.log(
-			'currentPlaybackTime change in player -> playbackTime:',
-			playbackTime,
-			'map:',
-			playerElementsMap
-		);
+		// console.log(
+		// 	'currentPlaybackTime change in player -> playbackTime:',
+		// 	playbackTime,
+		// 	'map:',
+		// 	playerElementsMap
+		// );
 
 		const playing = $previewPlaying;
 		if (!playing) {
