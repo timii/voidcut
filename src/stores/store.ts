@@ -5,6 +5,7 @@ import { writable } from 'svelte/store';
 // General
 export const windowWidth = writable(0) // current window width in ms
 export const ffmpegLoaded = writable(false)
+export const exportOverlayOpen = writable(false)
 
 // Timeline
 export const currentTimelineScale = writable(40); // default timeline scale (40 * 1px = 1 sec)

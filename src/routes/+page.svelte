@@ -2,11 +2,19 @@
 	import Timeline from '$lib/components/timeline/Timeline.svelte';
 	import MediaPool from '$lib/components/workbench/MediaPool.svelte';
 	import Preview from '$lib/components/preview/Preview.svelte';
-	import { currentTimelineScale, maxPlaybackTime, thumbOffset, windowWidth } from '../stores/store';
+	import {
+		currentTimelineScale,
+		exportOverlayOpen,
+		maxPlaybackTime,
+		thumbOffset,
+		windowWidth
+	} from '../stores/store';
 	import { CONSTS } from '$lib/utils/consts';
 	import Header from '$lib/components/header/Header.svelte';
 	import { onMount } from 'svelte';
 	import { initializeFfmpeg } from '$lib/utils/ffmpeg.utils';
+	import Overlay from '$lib/components/shared/Overlay.svelte';
+	import ExportDialog from '$lib/components/header/ExportDialog.svelte';
 
 	// TODO: add onMount hook that resets the Dragging storte values on mouse up for the whole window
 	onMount(async () => {
@@ -46,5 +54,9 @@
 		<Timeline></Timeline>
 	</div>
 </main>
+
+<Overlay>
+	<ExportDialog open={$exportOverlayOpen} />
+</Overlay>
 
 <svelte:window on:resize={() => onWindowResize(innerWidth)} />
