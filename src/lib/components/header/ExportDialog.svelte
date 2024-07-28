@@ -8,7 +8,8 @@
 		exportOverlayOpen,
 		exportState,
 		ffmpegProgress,
-		ffmpegProgressElapsedTime
+		ffmpegProgressElapsedTime,
+		processedFileSize
 	} from '../../../stores/store';
 	import { ExportState } from '$lib/interfaces/Ffmpeg';
 	import { downloadOutput, terminateFfmpegExecution } from '$lib/utils/ffmpeg.utils';
@@ -50,7 +51,7 @@
 		on:click={onClickBackdrop}
 	>
 		<div
-			class="fixed -translate-x-1/2 -translate-y-1/2 export-dialog bg-background-color-light top-1/2 left-1/2 h-[400px] w-[700px] rounded-2xl p-8 gap-3 flex flex-col items-center justify-center"
+			class="fixed -translate-x-1/2 -translate-y-1/2 export-dialog bg-background-color-light text-text-color-lightest top-1/2 left-1/2 h-[400px] w-[700px] rounded-2xl p-8 gap-3 flex flex-col items-center justify-center"
 		>
 			{#if $exportState === ExportState.PROCESSING}
 				<!-- <div class="absolute right-8 top-6">
@@ -77,7 +78,10 @@
 				<img class="mb-4" src={SuccessIcon} alt="complete" />
 				<div class="text-xl">Exporting complete</div>
 				<!-- TODO: add file infos -->
-				<div>File Info: File Size, elapsed time, etc</div>
+				<div class="text-sm text-center text-text-color-darkest">
+					<div>File size: {$processedFileSize} MB</div>
+					<div>Elapsed time: elapsed time</div>
+				</div>
 				<div class="mt-6">
 					<!-- TODO: add icon -->
 					<Button onClickCallback={onSaveClick} text={'Download'}></Button>

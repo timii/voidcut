@@ -1,5 +1,5 @@
 import { FFmpeg } from "@ffmpeg/ffmpeg";
-import { availableMedia, exportOverlayOpen, exportState, ffmpegLoaded, ffmpegProgress, ffmpegProgressElapsedTime, ffmpegProgressPrevValue, processedFile, timelineTracks } from "../../stores/store";
+import { availableMedia, exportOverlayOpen, exportState, ffmpegLoaded, ffmpegProgress, ffmpegProgressElapsedTime, ffmpegProgressPrevValue, processedFile, processedFileSize, timelineTracks } from "../../stores/store";
 import { get } from "svelte/store";
 import { convertDataUrlToUIntArray, msToS, sToMS } from "./utils";
 import { ExportState, type IFfmpegElement } from "$lib/interfaces/Ffmpeg";
@@ -94,6 +94,10 @@ export async function callFfmpeg() {
     const outputData = await ffmpeg.readFile(outputFileName) as Uint8Array;
     console.log('[FFMPEG] reading created output file successful');
 
+    // calculate file size from processed file
+    const fileSize = +(outputData.length / 1_048_576).toFixed(2)
+    processedFileSize.set(fileSize)
+
     // write processed file into store
     processedFile.set(outputData)
     console.log('[FFMPEG] writing processed into store successful');
@@ -143,7 +147,7 @@ async function createBlankVideo(videoData: IFfmpegElement[]) {
     // use just overlays at different times for the individual elements
     const flags: string[] = []
     flags.push(
-        "-f", "lavfi", "-i", "color=size=1280x720:rate=25:color=black", "-f", "lavfi", "-i", "anullsrc=channel_layout=stereo:sample_rate=44100", "-t", "20", "blank.mp4"
+        "-f", "lavfi", "-i", "color=size=1280x720:rate=25:color=black", "-f", "lavfi", "-i", "anullsrc=channel_layout=stereo:sample_rate=44100", "-t", "5", "blank.mp4"
     )
 
     const execReturn = await ffmpeg.exec(flags)
