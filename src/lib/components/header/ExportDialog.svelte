@@ -2,8 +2,8 @@
 	import Button from '../shared/Button.svelte';
 	import IconButton from '../shared/IconButton.svelte';
 	import CloseIcon from '$lib/assets/header/close.png';
-	import SuccessIcon from '$lib/assets/header/complete-52.png';
-	import ErrorIcon from '$lib/assets/header/error-52.png';
+	import SuccessIcon from '$lib/assets/header/complete.png';
+	import ErrorIcon from '$lib/assets/header/error.png';
 	import {
 		exportOverlayOpen,
 		exportState,

@@ -16,6 +16,15 @@
 	import Overlay from '$lib/components/shared/Overlay.svelte';
 	import ExportDialog from '$lib/components/header/ExportDialog.svelte';
 
+	const baseImgPath = 'src/lib/assets/';
+	const imageUrls = [
+		'header/close.png',
+		'header/complete.png',
+		'header/error.png',
+		'preview/pause.png'
+	];
+	$: preloadImageUrls = imageUrls.map((url) => baseImgPath + url);
+
 	// TODO: add onMount hook that resets the Dragging storte values on mouse up for the whole window
 	onMount(async () => {
 		// initialize all the ffmpeg stuff in the background
@@ -60,3 +69,10 @@
 </Overlay>
 
 <svelte:window on:resize={() => onWindowResize(innerWidth)} />
+
+<!-- preload images -->
+<svelte:head>
+	{#each preloadImageUrls as image}
+		<link rel="preload" as="image" href={image} />
+	{/each}
+</svelte:head>
