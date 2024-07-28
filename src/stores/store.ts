@@ -13,6 +13,7 @@ export const ffmpegProgress = writable(0) // track the progress of ffmpeg in per
 export const ffmpegProgressPrevValue = writable(0) // track the previous value for progress of ffmpeg
 export const ffmpegProgressElapsedTime = writable(0) // track the elapsed time since the export has been started
 export const exportState = writable(ExportState.NOT_STARTED) // track the current state of the export
+export const processedFile = writable(new Uint8Array) // track the current state of the export
 
 // Timeline
 export const currentTimelineScale = writable(40); // default timeline scale (40 * 1px = 1 sec)

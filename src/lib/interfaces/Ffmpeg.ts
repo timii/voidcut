@@ -5,8 +5,8 @@ export interface IFfmpegElement {
 }
 
 export enum ExportState {
-    NOT_STARTED,
-    PROCESSING,
-    COMPLETE,
-    FAILED,
+    NOT_STARTED = 'not_started',
+    PROCESSING = 'processing',
+    COMPLETE = 'complete',
+    FAILED = 'failed',
 }

@@ -1,10 +1,13 @@
 import { FFmpeg } from "@ffmpeg/ffmpeg";
-import { availableMedia, exportState, ffmpegLoaded, ffmpegProgress, ffmpegProgressElapsedTime, ffmpegProgressPrevValue, timelineTracks } from "../../stores/store";
+import { availableMedia, exportState, ffmpegLoaded, ffmpegProgress, ffmpegProgressElapsedTime, ffmpegProgressPrevValue, processedFile, timelineTracks } from "../../stores/store";
 import { get } from "svelte/store";
 import { convertDataUrlToUIntArray, msToS, sToMS } from "./utils";
 import { ExportState, type IFfmpegElement } from "$lib/interfaces/Ffmpeg";
 
 let ffmpeg: FFmpeg
+
+// TODO: dynamically set an output file type and name
+const outputFileName = 'output.mp4';
 
 // initialize FFmpeg, setup logging and load necessary packages
 export async function initializeFfmpeg() {
@@ -67,7 +70,7 @@ export async function callFfmpeg() {
     }
 
     // map elements into ffmpeg flags and parameters
-    const { outputFileName, flags } = createFfmpegFlags(videoData)
+    const flags = createFfmpegFlags(videoData)
     console.log('[FFMPEG] creating ffmpeg flags successful');
 
     // write necessary elements into ffmpeg.wasm filesystem
@@ -91,9 +94,13 @@ export async function callFfmpeg() {
     const outputData = await ffmpeg.readFile(outputFileName) as Uint8Array;
     console.log('[FFMPEG] reading created output file successful');
 
+    // write processed file into store
+    processedFile.set(outputData)
+    console.log('[FFMPEG] writing processed into store successful');
+
     // download read file
-    downloadOutput(outputData, outputFileName)
-    console.log('[FFMPEG] downloading output file successful');
+    // downloadOutput(outputData, outputFileName)
+    // console.log('[FFMPEG] downloading output file successful');
 }
 
 // get and map timeline elements and prepare them so they can be used in ffmpeg
@@ -146,7 +153,7 @@ async function createBlankVideo(videoData: IFfmpegElement[]) {
 
 // use the mapped timeline elements to dynamically create the necessary 
 // ffmpeg flags and parameters 
-function createFfmpegFlags(videoData: IFfmpegElement[]): { outputFileName: string, flags: string[] } {
+function createFfmpegFlags(videoData: IFfmpegElement[]): string[] {
 
     const flags: string[] = [];
 
@@ -160,9 +167,6 @@ function createFfmpegFlags(videoData: IFfmpegElement[]): { outputFileName: strin
         // push the -i flag with the input name
         flags.push('-i', fileName);
     }
-
-    // TODO: dynamically set an output file type and name
-    const outputFileName = 'output.mp4';
 
     console.log("createFfmpegFlags -> flags:", flags)
 
@@ -258,7 +262,7 @@ function createFfmpegFlags(videoData: IFfmpegElement[]): { outputFileName: strin
 
     // ffmpeg -i testvideo1.mp4 -i testvideo2.mp4 -filter_complex "[0:v]setpts=expr=PTS+0/TB[1];[0:a]adelay=delays=0s:all=1[2];[1:a]adelay=delays=10s:all=1[5];[1:v]setpts=expr=PTS-STARTPTS,tpad=start_duration=10[4];[4][1]overlay=eof_action=pass[out_v];[2][5]amix[out_a]" -map "[out_a]" -map "[out_v]" out.mp4
 
-    return { outputFileName, flags }
+    return flags
 }
 
 // write given video data into ffmpeg.wasm filesystem
@@ -276,7 +280,8 @@ function createFileName(index: number) {
 }
 
 // convert output data into blob and download it
-function downloadOutput(data: Uint8Array, outputFileName: string) {
+export function downloadOutput() {
+    const data = get(processedFile)
     const a = document.createElement('a');
     // TODO: dynamic output file type instead of hardcoding 'video/mp4'
     a.href = URL.createObjectURL(new Blob([data.buffer], { type: 'video/mp4' }));

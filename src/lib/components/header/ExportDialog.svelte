@@ -2,11 +2,17 @@
 	import Button from '../shared/Button.svelte';
 	import IconButton from '../shared/IconButton.svelte';
 	import CloseIcon from '$lib/assets/header/close.png';
-	import { exportOverlayOpen } from '../../../stores/store';
+	import SuccessIcon from '$lib/assets/header/complete-52.png';
+	import {
+		exportOverlayOpen,
+		exportState,
+		ffmpegProgress,
+		ffmpegProgressElapsedTime
+	} from '../../../stores/store';
+	import { ExportState } from '$lib/interfaces/Ffmpeg';
+	import { downloadOutput } from '$lib/utils/ffmpeg.utils';
 
 	export let open = false;
-
-	let progress = 20;
 
 	function onClickBackdrop(e: Event) {
 		e.stopPropagation();
@@ -22,6 +28,12 @@
 		console.log('onCloseClick');
 		exportOverlayOpen.set(false);
 	}
+
+	function onSaveClick(e: Event) {
+		e.stopPropagation();
+		console.log('onSaveClick');
+		downloadOutput();
+	}
 </script>
 
 {#if open}
@@ -32,23 +44,39 @@
 		<div
 			class="fixed -translate-x-1/2 -translate-y-1/2 export-dialog bg-background-color-light top-1/2 left-1/2 h-[400px] w-[700px] rounded-2xl p-8 gap-3 flex flex-col items-center justify-center"
 		>
-			<div class="absolute right-8 top-6">
+			{#if $exportState === ExportState.PROCESSING}
+				<!-- <div class="absolute right-8 top-6">
 				<IconButton onClickCallback={onCloseClick} icon={CloseIcon}></IconButton>
-			</div>
-			<div class="text-3xl">Exporting...</div>
-			<div class="mb-10 text-lg text-l">Your video is being processed, please wait</div>
-			<div class="flex items-center gap-4">
-				<div
-					class="progress-bar h-4 w-[450px] bg-background-color-darker rounded-sm relative block"
-				>
-					<span style="width: {progress}%;" class="block h-full rounded-sm bg-accent-color"></span>
+			</div> -->
+				<div class="text-3xl">Exporting...</div>
+				<div class="mb-10 text-lg text-l">Your video is being processed, please wait</div>
+				<div class="flex items-center gap-4">
+					<div
+						class="progress-bar h-4 w-[450px] bg-background-color-darker rounded-sm relative block"
+					>
+						<span style="width: {$ffmpegProgress}%;" class="block h-full rounded-sm bg-accent-color"
+						></span>
+					</div>
+					<div class="color-accent-color">{$ffmpegProgress}%</div>
 				</div>
-				<div class="color-accent-color">{progress}%</div>
-			</div>
-			<div>Estimated Time Left: TBD</div>
-			<div class="mt-10">
-				<Button text={'Cancel'} onClickCallback={onCancelClick}></Button>
-			</div>
+				<!-- TODO: implement an own timer that counts the elapsed time -->
+				<div>Elapsed time: {$ffmpegProgressElapsedTime} seconds</div>
+				<div class="mt-10">
+					<Button text={'Cancel'} onClickCallback={onCancelClick}></Button>
+				</div>
+				<div>{$exportState}</div>
+			{:else if $exportState === ExportState.COMPLETE}
+				<img class="mb-4" src={SuccessIcon} alt="complete" />
+				<div class="text-xl">Exporting complete</div>
+				<!-- TODO: add file infos -->
+				<div>File Info: File Size, elapsed time, etc</div>
+				<div class="mt-6">
+					<!-- TODO: add icon -->
+					<Button onClickCallback={onSaveClick} text={'Download'}></Button>
+				</div>
+			{:else}
+				<div>error</div>
+			{/if}
 		</div>
 	</div>
 {/if}
