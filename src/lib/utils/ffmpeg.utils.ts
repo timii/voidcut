@@ -1,5 +1,5 @@
 import { FFmpeg } from "@ffmpeg/ffmpeg";
-import { availableMedia, exportState, ffmpegLoaded, ffmpegProgress, ffmpegProgressElapsedTime, ffmpegProgressPrevValue, processedFile, timelineTracks } from "../../stores/store";
+import { availableMedia, exportOverlayOpen, exportState, ffmpegLoaded, ffmpegProgress, ffmpegProgressElapsedTime, ffmpegProgressPrevValue, processedFile, timelineTracks } from "../../stores/store";
 import { get } from "svelte/store";
 import { convertDataUrlToUIntArray, msToS, sToMS } from "./utils";
 import { ExportState, type IFfmpegElement } from "$lib/interfaces/Ffmpeg";
@@ -11,7 +11,6 @@ const outputFileName = 'output.mp4';
 
 // initialize FFmpeg, setup logging and load necessary packages
 export async function initializeFfmpeg() {
-    exportState.set(ExportState.PROCESSING)
 
     // create a new ffmpeg instance
     ffmpeg = new FFmpeg();
@@ -53,6 +52,7 @@ export async function initializeFfmpeg() {
 
 // entry point when starting export 
 export async function callFfmpeg() {
+    exportState.set(ExportState.PROCESSING)
     console.log('callFfmpeg called');
 
     // get and map timeline elements so they can be used in ffmpeg
@@ -290,4 +290,18 @@ export function downloadOutput() {
     setTimeout(() => {
         a.click();
     }, 1000);
+}
+
+export async function terminateFfmpegExecution() {
+    console.log("terminateFfmpegExecution called")
+
+    // terminate all api calls and web worker
+    ffmpeg.terminate()
+
+    // reset store values
+    exportState.set(ExportState.NOT_STARTED)
+    exportOverlayOpen.set(false)
+
+    // initialize ffmpeg again so its directly usable again
+    await initializeFfmpeg()
 }

@@ -11,7 +11,7 @@
 		ffmpegProgressElapsedTime
 	} from '../../../stores/store';
 	import { ExportState } from '$lib/interfaces/Ffmpeg';
-	import { downloadOutput } from '$lib/utils/ffmpeg.utils';
+	import { downloadOutput, terminateFfmpegExecution } from '$lib/utils/ffmpeg.utils';
 
 	export let open = false;
 
@@ -20,9 +20,10 @@
 		console.log('onClickBackdrop');
 	}
 
-	function onCancelClick(e: Event) {
+	async function onCancelClick(e: Event) {
 		e.stopPropagation();
 		console.log('onCancelClick');
+		await terminateFfmpegExecution();
 	}
 
 	// function onCloseClick() {
