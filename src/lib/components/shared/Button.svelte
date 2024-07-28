@@ -1,7 +1,7 @@
 <script lang="ts">
 	export let text: string = '';
 	export let disabled: boolean = false;
-	export let onClickCallback = () => {};
+	export let onClickCallback = (e: Event) => {};
 </script>
 
 <button

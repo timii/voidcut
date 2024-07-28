@@ -1,13 +1,15 @@
 import { FFmpeg } from "@ffmpeg/ffmpeg";
-import { availableMedia, ffmpegLoaded, timelineTracks } from "../../stores/store";
+import { availableMedia, exportState, ffmpegLoaded, ffmpegProgress, ffmpegProgressElapsedTime, ffmpegProgressPrevValue, timelineTracks } from "../../stores/store";
 import { get } from "svelte/store";
 import { convertDataUrlToUIntArray, msToS, sToMS } from "./utils";
-import { type IFfmpegElement } from "$lib/interfaces/Ffmpeg";
+import { ExportState, type IFfmpegElement } from "$lib/interfaces/Ffmpeg";
 
 let ffmpeg: FFmpeg
 
 // initialize FFmpeg, setup logging and load necessary packages
 export async function initializeFfmpeg() {
+    exportState.set(ExportState.PROCESSING)
+
     // create a new ffmpeg instance
     ffmpeg = new FFmpeg();
 
@@ -18,7 +20,20 @@ export async function initializeFfmpeg() {
 
     // listen to progress events and print them into the console
     ffmpeg.on('progress', ({ progress, time }) => {
-        console.log('[PROGRESS] progress:', progress * 100, 'time:', time / 1000000);
+        const progressPercent = progress * 100
+        const progressRounded = Math.round(progressPercent)
+        const timeInS = time / 1000000
+        console.log('[PROGRESS] progress:', progressPercent, 'time:', timeInS);
+
+        // handle weird progress values 
+        const prevProgessValue = get(ffmpegProgressPrevValue)
+        ffmpegProgressPrevValue.set(progressRounded)
+        if (prevProgessValue < 0 || progressRounded > 100) {
+            ffmpegProgress.update(prevValue => prevValue)
+        }
+        else {
+            ffmpegProgress.set(Math.max(0, Math.min(100, progressRounded)))
+        }
     });
 
     // load ffmpeg-core inside web worker
@@ -42,8 +57,14 @@ export async function callFfmpeg() {
     console.log('[FFMPEG] mapping of timeline elements successful');
 
     // create blank video with only black screen
-    await createBlankVideo(videoData)
+    const blankVideoReturn = await createBlankVideo(videoData)
     console.log('[FFMPEG] creation of blank video successful');
+
+    // handle error cases when executing ffmpeg and stop execution
+    if (blankVideoReturn !== 0) {
+        exportState.set(ExportState.FAILED)
+        return;
+    }
 
     // map elements into ffmpeg flags and parameters
     const { outputFileName, flags } = createFfmpegFlags(videoData)
@@ -54,10 +75,17 @@ export async function callFfmpeg() {
     console.log('[FFMPEG] writing into ffmpeg filesystem successful');
 
     // execute ffmpeg with the created flags
-    await ffmpeg.exec(flags)
+    const execReturn = await ffmpeg.exec(flags)
     console.log('[FFMPEG] executing ffmpeg commands successful');
 
-    // TODO: handle error cases when executing
+    // handle error cases when executing ffmpeg and stop execution
+    if (execReturn !== 0) {
+        exportState.set(ExportState.FAILED)
+        return;
+    }
+
+    // set export state to be successful if we reached this point
+    exportState.set(ExportState.COMPLETE)
 
     // read output file from ffmpeg.wasm
     const outputData = await ffmpeg.readFile(outputFileName) as Uint8Array;
@@ -111,7 +139,9 @@ async function createBlankVideo(videoData: IFfmpegElement[]) {
         "-f", "lavfi", "-i", "color=size=1280x720:rate=25:color=black", "-f", "lavfi", "-i", "anullsrc=channel_layout=stereo:sample_rate=44100", "-t", "20", "blank.mp4"
     )
 
-    await ffmpeg.exec(flags)
+    const execReturn = await ffmpeg.exec(flags)
+
+    return execReturn
 }
 
 // use the mapped timeline elements to dynamically create the necessary 

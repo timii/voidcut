@@ -3,9 +3,9 @@
 	import { exportOverlayOpen } from '../../../stores/store';
 	import Button from '../shared/Button.svelte';
 
-	async function onExportButtonClick() {
+	async function onExportButtonClick(e: Event) {
 		exportOverlayOpen.set(true);
-		// await callFfmpeg();
+		await callFfmpeg();
 	}
 </script>
 

@@ -3,3 +3,10 @@ export interface IFfmpegElement {
     duration: number; // duration in ms
     offset: number; // offset in ms
 }
+
+export enum ExportState {
+    NOT_STARTED,
+    PROCESSING,
+    COMPLETE,
+    FAILED,
+}

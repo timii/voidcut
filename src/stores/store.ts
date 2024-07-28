@@ -1,11 +1,18 @@
+import { ExportState } from '$lib/interfaces/Ffmpeg';
 import type { IMedia } from '$lib/interfaces/Media';
 import type { ITimelineDraggedElement, ITimelineTrack } from '$lib/interfaces/Timeline';
 import { writable } from 'svelte/store';
 
 // General
 export const windowWidth = writable(0) // current window width in ms
+
+// Ffmpeg
 export const ffmpegLoaded = writable(false)
 export const exportOverlayOpen = writable(false)
+export const ffmpegProgress = writable(0) // track the progress of ffmpeg in percent
+export const ffmpegProgressPrevValue = writable(0) // track the previous value for progress of ffmpeg
+export const ffmpegProgressElapsedTime = writable(0) // track the elapsed time since the export has been started
+export const exportState = writable(ExportState.NOT_STARTED) // track the current state of the export
 
 // Timeline
 export const currentTimelineScale = writable(40); // default timeline scale (40 * 1px = 1 sec)
