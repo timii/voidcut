@@ -3,6 +3,7 @@
 	import IconButton from '../shared/IconButton.svelte';
 	import CloseIcon from '$lib/assets/header/close.png';
 	import SuccessIcon from '$lib/assets/header/complete-52.png';
+	import ErrorIcon from '$lib/assets/header/error-52.png';
 	import {
 		exportOverlayOpen,
 		exportState,
@@ -24,15 +25,21 @@
 		console.log('onCancelClick');
 	}
 
-	function onCloseClick() {
-		console.log('onCloseClick');
-		exportOverlayOpen.set(false);
-	}
+	// function onCloseClick() {
+	// 	console.log('onCloseClick');
+	// 	exportOverlayOpen.set(false);
+	// }
 
 	function onSaveClick(e: Event) {
 		e.stopPropagation();
 		console.log('onSaveClick');
 		downloadOutput();
+	}
+
+	function onCloseClick(e: Event) {
+		e.stopPropagation();
+		console.log('onCloseClick');
+		exportOverlayOpen.set(false);
 	}
 </script>
 
@@ -75,7 +82,11 @@
 					<Button onClickCallback={onSaveClick} text={'Download'}></Button>
 				</div>
 			{:else}
-				<div>error</div>
+				<img class="mb-4" src={ErrorIcon} alt="error" />
+				<div class="text-xl">There was an error during processing!</div>
+				<div class="mt-6">
+					<Button onClickCallback={onCloseClick} text={'Close'}></Button>
+				</div>
 			{/if}
 		</div>
 	</div>
