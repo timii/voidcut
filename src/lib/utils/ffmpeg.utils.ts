@@ -3,8 +3,14 @@ import { availableMedia, exportOverlayOpen, exportState, ffmpegLoaded, ffmpegPro
 import { get } from "svelte/store";
 import { convertDataUrlToUIntArray, msToS, sToMS } from "./utils";
 import { ExportState, type IFfmpegElement } from "$lib/interfaces/Ffmpeg";
+import { adjustingInterval } from "./betterInterval";
+import { CONSTS } from "./consts";
 
 let ffmpeg: FFmpeg
+let elapsedTimeInterval: {
+    start: () => void;
+    stop: () => void;
+}
 
 // TODO: dynamically set an output file type and name
 const outputFileName = 'output.mp4';
@@ -52,6 +58,9 @@ export async function initializeFfmpeg() {
 
 // entry point when starting export 
 export async function callFfmpeg() {
+    // start timer for elapsed time calculation
+    startTimer()
+
     exportState.set(ExportState.PROCESSING)
     console.log('callFfmpeg called');
 
@@ -66,6 +75,7 @@ export async function callFfmpeg() {
     // handle error cases when executing ffmpeg and stop execution
     if (blankVideoReturn !== 0) {
         exportState.set(ExportState.FAILED)
+        stopTimer()
         return;
     }
 
@@ -84,15 +94,18 @@ export async function callFfmpeg() {
     // handle error cases when executing ffmpeg and stop execution
     if (execReturn !== 0) {
         exportState.set(ExportState.FAILED)
+        stopTimer()
         return;
     }
-
-    // set export state to be successful if we reached this point
-    exportState.set(ExportState.COMPLETE)
 
     // read output file from ffmpeg.wasm
     const outputData = await ffmpeg.readFile(outputFileName) as Uint8Array;
     console.log('[FFMPEG] reading created output file successful');
+
+    // set export state to be successful if we reached this point
+    exportState.set(ExportState.COMPLETE)
+    stopTimer()
+
 
     // calculate file size from processed file
     const fileSize = +(outputData.length / 1_048_576).toFixed(2)
@@ -308,4 +321,29 @@ export async function terminateFfmpegExecution() {
 
     // initialize ffmpeg again so its directly usable again
     await initializeFfmpeg()
+}
+
+// set up the interval for updating the elapsed time
+function startTimer() {
+    //reset the previous store value
+    ffmpegProgressElapsedTime.set(0)
+
+    const intervalCallback = () => {
+        ffmpegProgressElapsedTime.update(value => value + CONSTS.exportIntervalTimer)
+    }
+
+    const doError = () => {
+        console.warn('The drift exceeded the interval.');
+    };
+
+    // set up and start self adjusting interval
+    elapsedTimeInterval = adjustingInterval(intervalCallback, CONSTS.exportIntervalTimer, doError)
+    elapsedTimeInterval.start()
+}
+
+// clear the interval
+function stopTimer() {
+    if (elapsedTimeInterval) {
+        elapsedTimeInterval.stop()
+    }
 }

@@ -12,7 +12,7 @@ export default {
         "background-color-lightest": '#5b5b5e',
         "text-color-dark": '#b8b8b8',
         "text-color-darker": '#aeaeae',
-        "text-color-darkest": '#a5a5a5',
+        "text-color-darkest": '#6b7280',
         "text-color": '#c2c2c2',
         "text-color-light": '#cccccc',
         "text-color-lighter": '#d6d6d6',

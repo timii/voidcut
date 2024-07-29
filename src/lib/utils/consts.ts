@@ -1,5 +1,6 @@
 export const CONSTS = {
     playbackIntervalTimer: 50,
+    exportIntervalTimer: 1000,
     secondsMultiplier: 1000,
     resetDelay: 50,
     mediaPoolElementWidth: 128,
