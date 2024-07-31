@@ -380,18 +380,24 @@ export function msToS(value: number) {
 export function sToMS(value: number) {
     return value * 1000
 }
-// format a given millseconds value to seconds/minutes/hours depending on how big the value is
-export function formatMs(value: number) {
-    // if current time is less than a minute
-    // if (value < 60_000) {
-    //     return msToS(value)
-    // }
-    // if current time is more than a minute but less than an hour 
-    // if (value < 3_600_000) {
-    // return msToMin(value)
-    // }
-    // if current time is more than an hour
-    // else {
-    return msToHr(value)
-    // }
+
+// format a given millseconds value to hours:minutes:seconds
+export function msToHr(value: number) {
+
+    let hours, minutes, seconds, total_hours, total_minutes, total_seconds;
+
+    total_seconds = parseInt(Math.floor(value / 1000).toString());
+    total_minutes = parseInt(Math.floor(total_seconds / 60).toString());
+    total_hours = parseInt(Math.floor(total_minutes / 60).toString());
+
+    seconds = parseInt((total_seconds % 60).toString());
+    minutes = parseInt((total_minutes % 60).toString());
+    hours = parseInt((total_hours % 24).toString());
+
+    const s = seconds < 10 ? '0' + seconds : seconds;
+    const m = minutes < 10 ? '0' + minutes : minutes;
+    const h = hours < 10 ? '0' + hours : hours;
+
+
+    return h + ':' + m + ':' + s;
 }
