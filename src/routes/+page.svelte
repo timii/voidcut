@@ -71,8 +71,9 @@
 <svelte:window on:resize={() => onWindowResize(innerWidth)} />
 
 <!-- preload images -->
+<!-- TODO: check its possible to remove the warnings in the console caused by the preload -->
 <svelte:head>
 	{#each preloadImageUrls as image}
-		<link rel="preload prefetch" as="image" href={image} />
+		<link rel="preload" as="image" href={image} />
 	{/each}
 </svelte:head>
