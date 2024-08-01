@@ -55,9 +55,6 @@
 			class="fixed -translate-x-1/2 -translate-y-1/2 export-dialog bg-background-color-light text-text-color-lightest top-1/2 left-1/2 h-[400px] w-[700px] rounded-2xl p-8 gap-3 flex flex-col items-center justify-center"
 		>
 			{#if $exportState === ExportState.PROCESSING}
-				<!-- <div class="absolute right-8 top-6">
-				<IconButton onClickCallback={onCloseClick} icon={CloseIcon}></IconButton>
-			</div> -->
 				<div class="text-3xl">Exporting...</div>
 				<div class="mb-10 text-lg text-l">Your video is being processed, please wait</div>
 				<div class="flex items-center gap-4">
@@ -74,8 +71,10 @@
 				<div class="mt-10">
 					<Button text={'Cancel'} onClickCallback={onCancelClick}></Button>
 				</div>
-				<div>{$exportState}</div>
 			{:else if $exportState === ExportState.COMPLETE}
+				<div class="absolute right-8 top-6">
+					<IconButton onClickCallback={onCloseClick} icon={CloseIcon}></IconButton>
+				</div>
 				<img class="mb-4" src={SuccessIcon} alt="complete" />
 				<div class="text-xl">Exporting complete</div>
 				<!-- TODO: add file infos -->
@@ -88,6 +87,9 @@
 					<Button onClickCallback={onSaveClick} text={'Download'}></Button>
 				</div>
 			{:else}
+				<div class="absolute right-8 top-6">
+					<IconButton onClickCallback={onCloseClick} icon={CloseIcon}></IconButton>
+				</div>
 				<img class="mb-4" src={ErrorIcon} alt="error" />
 				<div class="text-xl">There was an error during processing!</div>
 				<div class="mt-6">
