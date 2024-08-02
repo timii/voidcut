@@ -1,6 +1,6 @@
 import { MediaType, type IMedia, type IFileMetadata } from "$lib/interfaces/Media";
 import type { ITimelineDraggedElement, ITimelineElement, ITimelineTrack } from "$lib/interfaces/Timeline";
-import { availableMedia, isTimelineElementBeingDragged, isThumbBeingDragged, timelineTracks, currentPlaybackTime, playbackIntervalId, currentTimelineScale, currentThumbPosition, thumbOffset, horizontalScroll, selectedElement, draggedElement } from "../../stores/store";
+import { availableMedia, isTimelineElementBeingDragged, isThumbBeingDragged, timelineTracks, currentPlaybackTime, playbackIntervalId, currentTimelineScale, currentThumbPosition, thumbOffset, horizontalScroll, selectedElement, draggedElement, previewPlaying } from "../../stores/store";
 import { CONSTS } from "./consts";
 import { adjustingInterval } from "./betterInterval";
 import { get } from "svelte/store";
@@ -11,6 +11,7 @@ let interval: {
     start: () => void;
     stop: () => void;
 }
+let timelineScrollContainer: Element | null
 
 // save a given array of media objects into the store 
 export function saveFilesToStore(files: IMedia[]) {
@@ -183,8 +184,8 @@ function convertFileToDataUrl(file: File): Promise<string> {
     })
 }
 
-// convert a base64 string into a binary UInt8Array
 // source: https://gist.github.com/borismus/1032746
+// convert a base64 string into a binary UInt8Array
 export function convertDataUrlToUIntArray(dataUrl: string) {
     const BASE64_MARKER = ';base64,';
     const base64Index = dataUrl.indexOf(BASE64_MARKER) + BASE64_MARKER.length;
@@ -222,6 +223,7 @@ export function pausePlayback() {
         // set the store value back to zero
         return 0;
     })
+    previewPlaying.set(false)
 }
 
 // create interval that increases current playback time
@@ -232,6 +234,7 @@ export function resumePlayback() {
     // console.time('Execution time');
     // currentPlaybackTime.subscribe(el => console.log("playback interval -> currentPlaybackTime:", el))
 
+    // TODO: only update current playback time if current playback time is less or equal to max playback time
     const intervallCallback = () => {
         // var diff = new Date().getTime() - startTime;
         // var drift = diff % 1000;
@@ -282,6 +285,25 @@ export function moveTimelineThumb(e: MouseEvent) {
     // check if we should move the thumb or if something else is already being dragged
     if (!moveThumb) {
         return
+    }
+
+    const thumbBoundingRect = document.getElementById('timeline-thumb')?.getBoundingClientRect()
+    if (!thumbBoundingRect) {
+        return
+    }
+
+    if (!timelineScrollContainer) {
+        timelineScrollContainer = document.getElementById('timeline-scroll-container')
+    }
+
+    // if the thumb is at the left or right edge of the screen (with some buffers) scroll the timeline horizontally
+    // left edge
+    // TODO: implement scrolling to the right
+    if (thumbBoundingRect.x < 16) {
+        requestAnimationFrame(() => {
+            // timelineScrollContainer?.scrollBy(-1, 0)
+        })
+        // timelineScrollContainer?.scrollBy(-1, 0)
     }
 
     // calculate new position using the mouse position on the x axis, the left thumb offset and the amount scrolled horizontally
@@ -386,13 +408,13 @@ export function msToHr(value: number) {
 
     let hours, minutes, seconds, total_hours, total_minutes, total_seconds;
 
-    total_seconds = parseInt(Math.floor(value / 1000).toString());
-    total_minutes = parseInt(Math.floor(total_seconds / 60).toString());
-    total_hours = parseInt(Math.floor(total_minutes / 60).toString());
+    total_seconds = Math.floor(value / 1000);
+    total_minutes = Math.floor(total_seconds / 60);
+    total_hours = Math.floor(total_minutes / 60);
 
-    seconds = parseInt((total_seconds % 60).toString());
-    minutes = parseInt((total_minutes % 60).toString());
-    hours = parseInt((total_hours % 24).toString());
+    seconds = (total_seconds % 60);
+    minutes = (total_minutes % 60);
+    hours = (total_hours % 24);
 
     const s = seconds < 10 ? '0' + seconds : seconds;
     const m = minutes < 10 ? '0' + minutes : minutes;
