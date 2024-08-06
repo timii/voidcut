@@ -283,7 +283,7 @@
 			<TimelineThumb></TimelineThumb>
 
 			<!-- Timeline Tracks -->
-			<div class="relative flex flex-col pl-5 mb-8 timeline-tracks">
+			<div class="relative flex flex-col pl-5 mb-20 timeline-tracks">
 				{#each $timelineTracks as track, i}
 					<!-- the dropzone is highlighted automatically if something is hovered over it -->
 					{#if i === 0}

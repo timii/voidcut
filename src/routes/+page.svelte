@@ -49,8 +49,11 @@
 	}
 </script>
 
-<main class="flex flex-col w-screen h-screen max-h-screen gap-1 max-w-screen">
-	<Header></Header>
+<main class="flex flex-col w-screen h-screen max-h-screen gap-1 overflow-hidden max-w-screen">
+	<!-- TODO: check weird scrolling behavior-->
+	<div class="flex-1 header">
+		<Header></Header>
+	</div>
 	<div class="flex flex-1 basis-2/3 shrink-0">
 		<div class="flex-1 p-4 border-2 workbench basis-1/3">
 			<MediaPool></MediaPool>
