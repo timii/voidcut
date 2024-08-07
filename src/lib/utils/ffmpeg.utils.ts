@@ -11,6 +11,7 @@ let elapsedTimeInterval: {
     start: () => void;
     stop: () => void;
 }
+const blankVideoLength = 35
 
 // TODO: dynamically set an output file type and name
 const outputFileName = 'output.mp4';
@@ -64,6 +65,7 @@ export async function callFfmpeg() {
     exportState.set(ExportState.PROCESSING)
     console.log('callFfmpeg called');
 
+    // TODO: refactor to go timeline by timeline instead of going through each element
     // get and map timeline elements so they can be used in ffmpeg
     const videoData = mapTimelineElementsToUIntArray()
     console.log('[FFMPEG] mapping of timeline elements successful');
@@ -160,7 +162,7 @@ async function createBlankVideo(videoData: IFfmpegElement[]) {
     // use just overlays at different times for the individual elements
     const flags: string[] = []
     flags.push(
-        "-f", "lavfi", "-i", "color=size=1280x720:rate=25:color=black", "-f", "lavfi", "-i", "anullsrc=channel_layout=stereo:sample_rate=44100", "-t", "5", "blank.mp4"
+        "-f", "lavfi", "-i", "color=size=1280x720:rate=25:color=black", "-f", "lavfi", "-i", "anullsrc=channel_layout=stereo:sample_rate=44100", "-t", `${blankVideoLength}`, "blank.mp4"
     )
 
     const execReturn = await ffmpeg.exec(flags)

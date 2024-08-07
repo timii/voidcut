@@ -17,11 +17,11 @@
 	}
 </script>
 
-<div class="media-upload flex flex-col justify-center items-center h-full gap-8">
+<div class="flex flex-col items-center justify-center h-full gap-8 media-upload">
 	<img src={MediaUploadImage} class="media-upload-image" alt="Media Upload" />
-	<div class="media-upload-info flex flex-col w-1/2 text-center">
+	<div class="flex flex-col w-1/2 text-center media-upload-info">
 		<span>You have no media files added to this project. Upload media files to get started.</span>
-		<span class="text-gray-500 text-sm italic"
+		<span class="text-sm italic text-text-color-darkest"
 			>(Hint: You can also just drag the files into this window)</span
 		>
 	</div>
