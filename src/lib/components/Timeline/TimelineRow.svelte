@@ -1,9 +1,15 @@
 <script lang="ts">
-	import type { ITimelineDraggedElement, ITimelineTrack } from '$lib/interfaces/Timeline';
+	import type {
+		ITimelineDraggedElement,
+		ITimelineDraggedElementPosition,
+		ITimelineTrack
+	} from '$lib/interfaces/Timeline';
 	import { onMount } from 'svelte';
 	import {
 		currentTimelineScale,
 		draggedElement,
+		draggedElementData,
+		draggedElementPosition,
 		isTimelineElementBeingDragged,
 		thumbOffset,
 		timelineTracks
@@ -22,10 +28,8 @@
 	export let index: number;
 	console.log('TimelineRow -> track:', track);
 
-	// call function everytime the store variable changes
-	$: isElementHovered($draggedElement);
-
-	// $: elementWidth = (element.duration / CONSTS.secondsMultiplier) * $currentTimelineScale;
+	// check if the dragged element is hovered over current row
+	$: isElementHovered($draggedElementPosition);
 
 	let rowRef: HTMLElement;
 
@@ -49,14 +53,14 @@
 
 			if (!elementHoveredOverRow) return;
 
-			if (!$draggedElement) return;
+			if (!$draggedElementData || !$draggedElementPosition) return;
 
 			// TODO: remove track offset to the left and make it into a const to use everywhere
 			// get position of dropped element along the x axis
-			const xWithoutOffset = $draggedElement.left - 20;
+			const xWithoutOffset = $draggedElementPosition.left - 20;
 			const x = xWithoutOffset < 20 ? 0 : xWithoutOffset;
 
-			const elementId = $draggedElement.elementId;
+			const elementId = $draggedElementData.elementId;
 			console.log('drop-timeline-element -> dropped element on the x axis:', x);
 
 			// move timeline element to correct position in the row
@@ -155,8 +159,8 @@
 
 	// TODO: refactor to be a util function (including the function in the divider)
 	// check if element is currently hovered over row
-	function isElementHovered(draggedEl: ITimelineDraggedElement | null) {
-		if (!draggedEl) return;
+	function isElementHovered(draggedEl: ITimelineDraggedElementPosition | null) {
+		if (!draggedEl || !$draggedElementData || !rowRef) return;
 
 		const boundRect = rowRef.getBoundingClientRect();
 		const offsetInParent = {
@@ -165,10 +169,19 @@
 		};
 
 		// current mouse position on the y axis
-		const curYPos = draggedEl.top + draggedEl.clickedY;
+		const curYPos = draggedEl.clickedY;
 		elementHoveredOverRow =
 			curYPos >= offsetInParent.top && curYPos <= offsetInParent.top + boundRect.height;
-		console.log('isElementHovered -> elementHoveredOverRow:', elementHoveredOverRow);
+		console.log(
+			'isElementHovered -> elementHoveredOverRow:',
+			elementHoveredOverRow,
+			'isTimelineElementBeingDragged',
+			$isTimelineElementBeingDragged,
+			'draggedEl:',
+			draggedEl,
+			'offsetInParent:',
+			offsetInParent
+		);
 		// if element is hovered over row show drop zone element
 		if (elementHoveredOverRow) {
 			// TODO: move the hardcoded value into a const
@@ -177,7 +190,7 @@
 
 			if (elementWidth === 0) {
 				// calculate element width using the dragged element width
-				elementWidth = draggedEl.width;
+				elementWidth = $draggedElementData.width;
 			}
 			console.log(
 				'isElementHovered -> in if dropZoneLeft:',

@@ -1,8 +1,14 @@
 <script lang="ts">
-	import type { ITimelineDraggedElement, ITimelineTrack } from '$lib/interfaces/Timeline';
+	import type {
+		ITimelineDraggedElement,
+		ITimelineDraggedElementPosition,
+		ITimelineTrack
+	} from '$lib/interfaces/Timeline';
 	import { onMount } from 'svelte';
 	import {
 		draggedElement,
+		draggedElementData,
+		draggedElementPosition,
 		isTimelineElementBeingDragged,
 		timelineTracks
 	} from '../../../stores/store';
@@ -18,7 +24,7 @@
 	export let index: number;
 
 	// call function everytime the store variable changes
-	$: isElementHovered($draggedElement);
+	$: isElementHovered($draggedElementPosition);
 
 	let dividerRef: HTMLElement;
 	let tracksElBoundRect: DOMRect;
@@ -46,10 +52,10 @@
 
 			if (!elementOverDivider) return;
 
-			if (!$draggedElement) return;
+			if (!$draggedElementData) return;
 
-			const elementId = $draggedElement.elementId;
-			const elementData = $draggedElement.data;
+			const elementId = $draggedElementData.elementId;
+			const elementData = $draggedElementData.data;
 
 			timelineTracks.update((tracks) => {
 				// find dragged element index using the element id
@@ -121,11 +127,12 @@
 	});
 
 	// check if an element is hovered over the divider
-	function isElementHovered(draggedEl: ITimelineDraggedElement | null) {
-		if (!draggedEl) return;
+	function isElementHovered(draggedEl: ITimelineDraggedElementPosition | null) {
+		if (!draggedEl || !offsetInParent) return;
 
 		// current mouse position on the y axis
-		const curYPos = draggedEl.top + draggedEl.clickedY;
+		// TODO: refactor into util function
+		const curYPos = draggedEl.clickedY;
 		elementOverDivider =
 			curYPos >= offsetInParent.top && curYPos <= offsetInParent.top + dividerElBoundRect.height;
 		// console.log(
@@ -169,6 +176,10 @@
 			handleTimelineMediaDrop(mediaData, index);
 		}
 	}
+
+	function onScroll(e: Event) {
+		e.preventDefault;
+	}
 </script>
 
 <div
@@ -180,5 +191,6 @@
 	on:dragleave={onDropElement}
 	on:dragenter={onHoverElement}
 	on:dragover={onHoverElement}
+	on:wheel={onScroll}
 	bind:this={dividerRef}
 ></div>
