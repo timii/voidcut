@@ -2,7 +2,7 @@
 	export let icon: string = '';
 	export let alt: string = '';
 	export let size = 26;
-	export let onClickCallback = () => {};
+	export let onClickCallback = (e: Event) => {};
 </script>
 
 <button

@@ -1,6 +1,6 @@
 import { ExportState } from '$lib/interfaces/Ffmpeg';
 import type { IMedia } from '$lib/interfaces/Media';
-import type { ITimelineDraggedElement, ITimelineTrack } from '$lib/interfaces/Timeline';
+import type { ITimelineDraggedElement, ITimelineDraggedElementData, ITimelineDraggedElementPosition, ITimelineTrack } from '$lib/interfaces/Timeline';
 import { writable } from 'svelte/store';
 
 // General
@@ -31,7 +31,10 @@ export const playbackIntervalId = writable(0); // store to hold the playback int
 export const timelineTracks = writable<ITimelineTrack[]>([]) // array that holds all information about the elements on the timeline
 export const isThumbBeingDragged = writable(false);
 export const isTimelineElementBeingDragged = writable(false);
+// TODO: remove old store variable
 export const draggedElement = writable<ITimelineDraggedElement | null>(null); // contains information about the dragged timeline element
+export const draggedElementPosition = writable<ITimelineDraggedElementPosition | null>(null) // keeps track of the dragged element position
+export const draggedElementData = writable<ITimelineDraggedElementData | null>(null) // holds the dragged element information that will only be set once at the beginngin
 export const selectedElement = writable(""); // keep track which element is currently selected in the timeline
 
 // Workbench

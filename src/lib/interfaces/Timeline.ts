@@ -29,3 +29,19 @@ export interface ITimelineDraggedElement {
     clickedY: number;  // where in the element the mouse clicked
     data: ITimelineElement  // all the information about the dragged element
 }
+
+export interface ITimelineDraggedElementPosition {
+    left: number;  // amount of pixels from the left inside the parent container
+    top: number;  // amount of pixels from the top inside the parent container
+    clickedX: number;  // where in the element the mouse clicked
+    clickedY: number;  // where in the element the mouse clicked
+    // absoluteLeft: number;  // amount of pixels from the left inside the viewport
+    // absoluteTop: number;  // amount of pixels from the top inside the viewport
+}
+
+export interface ITimelineDraggedElementData {
+    width: number; // width of the dragged timeline element
+    height: number; // height of the dragged timeline element
+    elementId: string; // timline element id
+    data: ITimelineElement  // all the information about the dragged element
+}

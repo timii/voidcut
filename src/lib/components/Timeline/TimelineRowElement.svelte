@@ -1,16 +1,24 @@
 <script lang="ts">
-	import type { ITimelineDraggedElement, ITimelineElement } from '$lib/interfaces/Timeline';
+	import type {
+		ITimelineDraggedElement,
+		ITimelineDraggedElementPosition,
+		ITimelineElement
+	} from '$lib/interfaces/Timeline';
 	import { CONSTS } from '$lib/utils/consts';
 	import { getRelativeMousePosition, getTailwindVariables } from '$lib/utils/utils';
 	import { onMount } from 'svelte';
 	import {
 		currentTimelineScale,
 		draggedElement,
+		draggedElementData,
+		draggedElementPosition,
 		isThumbBeingDragged,
 		isTimelineElementBeingDragged,
 		selectedElement,
 		thumbOffset
 	} from '../../../stores/store';
+	import { draggable } from '@neodrag/svelte';
+	import type { DragEventData } from '@neodrag/svelte';
 
 	export let element: ITimelineElement = {} as ITimelineElement;
 
@@ -56,6 +64,13 @@
 	let clonePositionLeft = '0px';
 	let clonePositionTop = '0px';
 	let cloneOffset = [0, 0];
+	let mouseStartPosition:
+		| undefined
+		| { left: number; top: number; mouseXInEl: number; mouseYInEl: number };
+	let mouseStartPositioninTimeline:
+		| undefined
+		| { mouseXInTimeline: number; mouseYInTimeline: number };
+	let elStartPosition: undefined | { left: number; top: number };
 	// let isSelected = false;
 	// let dropZonePositionLeft = 0;
 	// let elementHoveredOverRow = false;
@@ -320,6 +335,157 @@
 		}
 	}
 
+	// get the starting mouse position when starting the dragging movement
+	function getMousePosition(e: MouseEvent) {
+		console.log('getMousePosition -> e:', e);
+		if (!mouseStartPosition && !$isThumbBeingDragged) {
+			if (!tracksElBoundRect) {
+				// TODO: refactor this out into a util function since we use these two lines quite often
+				const tracksEl = document.getElementsByClassName('timeline-tracks')[0];
+				tracksElBoundRect = tracksEl.getBoundingClientRect();
+			}
+			const mousePosInEl = getRelativeMousePosition(e, tracksElBoundRect);
+			if (!elStartPosition) return;
+
+			mouseStartPosition = {
+				left: e.clientX,
+				top: e.clientY,
+				mouseXInEl: mousePosInEl.x - elStartPosition.left,
+				mouseYInEl: mousePosInEl.y - elStartPosition.top
+			};
+			mouseStartPositioninTimeline = {
+				mouseXInTimeline: mouseStartPosition.mouseXInEl + elStartPosition.left,
+				mouseYInTimeline: mouseStartPosition.mouseYInEl + elStartPosition.top
+			};
+
+			isTimelineElementBeingDragged.set(true);
+			dragging = true;
+
+			if (!mouseStartPositioninTimeline) return;
+
+			draggedElementPosition.update(
+				(value) =>
+					({
+						...value,
+						clickedX: mouseStartPositioninTimeline!.mouseXInTimeline,
+						clickedY: mouseStartPositioninTimeline!.mouseYInTimeline
+					}) as ITimelineDraggedElementPosition
+			);
+
+			console.log(
+				'getMousePosition in if -> mouseStartPosition:',
+				mouseStartPosition,
+				'draggedElementPosition:',
+				$draggedElementPosition
+			);
+		}
+	}
+
+	function testStart(e: CustomEvent<DragEventData>) {
+		console.log('testStart -> e:', e);
+
+		// first clear store value and set correct value afterwards to trigger store change to all subscribers
+		selectedElement.set('');
+		selectedElement.set(element.elementId);
+
+		const curEl = e.detail.currentNode;
+		const elDomRect = curEl.getBoundingClientRect();
+		const tracksEl = document.getElementsByClassName('timeline-tracks')[0];
+		tracksElBoundRect = tracksEl.getBoundingClientRect();
+
+		elStartPosition = {
+			left: elDomRect.left - tracksElBoundRect.left,
+			top: elDomRect.top - tracksElBoundRect.top
+		};
+
+		// reset store value
+		draggedElementData.set(null);
+		// set values that we already know of
+		draggedElementData.set({
+			height: elDomRect.height,
+			width: elDomRect.width,
+			elementId: element.elementId,
+			data: element
+		});
+
+		draggedElementPosition.set(null);
+		draggedElementPosition.set({
+			left: elStartPosition.left,
+			top: elStartPosition.top
+		} as ITimelineDraggedElementPosition);
+
+		console.log(
+			'testStart -> elDomRect:',
+			elDomRect,
+			'tracksElBoundRect:',
+			tracksElBoundRect,
+			'startPosition:',
+			elStartPosition,
+			'startingMousePosition:',
+			mouseStartPosition,
+			'draggedElementData:',
+			$draggedElementData,
+			'draggedElementPosition',
+			$draggedElementPosition
+		);
+
+		// const detail = e.detail as any;
+		// onElementClick({
+		// 	clientX: detail.offsetX,
+		// 	clientY: detail.offsetY,
+		// 	...e
+		// } as unknown as MouseEvent);
+	}
+	function test(e: CustomEvent<DragEventData>) {
+		console.log('test -> e:', e);
+
+		if (elStartPosition && mouseStartPositioninTimeline) {
+			draggedElementPosition.set({
+				left: e.detail.offsetX + CONSTS.timelineRowOffset,
+				top: e.detail.offsetY + CONSTS.timelineRowOffset,
+				clickedX: mouseStartPositioninTimeline!.mouseXInTimeline + e.detail.offsetX,
+				clickedY: mouseStartPositioninTimeline!.mouseYInTimeline + e.detail.offsetY
+			} as ITimelineDraggedElementPosition);
+		}
+		console.log(
+			'test -> draggedElementPosition:',
+			$draggedElementPosition,
+			'draggedElementData:',
+			$draggedElementData,
+			'$thumbOffset:',
+			$thumbOffset
+		);
+
+		// const detail = e.detail as any;
+		// onElementDrag({
+		// 	clientX: detail.offsetX,
+		// 	clientY: detail.offsetY,
+		// 	buttons: 1,
+		// 	...e
+		// } as unknown as MouseEvent);
+	}
+	function testEnd(e: CustomEvent<DragEventData>) {
+		console.log('testEnd -> e:', e);
+
+		// reset all variables to intial values
+		dragging = false;
+		isTimelineElementBeingDragged.set(false);
+		mouseStartPosition = undefined;
+		elStartPosition = undefined;
+
+		// create and dispatch custom event
+		const event = new CustomEvent(CONSTS.customEventNameDropTimelineElement);
+		window.dispatchEvent(event);
+		// const detail = e.detail as any;
+		// onElementDrop({
+		// 	clientX: detail.offsetX,
+		// 	clientY: detail.offsetY,
+		// 	buttons: 1,
+		// 	...e
+		// } as unknown as MouseEvent);
+	}
+
+	//#region old stuff
 	// function onElementDrag(e: MouseEvent) {
 	// 	// only drag element if mouse is held down and the timeline thumb is currently not being dragged
 	// 	if (e.buttons === 1 && !$isThumbBeingDragged) {
@@ -403,9 +569,10 @@
 	// 	// 	}
 	// 	// }
 	// }
+	//#endregion
 </script>
 
-<div
+<!-- <div
 	class="clone h-[50px] mr-5 rounded hover:cursor-pointer absolute z-20"
 	style="width: {elementWidth}px; background-color: blue; display: {dragging
 		? 'unset'
@@ -413,14 +580,16 @@
 	on:mousemove={onElementDrag}
 	on:mouseup={onElementDrop}
 	bind:this={cloneRef}
-></div>
+></div> -->
+
 <!-- <div
 	class="clone-drop-zone h-[50px] mr-5 rounded outline-dashed z-10"
 	style="width: {elementWidth}px; display: {elementHoveredOverRow && $isTimelineElementBeingDragged
 		? 'unset'
 		: 'none'}; background-color: green; transform: translate3d({dropZonePositionLeft}px, 0, 0);"
 ></div> -->
-<div
+
+<!-- <div
 	class="timeline-row-element h-[50px] mr-5 rounded hover:cursor-pointer absolute"
 	style="width: {elementWidth}px; background-color: {isSelected
 		? tailwindColors.orange[500]
@@ -431,6 +600,21 @@
 	on:pointermove={onPointerMove}
 	on:dragend={onElementDrop}
 	on:mousemove={onElementDrag}
+	bind:this={elementRef}
+></div> -->
+
+<div
+	class="timeline-row-element h-[50px] mr-5 rounded hover:cursor-pointer absolute"
+	style="width: {elementWidth}px; background-color: {isSelected
+		? tailwindColors.orange[500]
+		: tailwindColors.red[500]}; transform: translate3d({200}px, 0, 0)}; z-index: {dragging
+		? '50'
+		: 'auto'}"
+	use:draggable={{ position: { x: leftOffset, y: 0 } }}
+	on:mousedown={getMousePosition}
+	on:neodrag:start={testStart}
+	on:neodrag={test}
+	on:neodrag:end={testEnd}
 	bind:this={elementRef}
 ></div>
 
