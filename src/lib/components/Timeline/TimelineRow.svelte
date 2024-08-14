@@ -55,10 +55,9 @@
 
 			if (!$draggedElementData || !$draggedElementPosition) return;
 
-			// TODO: remove track offset to the left and make it into a const to use everywhere
 			// get position of dropped element along the x axis
-			const xWithoutOffset = $draggedElementPosition.left - 20;
-			const x = xWithoutOffset < 20 ? 0 : xWithoutOffset;
+			const xWithoutOffset = $draggedElementPosition.left - CONSTS.timelineRowOffset;
+			const x = xWithoutOffset < CONSTS.timelineRowOffset ? 0 : xWithoutOffset;
 
 			const elementId = $draggedElementData.elementId;
 			console.log('drop-timeline-element -> dropped element on the x axis:', x);
@@ -186,7 +185,7 @@
 		if (elementHoveredOverRow) {
 			// TODO: move the hardcoded value into a const
 			// limit the drop zone offset to the left so it doesnt' further left than the track
-			dropZonePositionLeft = Math.max(draggedEl.left, 20);
+			dropZonePositionLeft = Math.max(draggedEl.left, CONSTS.timelineRowOffset);
 
 			if (elementWidth === 0) {
 				// calculate element width using the dragged element width
@@ -210,7 +209,10 @@
 		e.stopPropagation();
 		hoverElement = true;
 		// subtract hald the media pool element width so drop zone starts at the left of the element
-		dropZonePositionLeft = Math.max(e.clientX - CONSTS.mediaPoolElementWidth, 20);
+		dropZonePositionLeft = Math.max(
+			e.clientX - CONSTS.mediaPoolElementWidth,
+			CONSTS.timelineRowOffset
+		);
 
 		if (dropZoneWidth) {
 			return;
