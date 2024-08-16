@@ -423,3 +423,14 @@ export function msToHr(value: number) {
 
     return h + ':' + m + ':' + s;
 }
+
+// check if a given element overlaps with any element on a given track
+export function isElementOverlapping(el: { start: number; end: number }, trackEls: ITimelineElement[]): boolean {
+    return trackEls.some(trackEl => {
+        const trackElStart = trackEl.playbackStartTime
+        const trackElEnd = trackEl.playbackStartTime + trackEl.duration
+        if ((el.start >= trackElStart && el.start < trackElEnd) || (el.end > trackElStart && el.end <= trackElEnd)) {
+            return true
+        }
+    })
+}
