@@ -425,10 +425,16 @@ export function msToHr(value: number) {
 }
 
 // check if a given element overlaps with any element on a given track
-export function isElementOverlapping(el: { start: number; end: number }, trackEls: ITimelineElement[]): boolean {
-    return trackEls.some(trackEl => {
+export function isElementOverlapping(el: { start: number; end: number }, trackEls: ITimelineElement[], ignoreElIndex?: number): boolean {
+    return trackEls.some((trackEl, i) => {
         const trackElStart = trackEl.playbackStartTime
         const trackElEnd = trackEl.playbackStartTime + trackEl.duration
+
+        // ignore this element when checking for overlapping
+        if (ignoreElIndex !== undefined && i === ignoreElIndex) {
+            return false
+        }
+
         if ((el.start >= trackElStart && el.start < trackElEnd) || (el.end > trackElStart && el.end <= trackElEnd)) {
             return true
         }
