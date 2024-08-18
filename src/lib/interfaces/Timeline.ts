@@ -17,6 +17,7 @@ export interface ITimelineTrack {
     elements: ITimelineElement[] // array to hold each element on the current track
 }
 
+// TODO: remove if not used anymore
 export interface ITimelineDraggedElement {
     left: number;  // amount of pixels from the left inside the parent container
     top: number;  // amount of pixels from the top inside the parent container
@@ -44,4 +45,9 @@ export interface ITimelineDraggedElementData {
     height: number; // height of the dragged timeline element
     elementId: string; // timline element id
     data: ITimelineElement  // all the information about the dragged element
+}
+
+export interface ITimelineElementBounds {
+    start: number; // start of the timeline element (in milliseconds)
+    end: number; // end of the timeline element (in milliseconds)
 }

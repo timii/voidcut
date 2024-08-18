@@ -1,5 +1,5 @@
 import { MediaType, type IMedia, type IFileMetadata } from "$lib/interfaces/Media";
-import type { ITimelineDraggedElement, ITimelineElement, ITimelineTrack } from "$lib/interfaces/Timeline";
+import type { ITimelineDraggedElement, ITimelineElement, ITimelineElementBounds, ITimelineTrack } from "$lib/interfaces/Timeline";
 import { availableMedia, isTimelineElementBeingDragged, isThumbBeingDragged, timelineTracks, currentPlaybackTime, playbackIntervalId, currentTimelineScale, currentThumbPosition, thumbOffset, horizontalScroll, selectedElement, draggedElement, previewPlaying } from "../../stores/store";
 import { CONSTS } from "./consts";
 import { adjustingInterval } from "./betterInterval";
@@ -425,7 +425,7 @@ export function msToHr(value: number) {
 }
 
 // check if a given element overlaps with any element on a given track
-export function isElementOverlapping(el: { start: number; end: number }, trackEls: ITimelineElement[], ignoreElIndex?: number): boolean {
+export function isElementOverlapping(elBounds: ITimelineElementBounds, trackEls: ITimelineElement[], ignoreElIndex?: number): boolean {
     return trackEls.some((trackEl, i) => {
         const trackElStart = trackEl.playbackStartTime
         const trackElEnd = trackEl.playbackStartTime + trackEl.duration
@@ -435,8 +435,31 @@ export function isElementOverlapping(el: { start: number; end: number }, trackEl
             return false
         }
 
-        if ((el.start >= trackElStart && el.start < trackElEnd) || (el.end > trackElStart && el.end <= trackElEnd)) {
+        if ((elBounds.start >= trackElStart && elBounds.start < trackElEnd) || (elBounds.end > trackElStart && elBounds.end <= trackElEnd)) {
             return true
         }
     })
+}
+
+// move a given list of timeline elements according to given element bounds so they don't overlap
+export function moveElementsOnTrack(elBounds: ITimelineElementBounds, trackEls: ITimelineElement[]) {
+    let moveAmount: number | undefined = undefined
+
+    const tracks = trackEls.map(trackEl => {
+        const trackElBounds: ITimelineElementBounds = { start: trackEl.playbackStartTime, end: trackEl.playbackStartTime + trackEl.duration }
+
+        // check for the first element the dropped element overlaps and get the amount the overlapped element needs to be moved to the right. Move every element after that by the same amount to the right so we move the whole "block" of element by the same amount
+        if (isElementOverlapping(elBounds, [trackEl]) && moveAmount === undefined) {
+            moveAmount = elBounds.end - trackElBounds.start;
+        }
+
+        // if moveAmount is defined move the current element by that amount
+        if (moveAmount !== undefined) {
+            trackEl.playbackStartTime += moveAmount
+        }
+
+        return trackEl
+    })
+
+    return tracks
 }

@@ -2,6 +2,7 @@
 	import type {
 		ITimelineDraggedElement,
 		ITimelineDraggedElementPosition,
+		ITimelineElementBounds,
 		ITimelineTrack
 	} from '$lib/interfaces/Timeline';
 	import { onMount } from 'svelte';
@@ -19,7 +20,9 @@
 	import {
 		cleanUpEmptyTracks,
 		getTailwindVariables,
-		handleTimelineMediaDrop
+		handleTimelineMediaDrop,
+		isElementOverlapping,
+		moveElementsOnTrack
 	} from '$lib/utils/utils';
 	import colors from 'tailwindcss/colors';
 	import type { IMedia } from '$lib/interfaces/Media';
@@ -51,15 +54,13 @@
 				elementHoveredOverRow
 			);
 
-			if (!elementHoveredOverRow) return;
-
-			if (!$draggedElementData || !$draggedElementPosition) return;
+			if (!$draggedElementData || !$draggedElementPosition || !elementHoveredOverRow) return;
 
 			// get position of dropped element along the x axis
 			const xWithoutOffset = $draggedElementPosition.left - CONSTS.timelineRowOffset;
 			const x = xWithoutOffset < CONSTS.timelineRowOffset ? 0 : xWithoutOffset;
-
 			const elementId = $draggedElementData.elementId;
+
 			console.log('drop-timeline-element -> dropped element on the x axis:', x);
 
 			// move timeline element to correct position in the row
@@ -73,8 +74,9 @@
 				// 	i++;
 				// }
 
-				// find dragged element index using the element id
+				// find previous index of dragged element in previous track using the element id
 				let elementIndexInTrack = -1;
+				// keep track of the previous track index of the dragged element
 				let trackIndex = 0;
 				while (elementIndexInTrack === -1 && trackIndex < tracks.length) {
 					console.log(
@@ -115,8 +117,23 @@
 
 				// TODO: check track index of dragged element and if its the same as the current row just change the playback start time, else we also need to remove it from the current row and move it into the new one with the updated playback start time
 
+				// TODO: use utils function here instead
 				// convert the x value from px into ms
 				const xInMs = Math.round((x / $currentTimelineScale) * CONSTS.secondsMultiplier) || 0;
+				const foundElEnd = xInMs + foundEl.duration;
+				const elBounds: ITimelineElementBounds = { start: xInMs, end: foundElEnd };
+
+				// check if the dropped element overlaps with any element on the track
+				const isOverlapping = isElementOverlapping(
+					elBounds,
+					tracks[index].elements,
+					index !== trackIndex ? undefined : elementIndexInTrack // if the element is dropped on the same track we ignore the dragged element index in the track
+				);
+
+				// if the dropped element overlaps any other element we move the elements accordingly so the element can fit on the track
+				if (isOverlapping) {
+					tracks[index].elements = moveElementsOnTrack(elBounds, tracks[index].elements);
+				}
 
 				// set the new playback start time (in ms)
 				foundEl.playbackStartTime = xInMs;
@@ -124,7 +141,11 @@
 					'element dropped on track after new playbacktime set -> foundEl:',
 					foundEl,
 					'x in ms:',
-					xInMs
+					xInMs,
+					'isOverlapping:',
+					isOverlapping,
+					'elementIndexInTrack:',
+					elementIndexInTrack
 				);
 
 				// if the element is moved to a different track
@@ -134,6 +155,17 @@
 					console.log(
 						'element dropped on track -> tracks after element removed from track:',
 						JSON.parse(JSON.stringify(tracks))
+					);
+
+					console.log(
+						'element dropped on track -> tracks checking if overlapping:',
+						isOverlapping,
+						'xInMs',
+						xInMs,
+						'foundEl:',
+						foundEl,
+						'new track:',
+						JSON.parse(JSON.stringify(tracks[index]))
 					);
 
 					// add element into new track
@@ -149,6 +181,9 @@
 						'element dropped on divider -> tracks after empty track is removed:',
 						JSON.parse(JSON.stringify(tracks))
 					);
+				}
+				// if the element is dropped on the same track
+				else {
 				}
 
 				return tracks;
