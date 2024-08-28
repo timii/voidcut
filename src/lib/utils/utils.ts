@@ -34,12 +34,16 @@ export async function handleFileUpload(files: FileList) {
         // get metadata of current file
         const fileMetadata = await getFileMetadata(file)
 
-        console.log("utils -> in filesArr map file:", file)
+        // TODO: create image of uploaded media to show as preview
+        const filePreviewImage = await getFilePreviewImage(file)
+
+        console.log("utils -> in filesArr map file:", file, "previewImage:", filePreviewImage)
         return {
             name: file.name,
             mediaId: generateId(),
             type: MediaType.Video,
             loaded: true,
+            previewImage: filePreviewImage as string,
             ...fileMetadata
         }
     }))
@@ -114,6 +118,22 @@ export function createTrackWithElement(element: ITimelineElement) {
         trackId: generateId(),
         elements: [element]
     } as ITimelineTrack
+}
+
+// creates a preview image using a given file
+function getFilePreviewImage(file: File): Promise<string | ArrayBuffer | null> {
+    return new Promise((resolve, reject) => {
+        let reader = new FileReader()
+        reader.readAsDataURL(file)
+        reader.onloadend = () => {
+            resolve(reader.result);
+        }
+
+        reader.onerror = (err) => {
+            console.error("Error while getting preview image for file", err)
+            reject(err)
+        }
+    })
 }
 
 // get metadata from a given file 

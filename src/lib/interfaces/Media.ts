@@ -4,6 +4,7 @@ export interface IMedia {
     type: MediaType; // enum type of media
     src: string; // dataUrl of media
     loaded: boolean; // is media finished uploading
+    previewImage: string; // dataUrl string of preview image shown in the media pool
     duration?: number; // duration in milliseconds (only relevant for video and audio)
 }
 
