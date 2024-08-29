@@ -4,6 +4,7 @@ export const CONSTS = {
     secondsMultiplier: 1000,
     resetDelay: 50,
     mediaPoolElementWidth: 128,
+    mediaPoolElementHeight: 84,
     mediaPoolTransferKey: 'media-data',
     timelineElTransferKey: 'timeline-move-data',
     customEventNameDropTimelineElement: 'drop-timeline-element',

@@ -121,18 +121,30 @@ export function createTrackWithElement(element: ITimelineElement) {
 }
 
 // creates a preview image using a given file
+// TODO: handle different media types differently: video(thumbnail), image(image), audio(soundwave of the file)
 function getFilePreviewImage(file: File): Promise<string | ArrayBuffer | null> {
     return new Promise((resolve, reject) => {
-        let reader = new FileReader()
-        reader.readAsDataURL(file)
-        reader.onloadend = () => {
-            resolve(reader.result);
-        }
+        const canvas = document.createElement("canvas");
+        const video = document.createElement("video");
 
-        reader.onerror = (err) => {
-            console.error("Error while getting preview image for file", err)
-            reject(err)
-        }
+        video.src = URL.createObjectURL(file);
+
+        video.onloadeddata = () => {
+            let ctx = canvas.getContext("2d");
+
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+
+            if (!ctx) {
+                reject()
+                return;
+            }
+
+            ctx.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
+            video.pause();
+            URL.revokeObjectURL(video.src)
+            return resolve(canvas.toDataURL("image/png"));
+        };
     })
 }
 
@@ -158,6 +170,7 @@ function getFileMetadata(file: File): Promise<IFileMetadata> {
             // calculate the duration in milliseconds and round it to the nearest integer  
             const durationInMs = Math.round(duration * CONSTS.secondsMultiplier)
 
+            window.URL.revokeObjectURL(video.src);
             // console.log('getFileInfo in onleadedmetadata -> duration:', duration, 'video:', video, "src:", video.src);
             resolve({
                 src: video.src,

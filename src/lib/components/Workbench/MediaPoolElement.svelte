@@ -23,12 +23,14 @@
 
 <div class="flex flex-col items-center element-container">
 	<div
-		class="h-24 bg-red-500 rounded media"
-		style="width: {CONSTS.mediaPoolElementWidth}px;"
+		class="rounded-lg bg-text-color media"
+		style="width: {CONSTS.mediaPoolElementWidth}px; height: {CONSTS.mediaPoolElementHeight}px;"
 		draggable="true"
 		on:dragstart={onDragElement}
 		on:drag={onDragged}
 		bind:this={elementRef}
-	></div>
-	<span>{file.name}</span>
+	>
+		<img src={file.previewImage} alt="media preview" class="w-full h-full rounded-[inherit]" />
+	</div>
+	<span class="h-auto mt-1 text-xs font-medium text-text-color-darkest">{file.name}</span>
 </div>
