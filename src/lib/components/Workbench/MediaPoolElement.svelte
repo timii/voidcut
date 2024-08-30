@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { IMedia } from '$lib/interfaces/Media';
 	import { CONSTS } from '$lib/utils/consts';
+	import { msToHr } from '$lib/utils/utils';
 
 	export let file: IMedia;
 
@@ -23,7 +24,7 @@
 
 <div class="flex flex-col items-center element-container">
 	<div
-		class="rounded-lg bg-text-color media"
+		class="media relative rounded-lg p-[1px] bg-accent-color"
 		style="width: {CONSTS.mediaPoolElementWidth}px; height: {CONSTS.mediaPoolElementHeight}px;"
 		draggable="true"
 		on:dragstart={onDragElement}
@@ -31,6 +32,18 @@
 		bind:this={elementRef}
 	>
 		<img src={file.previewImage} alt="media preview" class="w-full h-full rounded-[inherit]" />
+
+		<!-- if the file has a duration show it in the element -->
+		{#if file.duration}
+			<span
+				class="absolute bottom-2 left-2 font-medium text-xxs bg-background-color pb-[1px] px-1 rounded opacity-80"
+				>{msToHr(file.duration)}</span
+			>
+		{/if}
 	</div>
-	<span class="h-auto mt-1 text-xs font-medium text-text-color-darkest">{file.name}</span>
+	<!-- <div class="inline-block w-[128px]"> -->
+	<span class="h-auto mt-1 text-xxs font-medium text-text-color-darker truncate w-[128px]"
+		>{file.name}</span
+	>
+	<!-- </div> -->
 </div>

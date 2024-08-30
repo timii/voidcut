@@ -28,11 +28,6 @@
 		await terminateFfmpegExecution();
 	}
 
-	// function onCloseClick() {
-	// 	console.log('onCloseClick');
-	// 	exportOverlayOpen.set(false);
-	// }
-
 	function onSaveClick(e: Event) {
 		e.stopPropagation();
 		console.log('onSaveClick');
@@ -54,6 +49,7 @@
 		<div
 			class="fixed -translate-x-1/2 -translate-y-1/2 export-dialog bg-background-color-light text-text-color-lightest top-1/2 left-1/2 h-[400px] w-[700px] rounded-2xl p-8 gap-3 flex flex-col items-center justify-center"
 		>
+			<!-- during processing -->
 			{#if $exportState === ExportState.PROCESSING}
 				<div class="text-3xl">Exporting...</div>
 				<div class="mb-10 text-lg text-l">Your video is being processed, please wait</div>
@@ -71,6 +67,8 @@
 				<div class="mt-10">
 					<Button text={'Cancel'} onClickCallback={onCancelClick}></Button>
 				</div>
+
+				<!-- after processing complete -->
 			{:else if $exportState === ExportState.COMPLETE}
 				<div class="absolute right-8 top-6">
 					<IconButton onClickCallback={onCloseClick} icon={CloseIcon}></IconButton>
@@ -86,6 +84,8 @@
 					<!-- TODO: add icon -->
 					<Button onClickCallback={onSaveClick} text={'Download'}></Button>
 				</div>
+
+				<!-- if an error occured -->
 			{:else}
 				<div class="absolute right-8 top-6">
 					<IconButton onClickCallback={onCloseClick} icon={CloseIcon}></IconButton>

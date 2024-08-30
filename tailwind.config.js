@@ -2,6 +2,9 @@
 export default {
   content: ['./src/**/*.{html,js,svelte,ts}'],
   theme: {
+    fontSize: {
+      xxs: '10px'
+    },
     extend: {
       colors: {
         "ruler-color": '#42424e',
