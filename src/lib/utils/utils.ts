@@ -30,20 +30,48 @@ export async function handleFileUpload(files: FileList) {
 
     // add metadata to each file
     const mediaArr: IMedia[] = await Promise.all(filesArr.map(async (file) => {
+        console.log("utils -> in filesArr map file type:", file, file.type)
 
-        // get metadata of current file
-        const fileMetadata = await getFileMetadata(file)
+        // get the file type prefix
+        const fileTypeString = file.type.split('/')[0].toUpperCase()
 
-        // TODO: create image of uploaded media to show as preview
-        const filePreviewImage = await getFilePreviewImage(file)
+        // convert the string into an enum value
+        // const fileType: MediaType = MediaType[fileTypeString as keyof typeof MediaType]
+        const fileType = fileTypeString as MediaType
+        console.log("utils -> in filesArr map file type after convert:", fileType, fileTypeString)
 
-        console.log("utils -> in filesArr map file:", file, "previewImage:", filePreviewImage)
+        let fileMetadata: IFileMetadata = {} as IFileMetadata
+        let filePreviewImage: string = '';
+        // TODO: handle different file types 
+        switch (fileType) {
+            case MediaType.Audio:
+                console.log("in switch audio file type")
+                break;
+            case MediaType.Image:
+                break;
+            case MediaType.Video:
+                console.log("in switch video file type")
+
+                // get metadata of current file
+                fileMetadata = await getFileMetadata(file)
+
+                // create image of uploaded media to show as preview
+                filePreviewImage = await getFilePreviewImage(file)
+                break;
+            default:
+                console.error("No fitting media type found")
+        }
+
+
+
+        console.log("utils -> in filesArr map file:", file, "previewImage:", filePreviewImage, "metadata:", fileMetadata)
         return {
             name: file.name,
             mediaId: generateId(),
-            type: MediaType.Video,
+            type: fileType,
+            // TODO: implement loading so that the element gets directly added into store but with loaded false only and then we update it here
             loaded: true,
-            previewImage: filePreviewImage as string,
+            previewImage: filePreviewImage,
             ...fileMetadata
         }
     }))
@@ -122,7 +150,7 @@ export function createTrackWithElement(element: ITimelineElement) {
 
 // creates a preview image using a given file
 // TODO: handle different media types differently: video(thumbnail), image(image), audio(soundwave of the file)
-function getFilePreviewImage(file: File): Promise<string | ArrayBuffer | null> {
+function getFilePreviewImage(file: File): Promise<string> {
     return new Promise((resolve, reject) => {
         const canvas = document.createElement("canvas");
         const video = document.createElement("video");
