@@ -48,6 +48,14 @@ export async function handleFileUpload(files: FileList) {
                 console.log("in switch audio file type")
                 break;
             case MediaType.Image:
+                console.log("in switch image file type")
+
+                // convert uploaded file into dataUrl
+                const fileAsDataUrl = await convertFileToDataUrl(file)
+                fileMetadata = { src: fileAsDataUrl }
+
+                filePreviewImage = fileAsDataUrl
+
                 break;
             case MediaType.Video:
                 console.log("in switch video file type")
