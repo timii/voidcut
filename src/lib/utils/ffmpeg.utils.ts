@@ -1,7 +1,7 @@
 import { FFmpeg } from "@ffmpeg/ffmpeg";
 import { availableMedia, exportOverlayOpen, exportState, ffmpegLoaded, ffmpegProgress, ffmpegProgressElapsedTime, ffmpegProgressPrevValue, processedFile, processedFileSize, timelineTracks } from "../../stores/store";
 import { get } from "svelte/store";
-import { convertDataUrlToUIntArray, msToS, sToMS } from "./utils";
+import { convertDataUrlToUIntArray, convertFileToDataUrl, msToS, sToMS } from "./utils";
 import { ExportState, type IFfmpegElement } from "$lib/interfaces/Ffmpeg";
 import { adjustingInterval } from "./betterInterval";
 import { CONSTS } from "./consts";
@@ -348,4 +348,58 @@ function stopTimer() {
     if (elapsedTimeInterval) {
         elapsedTimeInterval.stop()
     }
+}
+
+// generates an image of the waveform using the given file
+export async function generateAudioWaveform(file: File) {
+    // convert audio file to DataUrl and then UIntArray first
+    const audioDataUrl = await convertFileToDataUrl(file)
+    const audioUIntArray = await convertDataUrlToUIntArray(audioDataUrl)
+
+    const inputName = 'audioInput.wav'
+    const outputName = 'audioOutput.png'
+    // write audio in ffmpeg.wasm filesystem
+    await ffmpeg.writeFile(inputName, audioUIntArray);
+    console.log('[FFMPEG] writing into ffmpeg filesystem successful');
+
+    const flags = ['-i', inputName, '-filter_complex', 'aformat=channel_layouts=mono,compand,showwavespic=s=300x120,drawbox=x=(iw-w)/2:y=(ih-h)/2:w=iw:h=1:color=#9cf42f', '-frames:v', '1', outputName]
+    // execute ffmpeg with the created flags
+    const execReturn = await ffmpeg.exec(flags)
+    console.log('[FFMPEG] executing ffmpeg commands successful');
+
+    // handle error cases when executing ffmpeg and stop execution
+    if (execReturn !== 0) {
+        return undefined;
+    }
+
+    // read output file from ffmpeg.wasm
+    const outputData = await ffmpeg.readFile(outputName) as Uint8Array;
+    console.log('[FFMPEG] reading created output file successful');
+
+    // turn outpout UIntArray into dataUrl
+    // var blob = new Blob([outputData], { 'type': 'image/png' });
+    // var dataUrl = URL.createObjectURL(blob);
+    // URL.revokeObjectURL(dataUrl)
+
+    // var binary = '';
+    // var len = outputData.byteLength;
+    // for (var i = 0; i < len; i++) {
+    //     binary += String.fromCharCode(outputData[i]);
+    // }
+    // return window.btoa(binary);
+
+    // use a FileReader to generate a base64 data URI:
+    // const base64url = await new Promise(r => {
+    //     const reader = new FileReader()
+    //     reader.onload = () => r(reader.result)
+    //     reader.readAsDataURL(new Blob([outputData]))
+    // });
+    // remove the `data:...;base64,` part from the start
+    // return base64url
+    // return base64url.slice(base64url.indexOf(',') + 1);
+
+    const blob = new Blob([outputData.buffer], { type: 'image/png' })
+    const dataUrl = URL.createObjectURL(blob)
+
+    return dataUrl
 }

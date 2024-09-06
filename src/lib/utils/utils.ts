@@ -6,6 +6,7 @@ import { adjustingInterval } from "./betterInterval";
 import { get } from "svelte/store";
 import resolveConfig from 'tailwindcss/resolveConfig'
 import tailwindConfig from '../../../tailwind.config.js'
+import { generateAudioWaveform } from "./ffmpeg.utils";
 
 let interval: {
     start: () => void;
@@ -46,6 +47,16 @@ export async function handleFileUpload(files: FileList) {
         switch (fileType) {
             case MediaType.Audio:
                 console.log("in switch audio file type")
+
+                // get metadata for the audio file
+                fileMetadata = await getFileMetadata(file, MediaType.Audio)
+
+                // TODO: generate preview image for audio files
+
+                const generatedImage = await generateAudioWaveform(file)
+                if (generatedImage) {
+                    filePreviewImage = generatedImage
+                }
                 break;
             case MediaType.Image:
                 console.log("in switch image file type")
@@ -61,7 +72,7 @@ export async function handleFileUpload(files: FileList) {
                 console.log("in switch video file type")
 
                 // get metadata of current file
-                fileMetadata = await getFileMetadata(file)
+                fileMetadata = await getFileMetadata(file, MediaType.Video)
 
                 // create image of uploaded media to show as preview
                 filePreviewImage = await getFilePreviewImage(file)
@@ -185,47 +196,49 @@ function getFilePreviewImage(file: File): Promise<string> {
 }
 
 // get metadata from a given file 
-function getFileMetadata(file: File): Promise<IFileMetadata> {
+function getFileMetadata(file: File, type: MediaType.Video | MediaType.Audio): Promise<IFileMetadata> {
     return new Promise(async (resolve, reject) => {
         // convert FileList type to an array
         // let filesArr = [...file];
 
+        // TODO: implement case for other file type like images or audio
         // create video element to "hold" each file and only preload its metadata
-        var video = document.createElement('video');
-        video.preload = 'metadata';
+        let placeholderEl: HTMLVideoElement | HTMLAudioElement
+        if (type === MediaType.Video) {
+            placeholderEl = document.createElement('video') as HTMLVideoElement;
+        } else {
+            placeholderEl = document.createElement('audio') as HTMLAudioElement
+        }
+        placeholderEl.preload = 'metadata';
 
         // create blob out of file and pass it as a source to the video element
-        video.src = await convertFileToDataUrl(file)
+        placeholderEl.src = await convertFileToDataUrl(file)
         // video.src = URL.createObjectURL(file);
 
         // add event listener to when metadata has loaded
-        video.onloadedmetadata = () => {
-            // window.URL.revokeObjectURL(video.src);
-            const duration = video.duration;
+        placeholderEl.onloadedmetadata = () => {
+            const duration = placeholderEl.duration;
 
             // calculate the duration in milliseconds and round it to the nearest integer  
             const durationInMs = Math.round(duration * CONSTS.secondsMultiplier)
 
-            window.URL.revokeObjectURL(video.src);
+            window.URL.revokeObjectURL(placeholderEl.src);
             // console.log('getFileInfo in onleadedmetadata -> duration:', duration, 'video:', video, "src:", video.src);
             resolve({
-                src: video.src,
+                src: placeholderEl.src,
                 duration: durationInMs
             });
         };
 
         // add event listener to when loading video throws an error
-        video.onerror = (err) => {
-            console.error("Error while getting file metadata", err)
+        placeholderEl.onerror = (err) => {
             reject(err)
         }
-
-        // console.log('getFileInfo after onleadedmetadata -> video:', video);
     });
 }
 
 // convert a given file into a data url string
-function convertFileToDataUrl(file: File): Promise<string> {
+export function convertFileToDataUrl(file: File): Promise<string> {
     return new Promise((resolve, reject) => {
         if (FileReader) {
             let fr = new FileReader();
