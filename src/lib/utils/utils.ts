@@ -502,7 +502,10 @@ export function msToHr(value: number) {
     const m = minutes < 10 ? '0' + minutes : minutes;
     const h = hours < 10 ? '0' + hours : hours;
 
-
+    // if it less than an hour don't show the hours
+    if (hours === 0) {
+        return m + ':' + s;
+    }
     return h + ':' + m + ':' + s;
 }
 

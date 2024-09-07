@@ -24,14 +24,14 @@
 
 <div class="flex flex-col items-center element-container">
 	<div
-		class="media relative rounded-lg p-[1px] bg-accent-color"
+		class="media relative rounded-lg p-[1px] bg-background-color-light border-accent-color border"
 		style="width: {CONSTS.mediaPoolElementWidth}px; height: {CONSTS.mediaPoolElementHeight}px;"
 		draggable="true"
 		on:dragstart={onDragElement}
 		on:drag={onDragged}
 		bind:this={elementRef}
 	>
-		<img src={file.previewImage} alt="media preview" class="w-full h-full rounded-[inherit]" />
+		<img src={file.previewImage} alt="media preview" class="w-full h-full rounded-[6px]" />
 
 		<!-- if the file has a duration show it in the element -->
 		{#if file.duration}
