@@ -75,7 +75,7 @@ export async function handleFileUpload(files: FileList) {
                 fileMetadata = await getFileMetadata(file, MediaType.Video)
 
                 // create image of uploaded media to show as preview
-                filePreviewImage = await getFilePreviewImage(file)
+                filePreviewImage = await getVideoPreviewImage(file)
                 break;
             default:
                 console.error("No fitting media type found")
@@ -168,8 +168,7 @@ export function createTrackWithElement(element: ITimelineElement) {
 }
 
 // creates a preview image using a given file
-// TODO: handle different media types differently: video(thumbnail), image(image), audio(soundwave of the file)
-function getFilePreviewImage(file: File): Promise<string> {
+function getVideoPreviewImage(file: File): Promise<string> {
     return new Promise((resolve, reject) => {
         const canvas = document.createElement("canvas");
         const video = document.createElement("video");
