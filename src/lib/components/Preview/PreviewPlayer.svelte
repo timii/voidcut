@@ -21,9 +21,9 @@
 	$: handlePlayingElements($previewPlaying);
 
 	// handle playing and pausing elements when the currentPlaybackTime store value changes
-	$: test($currentPlaybackTime);
+	$: handlePlaybackTimeUpdate($currentPlaybackTime);
 
-	function test(playbackTime: number) {
+	function handlePlaybackTimeUpdate(playbackTime: number) {
 		// console.log(
 		// 	'currentPlaybackTime change in player -> playbackTime:',
 		// 	playbackTime,
@@ -54,7 +54,7 @@
 			const afterElEnd =
 				curPlaybackTime >= el.properties.playbackStartTime + el.properties.duration;
 			const atElTime = !beforeElStart && !afterElEnd;
-			const isVideoPlaying = !htmlEl.paused;
+			const isMediaPlaying = !htmlEl.paused;
 			const curElTime =
 				($currentPlaybackTime - el.properties.playbackStartTime) / CONSTS.secondsMultiplier;
 			const elTimeOutOfSync =
@@ -70,8 +70,8 @@
 				elTimeOutOfSync,
 				'atElTime:',
 				atElTime,
-				'isVideoPlaying:',
-				isVideoPlaying,
+				'isMediaPlaying:',
+				isMediaPlaying,
 				'curElTime:',
 				curElTime,
 				'htmlEl.currentTime:',
@@ -79,11 +79,11 @@
 			);
 
 			if (!atElTime) {
-				if (isVideoPlaying) htmlEl.pause();
+				if (isMediaPlaying) htmlEl.pause();
 				return;
 			}
 
-			if (!isVideoPlaying) {
+			if (!isMediaPlaying) {
 				htmlEl.play();
 			}
 
@@ -191,6 +191,7 @@
 	<!-- for each element in the timeline show a video/audio/image element -->
 	{#each timelineElements as element, i}
 		{#if element.type === MediaType.Video}
+			<!-- TODO: hide controls at the end when everything works -->
 			<video
 				data-id={element.elementId}
 				data-duration={element.duration}
@@ -205,13 +206,35 @@
 				bind:this={playerElementsMap[element.elementId].el}
 			>
 			</video>
-			<!-- TODO: implement audio and image -->
 		{:else if element.type === MediaType.Audio}
-			<div class="audio"></div>
+			<!-- TODO: hide controls at the end when everything works -->
+			<audio
+				data-id={element.elementId}
+				data-duration={element.duration}
+				preload="auto"
+				controls
+				class="absolute top-0 left-0 w-full h-full pointer-events-none"
+				style="display: {displayMediaElement(
+					$currentPlaybackTime,
+					element
+				)}; z-index:{timelineElements.length - i};"
+				src={element.src}
+				bind:this={playerElementsMap[element.elementId].el}
+			></audio>
 		{:else if element.type === MediaType.Image}
-			<div class="image"></div>
-			<!-- default case that should not be reached usually -->
+			<img
+				src={element.src}
+				alt=""
+				bind:this={playerElementsMap[element.elementId].el}
+				style="display: {displayMediaElement(
+					$currentPlaybackTime,
+					element
+				)}; z-index:{timelineElements.length - i};"
+				class="absolute top-0 left-0 w-full h-full pointer-events-none"
+				data-id={element.elementId}
+			/>
 		{:else}
+			<!-- default case that should not be reached usually -->
 			<div class="no-matching-element-type"></div>
 		{/if}
 	{/each}
