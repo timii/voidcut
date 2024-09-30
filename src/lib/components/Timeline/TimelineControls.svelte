@@ -7,8 +7,8 @@
 	} from '../../../stores/store';
 	import IconButton from '../shared/IconButton.svelte';
 	import DeleteIcon from '$lib/assets/timeline/delete.png';
-	import { get } from 'svelte/store';
-	import type { ITimelineTrack } from '$lib/interfaces/Timeline';
+	import IncreaseIcon from '$lib/assets/timeline/increase.png';
+	import DecreaseIcon from '$lib/assets/timeline/decrease.png';
 	import { formatPlaybackTime, getIndexOfElementInTracks } from '$lib/utils/utils';
 
 	function increaseTimelineScale() {
@@ -61,13 +61,21 @@
 			alt={'Delete selected element'}
 			size={20}
 		></IconButton>
-		<!-- <div class="cursor-pointer increase-scale" on:click={deleteSelectedElement}>+</div> -->
 	</div>
 	<div class="flex-1 text-center">{formatPlaybackTime($currentPlaybackTime)}</div>
 	<div class="flex-1 text-right">
 		<div class="flex justify-end gap-3 mr-12 text-lg">
-			<div class="cursor-pointer increase-scale" on:click={increaseTimelineScale}>+</div>
-			<div class="cursor-pointer decrease-scale" on:click={decreaseTimelineScale}>-</div>
+			<IconButton
+				onClickCallback={increaseTimelineScale}
+				icon={IncreaseIcon}
+				alt={'Increase timeline scale'}
+				size={20}
+			></IconButton><IconButton
+				onClickCallback={decreaseTimelineScale}
+				icon={DecreaseIcon}
+				alt={'Decrease timeline scale'}
+				size={20}
+			></IconButton>
 		</div>
 	</div>
 </div>
