@@ -9,5 +9,5 @@
 	on:click={onClickCallback}
 	class="cursor-pointer rounded p-[2px] hover:bg-background-color-lighter"
 >
-	<img src={icon} {alt} width={size} class="[image-rendering:-moz-crisp-edges]" />
+	<img src={icon} {alt} width={size} />
 </button>
