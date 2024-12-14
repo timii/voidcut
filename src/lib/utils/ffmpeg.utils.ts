@@ -16,6 +16,7 @@ const blankVideoLength = 35
 // TODO: dynamically set an output file type and name
 const outputFileName = 'output.mp4';
 
+// #region initliaze ffmpeg
 // initialize FFmpeg, setup logging and load necessary packages
 export async function initializeFfmpeg() {
 
@@ -57,6 +58,7 @@ export async function initializeFfmpeg() {
     console.log('[FFMPEG] Ffmpeg core packages loaded');
 }
 
+// #region entry point
 // entry point when starting export 
 export async function callFfmpeg() {
     // start timer for elapsed time calculation
@@ -122,6 +124,7 @@ export async function callFfmpeg() {
     // console.log('[FFMPEG] downloading output file successful');
 }
 
+// #region mapping timeline
 // get and map timeline elements and prepare them so they can be used in ffmpeg
 function mapTimelineElementsToUIntArray(): IFfmpegElement[] {
     // get all timeline elements and their properties
@@ -159,7 +162,8 @@ function mapTimelineElementsToUIntArray(): IFfmpegElement[] {
     return mappedElements
 }
 
-async function createBlankVideo(videoData: IFfmpegElement[]) {
+// #region blank
+async function createBlankVideo(mediaData: IFfmpegElement[]) {
     // TODO: dynamically get max video length of all elements 
 
     // TODO:
@@ -176,6 +180,7 @@ async function createBlankVideo(videoData: IFfmpegElement[]) {
     return execReturn
 }
 
+// #region flags
 // use the mapped timeline elements to dynamically create the necessary 
 // ffmpeg flags and parameters 
 function createFfmpegFlags(videoData: IFfmpegElement[]): string[] {
@@ -290,6 +295,7 @@ function createFfmpegFlags(videoData: IFfmpegElement[]): string[] {
     return flags
 }
 
+// #region write files
 // write given video data into ffmpeg.wasm filesystem
 async function writeFilesToFfmpeg(videoData: IFfmpegElement[]) {
     for (const [i, el] of videoData.entries()) {
@@ -298,6 +304,7 @@ async function writeFilesToFfmpeg(videoData: IFfmpegElement[]) {
     }
 }
 
+// #region create file name
 // create a input file name using the given index
 function createFileName(index: number) {
     // TODO: handle different input file types
@@ -317,6 +324,8 @@ export function downloadOutput() {
     }, 1000);
 }
 
+// #region clean up
+// clean up everything and reset store variables
 export async function terminateFfmpegExecution() {
     console.log("terminateFfmpegExecution called")
 
@@ -331,6 +340,7 @@ export async function terminateFfmpegExecution() {
     await initializeFfmpeg()
 }
 
+// #region export timer
 // set up the interval for updating the elapsed time
 function startTimer() {
     //reset the previous store value
@@ -356,7 +366,8 @@ function stopTimer() {
     }
 }
 
-// generates an image of the waveform using the given file
+// #region waveform
+// generates an image of the waveform using ffmpeg from the given file
 export async function generateAudioWaveform(file: File) {
     // convert audio file to DataUrl and then UIntArray first
     const audioDataUrl = await convertFileToDataUrl(file)
