@@ -5,12 +5,14 @@ import { convertDataUrlToUIntArray, convertFileToDataUrl, msToS, sToMS } from ".
 import { ExportState, type IFfmpegElement } from "$lib/interfaces/Ffmpeg";
 import { adjustingInterval } from "./betterInterval";
 import { CONSTS } from "./consts";
+import { MediaType } from "$lib/interfaces/Media";
 
 let ffmpeg: FFmpeg
 let elapsedTimeInterval: {
     start: () => void;
     stop: () => void;
 }
+// TODO: remove after the blank video time is being set dynamically
 const blankVideoLength = 35
 
 // TODO: dynamically set an output file type and name
@@ -68,12 +70,12 @@ export async function callFfmpeg() {
     console.log('callFfmpeg called');
 
     // TODO: refactor to go timeline by timeline instead of going through each element
-    // get and map timeline elements so they can be used in ffmpeg
-    const videoData = mapTimelineElementsToUIntArray()
+    // map timeline elements so they include all necessary information and can be used in ffmpeg
+    const mediaData = mapTimelineElements()
     console.log('[FFMPEG] mapping of timeline elements successful');
 
     // create blank video with only black screen
-    const blankVideoReturn = await createBlankVideo(videoData)
+    const blankVideoReturn = await createBlankVideo(mediaData)
     console.log('[FFMPEG] creation of blank video successful');
 
     // handle error cases when executing ffmpeg and stop execution
@@ -84,11 +86,11 @@ export async function callFfmpeg() {
     }
 
     // map elements into ffmpeg flags and parameters
-    const flags = createFfmpegFlags(videoData)
+    const flags = createFfmpegFlags(mediaData)
     console.log('[FFMPEG] creating ffmpeg flags successful');
 
     // write necessary elements into ffmpeg.wasm filesystem
-    await writeFilesToFfmpeg(videoData)
+    await writeFilesToFfmpeg(mediaData)
     console.log('[FFMPEG] writing into ffmpeg filesystem successful');
 
     // execute ffmpeg with the created flags
@@ -126,7 +128,7 @@ export async function callFfmpeg() {
 
 // #region mapping timeline
 // get and map timeline elements and prepare them so they can be used in ffmpeg
-function mapTimelineElementsToUIntArray(): IFfmpegElement[] {
+function mapTimelineElements(): IFfmpegElement[] {
     // get all timeline elements and their properties
     const timelineElements = get(timelineTracks).flatMap(track => track.elements)
     console.log('callFfmpeg -> timelineElements:', timelineElements);
@@ -138,6 +140,7 @@ function mapTimelineElementsToUIntArray(): IFfmpegElement[] {
     });
     console.log('callFfmpeg -> mediaElements:', mediaElements);
 
+    // TODO: handle image and auido media types
     // map media elements and convert their source data url into UInt8Array that 
     // can be used in ffmpeg
     const videoData = mediaElements.map((el) => {
@@ -151,6 +154,7 @@ function mapTimelineElementsToUIntArray(): IFfmpegElement[] {
         const timelineElement = timelineElements[i]
         return {
             videoData: data.uIntArr,
+            mediaData: data.uIntArr,
             duration: timelineElement.duration,
             offset: timelineElement.playbackStartTime,
             mediaType: timelineElement.type,
@@ -183,16 +187,16 @@ async function createBlankVideo(mediaData: IFfmpegElement[]) {
 // #region flags
 // use the mapped timeline elements to dynamically create the necessary 
 // ffmpeg flags and parameters 
-function createFfmpegFlags(videoData: IFfmpegElement[]): string[] {
+function createFfmpegFlags(mediaData: IFfmpegElement[]): string[] {
 
     const flags: string[] = [];
 
     // include the blank video as the first input
     flags.push('-i', 'blank.mp4')
 
-    // loop backwards through the array to fix the order of overlaying
-    for (let i = videoData.length - 1; i >= 0; i--) {
-        const fileName = createFileName(i + 1);
+    // loop backwards through the array to fix the order of overlaying and add filenames as input flags
+    for (let i = mediaData.length - 1; i >= 0; i--) {
+        const fileName = createFileName(i + 1, mediaData[i].fileExtension);
 
         // push the -i flag with the input name
         flags.push('-i', fileName);
@@ -209,13 +213,14 @@ function createFfmpegFlags(videoData: IFfmpegElement[]): string[] {
     let filterComplexString = ''
     // go over each element and map offsets to video and audio delays
     // for (let i = 0; i < videoData.length; i++) {
-    for (let i = videoData.length - 1; i >= 0; i--) {
+    for (let i = mediaData.length - 1; i >= 0; i--) {
+        // TODO: handle image and audio media types
         // videoData.forEach((data, inputIndex) => {
-        const data = videoData[i]
-        const offsetInS = +msToS(data.offset).toFixed(2)
-        const durationInS = +msToS(data.duration).toFixed(2)
-        console.log("createFfmpegFlags in for each -> inputIndex:", i, "data:", data)
-        const inputIndex = videoData.length - i
+        const curEl = mediaData[i]
+        const offsetInS = +msToS(curEl.offset).toFixed(2)
+        const durationInS = +msToS(curEl.duration).toFixed(2)
+        console.log("createFfmpegFlags in for each -> inputIndex:", i, "data:", curEl)
+        const inputIndex = mediaData.length - i
 
         // set the video delay using the offset in seconds
         filterComplexString += `[${inputIndex}:v]setpts=expr=PTS+${offsetInS}/TB[${filterNumber}];`
@@ -241,11 +246,15 @@ function createFfmpegFlags(videoData: IFfmpegElement[]): string[] {
         filterNumber += 1
         console.log("createFfmpegFlags in for each -> filterComplexString:", filterComplexString)
 
-        // set the audio delay using the offset in ms
-        filterComplexString += `[${inputIndex}:a]adelay=delays=${data.offset}:all=1[${filterNumber}];`
-        amixInputNumbers.push(filterNumber)
-        filterNumber += 1
-        console.log("createFfmpegFlags in for each -> filterComplexString:", filterComplexString)
+        // TODO: handle audio media types
+        // ignore audio delay for images 
+        if (curEl.mediaType === MediaType.Video || curEl.mediaType === MediaType.Audio) {
+            // set the audio delay using the offset in ms
+            filterComplexString += `[${inputIndex}:a]adelay=delays=${curEl.offset}:all=1[${filterNumber}];`
+            amixInputNumbers.push(filterNumber)
+            filterNumber += 1
+            console.log("createFfmpegFlags in for each -> filterComplexString:", filterComplexString)
+        }
     }
 
     // mix all the audio streams together
@@ -254,7 +263,7 @@ function createFfmpegFlags(videoData: IFfmpegElement[]): string[] {
         return prev
     }, '')
     const amixInputs: string = '[0:a]' + amixInputsString
-    filterComplexString += `${amixInputs}amix=inputs=${videoData.length + 1}[${filterNumber}]`
+    filterComplexString += `${amixInputs}amix=inputs=${amixInputNumbers.length + 1}[${filterNumber}]`
     amixOutput = filterNumber
     console.log("createFfmpegFlags after for each -> filterComplexString:", filterComplexString)
 
@@ -270,6 +279,11 @@ function createFfmpegFlags(videoData: IFfmpegElement[]): string[] {
     flags.push(`${outputFileName}`)
 
     console.log("createFfmpegFlags -> flags:", flags)
+    console.log("createFfmpegFlags -> flags string:", flags.join(' '))
+
+    //  -i blank.mp4 -i input2.mp4 -i input1.jpg -filter_complex [1:v]setpts=expr=PTS+0/TB[0];[0:v][0]overlay=enable='between(t,0,15.02)'[1];[1:a]adelay=delays=0:all=1[2];[2:v]setpts=expr=PTS+0/TB[3];[1][3]overlay=enable='between(t,0,3)'[4];[2:a]adelay=delays=0:all=1[5];[0:a][2][5]amix=inputs=3[6] -map [4] -map [6] output.mp4
+
+    // Stream specifier ':a' in filtergraph description [1:v]setpts=expr=PTS+0/TB[0];[0:v][0]overlay=enable='between(t,0,15.02)'[1];[1:a]adelay=delays=0:all=1[2];[2:v]setpts=expr=PTS+0/TB[3];[1][3]overlay=enable='between(t,0,3)'[4];[2:a]adelay=delays=0:all=1[5];[0:a][2][5]amix=inputs=3[6] matches no streams.
 
     // ffmpeg -i output.mp4 -i testvideo1.mp4 -i testvideo2.mp4 -filter_complex "[1:v]setpts=expr=PTS+5/TB[2];[1:a]adelay=delays=5s:all=1[3];[2:v]setpts=expr=PTS+0/TB[4];[2:a]adelay=delays=0s:all=1[6];[0:v][4]overlay=eof_action=pass[5];[5][2]overlay=eof_action=pass[out_v];[0:a][3][6]amix=inputs=3[out_a]" -map "[out_a]" -map "[out_v]" out.mp4
 
@@ -299,18 +313,19 @@ function createFfmpegFlags(videoData: IFfmpegElement[]): string[] {
 // write given video data into ffmpeg.wasm filesystem
 async function writeFilesToFfmpeg(videoData: IFfmpegElement[]) {
     for (const [i, el] of videoData.entries()) {
-        const fileName = createFileName(i + 1);
+        const fileName = createFileName(i + 1, el.fileExtension);
         await ffmpeg.writeFile(fileName, el.videoData);
     }
 }
 
 // #region create file name
 // create a input file name using the given index
-function createFileName(index: number) {
+function createFileName(index: number, fileExtension: string) {
     // TODO: handle different input file types
-    return `input${index}.mp4`;
+    return `input${index}.${fileExtension}`;
 }
 
+// #region download output
 // convert output data into blob and download it
 export function downloadOutput() {
     const data = get(processedFile)
