@@ -12,8 +12,6 @@ let elapsedTimeInterval: {
     start: () => void;
     stop: () => void;
 }
-// TODO: remove after the blank video time is being set dynamically
-const blankVideoLength = 35
 
 // TODO: dynamically set an output file type and name
 const outputFileName = 'output.mp4';
@@ -158,17 +156,26 @@ function mapTimelineElements(): IFfmpegElement[] {
 
 // #region blank
 async function createBlankVideo(mediaData: IFfmpegElement[]) {
-    // TODO: dynamically get max video length of all elements 
+    let maxLength = 0
 
-    // TODO: get total length of all elements together
+    // go through each media element and get the latest point of any element for the blank video length
+    mediaData.forEach(el => {
+        // if the current element duration + offset are bigger than the maxLength, update it
+        if (el.duration + el.offset > maxLength) {
+            maxLength = el.duration + el.offset
+        }
+    })
+    const maxLengthInS = maxLength / 1000
 
-    // create a "video" with just a black screen and now audio with the length from the step before
-    // use just overlays at different times for the individual elements
+
+    // create a "video" with just a black screen and no audio
+    // we will overlay every element on top of this "base" video 
     const flags: string[] = []
     flags.push(
-        "-f", "lavfi", "-i", "color=size=1280x720:rate=25:color=black", "-f", "lavfi", "-i", "anullsrc=channel_layout=stereo:sample_rate=44100", "-t", `${blankVideoLength}`, "blank.mp4"
+        "-f", "lavfi", "-i", "color=size=1280x720:rate=25:color=black", "-f", "lavfi", "-i", "anullsrc=channel_layout=stereo:sample_rate=44100", "-t", `${maxLengthInS}`, "blank.mp4"
     )
 
+    // execute the blank video creation command and wait until its done
     const execReturn = await ffmpeg.exec(flags)
 
     return execReturn
