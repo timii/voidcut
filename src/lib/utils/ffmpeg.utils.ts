@@ -120,10 +120,6 @@ export async function callFfmpeg() {
     // write processed file into store
     processedFile.set(outputData)
     console.log('[FFMPEG] writing processed into store successful');
-
-    // download read file
-    // downloadOutput(outputData, outputFileName)
-    // console.log('[FFMPEG] downloading output file successful');
 }
 
 // #region mapping timeline
@@ -133,22 +129,17 @@ function mapTimelineElements(): IFfmpegElement[] {
     const timelineElements = get(timelineTracks).flatMap(track => track.elements)
     console.log('callFfmpeg -> timelineElements:', timelineElements);
 
-    // TODO: refactor following two maps into one
-    // map each element to a media element in the pool to get the source dataUrl
-    const mediaElements = timelineElements.map((el) => {
-        return get(availableMedia).find((media) => media.mediaId === el.mediaId)!;
-    });
-    console.log('callFfmpeg -> mediaElements:', mediaElements);
+    const mediaData = timelineElements.map((el) => {
+        // map each timeline element to a media element in the pool to get the source dataUrl
+        const mediaEl = get(availableMedia).find((media) => media.mediaId === el.mediaId)!;
 
-    // TODO: handle image and auido media types
-    // map media elements and convert their source data url into UInt8Array that 
-    // can be used in ffmpeg
-    const mediaData = mediaElements.map((el) => {
-        const splitFilename = el.name.split('.')
+        // map media element and convert their source data url into UInt8Array that 
+        // can be used in ffmpeg
+        const splitFilename = mediaEl.name.split('.')
         const fileType = splitFilename && splitFilename.length > 1 ? splitFilename.pop() : ''
-        return { uIntArr: convertDataUrlToUIntArray(el.src), fileType }
+        return { uIntArr: convertDataUrlToUIntArray(mediaEl.src), fileType }
     });
-    console.log('callFfmpeg -> mediaData:', mediaData);
+    console.log('callFfmpeg -> mediaElements:', mediaData);
 
     const mappedElements: IFfmpegElement[] = mediaData.map((data, i) => {
         const timelineElement = timelineElements[i]
@@ -169,8 +160,8 @@ function mapTimelineElements(): IFfmpegElement[] {
 async function createBlankVideo(mediaData: IFfmpegElement[]) {
     // TODO: dynamically get max video length of all elements 
 
-    // TODO:
-    // get total length of all elements together
+    // TODO: get total length of all elements together
+
     // create a "video" with just a black screen and now audio with the length from the step before
     // use just overlays at different times for the individual elements
     const flags: string[] = []
@@ -213,8 +204,6 @@ function createFfmpegFlags(mediaData: IFfmpegElement[]): string[] {
     // go over each element and map offsets to video and audio delays
     // for (let i = 0; i < videoData.length; i++) {
     for (let i = mediaData.length - 1; i >= 0; i--) {
-        // TODO: handle image and audio media types
-        // videoData.forEach((data, inputIndex) => {
         const curEl = mediaData[i]
         const offsetInS = +msToS(curEl.offset).toFixed(2)
         const durationInS = +msToS(curEl.duration).toFixed(2)
@@ -282,13 +271,9 @@ function createFfmpegFlags(mediaData: IFfmpegElement[]): string[] {
     console.log("createFfmpegFlags -> flags:", flags)
     console.log("createFfmpegFlags -> flags string:", flags.join(' '))
 
-    //  -i blank.mp4 -i input2.mp4 -i input1.jpg -filter_complex [1:v]setpts=expr=PTS+0/TB[0];[0:v][0]overlay=enable='between(t,0,15.02)'[1];[1:a]adelay=delays=0:all=1[2];[2:v]setpts=expr=PTS+0/TB[3];[1][3]overlay=enable='between(t,0,3)'[4];[2:a]adelay=delays=0:all=1[5];[0:a][2][5]amix=inputs=3[6] -map [4] -map [6] output.mp4
-
-    // Stream specifier ':a' in filtergraph description [1:v]setpts=expr=PTS+0/TB[0];[0:v][0]overlay=enable='between(t,0,15.02)'[1];[1:a]adelay=delays=0:all=1[2];[2:v]setpts=expr=PTS+0/TB[3];[1][3]overlay=enable='between(t,0,3)'[4];[2:a]adelay=delays=0:all=1[5];[0:a][2][5]amix=inputs=3[6] matches no streams.
-
     // ffmpeg -i output.mp4 -i testvideo1.mp4 -i testvideo2.mp4 -filter_complex "[1:v]setpts=expr=PTS+5/TB[2];[1:a]adelay=delays=5s:all=1[3];[2:v]setpts=expr=PTS+0/TB[4];[2:a]adelay=delays=0s:all=1[6];[0:v][4]overlay=eof_action=pass[5];[5][2]overlay=eof_action=pass[out_v];[0:a][3][6]amix=inputs=3[out_a]" -map "[out_a]" -map "[out_v]" out.mp4
 
-    // TODO: change the flags to be dynamic
+    //  change the flags to be dynamic
     // flags.push(
     //     '-filter_complex',
     //     `[0:v]setpts=expr=PTS+10/TB[1];
@@ -320,9 +305,8 @@ async function writeFilesToFfmpeg(mediaData: IFfmpegElement[]) {
 }
 
 // #region create file name
-// create a input file name using the given index
+// create a ffmpeg input file name string using the given index adn file extension
 function createFileName(index: number, fileExtension: string) {
-    // TODO: handle different input file types
     return `input${index}.${fileExtension}`;
 }
 
@@ -331,7 +315,7 @@ function createFileName(index: number, fileExtension: string) {
 export function downloadOutput() {
     const data = get(processedFile) as Uint8Array<ArrayBuffer>
     const a = document.createElement('a');
-    // TODO: dynamic output file type instead of hardcoding 'video/mp4'
+    // TODO: dynamic output file type instead of hardcoding 'video/mp4' after we added logic for setting custom output name and file type
     a.href = URL.createObjectURL(new Blob([data.buffer], { type: 'video/mp4' }));
     a.download = outputFileName;
 
