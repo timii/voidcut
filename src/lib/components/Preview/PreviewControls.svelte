@@ -28,7 +28,6 @@
 			value ? pausePlayback() : resumePlayback();
 			return !value;
 		});
-		// TODO: pause/resume playback
 	}
 
 	function onFrameAfterClick() {

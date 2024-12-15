@@ -43,7 +43,6 @@ export async function handleFileUpload(files: FileList) {
 
         let fileMetadata: IFileMetadata = {} as IFileMetadata
         let filePreviewImage: string = '';
-        // TODO: handle different file types 
         switch (fileType) {
             case MediaType.Audio:
                 console.log("in switch audio file type")
@@ -51,8 +50,7 @@ export async function handleFileUpload(files: FileList) {
                 // get metadata for the audio file
                 fileMetadata = await getFileMetadata(file, MediaType.Audio)
 
-                // TODO: generate preview image for audio files
-
+                // generate wave form image for the preview image
                 const generatedImage = await generateAudioWaveform(file)
                 if (generatedImage) {
                     filePreviewImage = generatedImage
@@ -88,7 +86,7 @@ export async function handleFileUpload(files: FileList) {
             name: file.name,
             mediaId: generateId(),
             type: fileType,
-            // TODO: implement loading so that the element gets directly added into store but with loaded false only and then we update it here
+            // TODO: implement loading so that the element gets directly added into store but with loaded false only and then we update it here so we can show a loading media element in the media pool already
             loaded: true,
             previewImage: filePreviewImage,
             ...fileMetadata
@@ -110,7 +108,6 @@ export function handleTimelineMediaDrop(media: IMedia, rowIndex?: number, elInde
         type: media.type,
         elementId: generateId(),
         playbackStartTime: startTime ? startTime : 0,
-        // playbackStartTime: 4000, // TODO: remove only for testing
         trimFromStart: 0,
         trimFromEnd: 0,
         videoOptions: {}
@@ -144,8 +141,6 @@ export function handleTimelineMediaDrop(media: IMedia, rowIndex?: number, elInde
     } else {
         // add new timeline element into given row index
         timelineTracks.update(arr => {
-            // TODO: remove test
-            // const test = [...arr]
             // console.log("handleTimelineMediaDrop -> add at given index:", test.toSpliced(elIndex, 0, timelineTrack))
             const trackIndex = rowIndex !== undefined && rowIndex >= 0 ? rowIndex : 0
             arr[trackIndex].elements.splice(elIndex, 0, timelineEl)
@@ -197,11 +192,7 @@ function getVideoPreviewImage(file: File): Promise<string> {
 // get metadata from a given file 
 function getFileMetadata(file: File, type: MediaType.Video | MediaType.Audio): Promise<IFileMetadata> {
     return new Promise(async (resolve, reject) => {
-        // convert FileList type to an array
-        // let filesArr = [...file];
-
-        // TODO: implement case for other file type like images or audio
-        // create video element to "hold" each file and only preload its metadata
+        // create html element to "hold" each file and only preload its metadata
         let placeholderEl: HTMLVideoElement | HTMLAudioElement
         if (type === MediaType.Video) {
             placeholderEl = document.createElement('video') as HTMLVideoElement;
@@ -212,7 +203,6 @@ function getFileMetadata(file: File, type: MediaType.Video | MediaType.Audio): P
 
         // create blob out of file and pass it as a source to the video element
         placeholderEl.src = await convertFileToDataUrl(file)
-        // video.src = URL.createObjectURL(file);
 
         // add event listener to when metadata has loaded
         placeholderEl.onloadedmetadata = () => {
@@ -222,7 +212,7 @@ function getFileMetadata(file: File, type: MediaType.Video | MediaType.Audio): P
             const durationInMs = Math.round(duration * CONSTS.secondsMultiplier)
 
             window.URL.revokeObjectURL(placeholderEl.src);
-            // console.log('getFileInfo in onleadedmetadata -> duration:', duration, 'video:', video, "src:", video.src);
+
             resolve({
                 src: placeholderEl.src,
                 duration: durationInMs
@@ -296,6 +286,7 @@ export function resetAllBeingDragged() {
 // remove interval that handles the current playback time
 export function pausePlayback() {
     console.log("pausePlayback")
+    previewPlaying.set(false)
     playbackIntervalId.update((id) => {
         // use current interval id to clear the interval
         clearInterval(id)
@@ -304,11 +295,11 @@ export function pausePlayback() {
         // set the store value back to zero
         return 0;
     })
-    previewPlaying.set(false)
 }
 
 // create interval that increases current playback time
 export function resumePlayback() {
+    previewPlaying.set(true)
     // const startTime = new Date().valueOf();
     // TODO: remove old testing stuff
     const startTime = new Date().getTime();;

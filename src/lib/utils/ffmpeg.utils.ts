@@ -67,7 +67,6 @@ export async function callFfmpeg() {
     exportState.set(ExportState.PROCESSING)
     console.log('callFfmpeg called');
 
-    // TODO: refactor to go timeline by timeline instead of going through each element
     // map timeline elements so they include all necessary information and can be used in ffmpeg
     const mediaData = mapTimelineElements()
     console.log('[FFMPEG] mapping of timeline elements successful');
