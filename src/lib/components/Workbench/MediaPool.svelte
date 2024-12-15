@@ -45,8 +45,8 @@
 >
 	{#if $availableMedia && $availableMedia.length !== 0}
 		<div class="mediapool flex flex-row flex-wrap overflow-y-auto h-full content-start gap-2">
-			{#each $availableMedia as media}
-				<MediaPoolElement file={media}></MediaPoolElement>
+			{#each $availableMedia as media, i}
+				<MediaPoolElement file={media} index={i}></MediaPoolElement>
 			{/each}
 		</div>
 	{:else}
