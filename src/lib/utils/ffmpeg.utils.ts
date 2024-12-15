@@ -143,17 +143,16 @@ function mapTimelineElements(): IFfmpegElement[] {
     // TODO: handle image and auido media types
     // map media elements and convert their source data url into UInt8Array that 
     // can be used in ffmpeg
-    const videoData = mediaElements.map((el) => {
+    const mediaData = mediaElements.map((el) => {
         const splitFilename = el.name.split('.')
         const fileType = splitFilename && splitFilename.length > 1 ? splitFilename.pop() : ''
         return { uIntArr: convertDataUrlToUIntArray(el.src), fileType }
     });
-    console.log('callFfmpeg -> videoData:', videoData);
+    console.log('callFfmpeg -> mediaData:', mediaData);
 
-    const mappedElements: IFfmpegElement[] = videoData.map((data, i) => {
+    const mappedElements: IFfmpegElement[] = mediaData.map((data, i) => {
         const timelineElement = timelineElements[i]
         return {
-            videoData: data.uIntArr,
             mediaData: data.uIntArr,
             duration: timelineElement.duration,
             offset: timelineElement.playbackStartTime,
@@ -222,8 +221,11 @@ function createFfmpegFlags(mediaData: IFfmpegElement[]): string[] {
         console.log("createFfmpegFlags in for each -> inputIndex:", i, "data:", curEl)
         const inputIndex = mediaData.length - i
 
-        // set the video delay using the offset in seconds
-        filterComplexString += `[${inputIndex}:v]setpts=expr=PTS+${offsetInS}/TB[${filterNumber}];`
+        // ignore video delay for audio
+        if (curEl.mediaType !== MediaType.Audio) {
+            // set the video delay using the offset in seconds
+            filterComplexString += `[${inputIndex}:v]setpts=expr=PTS+${offsetInS}/TB[${filterNumber}];`
+        }
 
         if (overlayInputs.length === 0) {
             overlayInputs[0] = `0:v`
@@ -246,9 +248,8 @@ function createFfmpegFlags(mediaData: IFfmpegElement[]): string[] {
         filterNumber += 1
         console.log("createFfmpegFlags in for each -> filterComplexString:", filterComplexString)
 
-        // TODO: handle audio media types
         // ignore audio delay for images 
-        if (curEl.mediaType === MediaType.Video || curEl.mediaType === MediaType.Audio) {
+        if (curEl.mediaType !== MediaType.Image) {
             // set the audio delay using the offset in ms
             filterComplexString += `[${inputIndex}:a]adelay=delays=${curEl.offset}:all=1[${filterNumber}];`
             amixInputNumbers.push(filterNumber)
@@ -311,10 +312,10 @@ function createFfmpegFlags(mediaData: IFfmpegElement[]): string[] {
 
 // #region write files
 // write given video data into ffmpeg.wasm filesystem
-async function writeFilesToFfmpeg(videoData: IFfmpegElement[]) {
-    for (const [i, el] of videoData.entries()) {
+async function writeFilesToFfmpeg(mediaData: IFfmpegElement[]) {
+    for (const [i, el] of mediaData.entries()) {
         const fileName = createFileName(i + 1, el.fileExtension);
-        await ffmpeg.writeFile(fileName, el.videoData);
+        await ffmpeg.writeFile(fileName, el.mediaData);
     }
 }
 
