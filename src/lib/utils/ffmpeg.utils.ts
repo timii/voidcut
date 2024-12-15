@@ -329,7 +329,7 @@ function createFileName(index: number, fileExtension: string) {
 // #region download output
 // convert output data into blob and download it
 export function downloadOutput() {
-    const data = get(processedFile)
+    const data = get(processedFile) as Uint8Array<ArrayBuffer>
     const a = document.createElement('a');
     // TODO: dynamic output file type instead of hardcoding 'video/mp4'
     a.href = URL.createObjectURL(new Blob([data.buffer], { type: 'video/mp4' }));
@@ -406,7 +406,7 @@ export async function generateAudioWaveform(file: File) {
     }
 
     // read output file from ffmpeg.wasm
-    const outputData = await ffmpeg.readFile(outputName) as Uint8Array;
+    const outputData = await ffmpeg.readFile(outputName) as Uint8Array<ArrayBuffer>;
     console.log('[FFMPEG] reading created output file successful');
 
     // turn outpout UIntArray into dataUrl
