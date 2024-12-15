@@ -21,7 +21,8 @@
 		'header/close.png',
 		'header/complete.png',
 		'header/error.png',
-		'preview/pause.png'
+		'preview/pause.png',
+		'workbench/delete.png'
 	];
 	$: preloadImageUrls = imageUrls.map((url) => baseImgPath + url);
 
