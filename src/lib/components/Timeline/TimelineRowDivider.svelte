@@ -57,6 +57,13 @@
 			const elementId = $draggedElementData.elementId;
 			const elementData = $draggedElementData.data;
 
+			console.log(
+				'element dropped on divider -> draggedElementData:',
+				$draggedElementData,
+				'elementData:',
+				elementData
+			);
+
 			timelineTracks.update((tracks) => {
 				// find dragged element index using the element id
 				let elementIndexInTrack = -1;
@@ -76,6 +83,9 @@
 					}
 				}
 
+				// TODO: fix behavior when two elements on one track and trying to move first element onto a divider
+
+				// if the dragged element is in the same track as the track it got dragged from -> don't change any tracks
 				if (elementIndexInTrack === -1) {
 					return tracks;
 				}
@@ -107,7 +117,7 @@
 
 				// TODO: check for array bounds
 
-				// add new track
+				// add new track that includes the dragged element
 				tracks.splice(index, 0, track);
 				console.log(
 					'element dropped on divider -> tracks after new track has been added:',
@@ -156,6 +166,7 @@
 		hoverElement = true;
 	}
 
+	// handle media element dropped on divider and not timeline element
 	function onDropElement(e: DragEvent) {
 		// prevent default behavior
 		e.preventDefault();
@@ -187,6 +198,7 @@
 	style="background-color: {(elementOverDivider && $isTimelineElementBeingDragged) || hoverElement
 		? 'red'
 		: colors.slate[500]}"
+	data-divider-index={index}
 	on:drop={onDropElement}
 	on:dragleave={onDropElement}
 	on:dragenter={onHoverElement}

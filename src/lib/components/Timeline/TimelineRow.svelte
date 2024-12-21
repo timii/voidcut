@@ -356,7 +356,7 @@
 			? 'unset'
 			: 'none'}; background-color: green; left: {dropZonePositionLeft}px;"
 	></div>
-	{#each track.elements as element}
-		<TimelineRowElement {element}></TimelineRowElement>
+	{#each track.elements as element, index}
+		<TimelineRowElement {element} {index}></TimelineRowElement>
 	{/each}
 </div>

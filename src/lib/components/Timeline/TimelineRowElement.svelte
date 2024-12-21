@@ -21,6 +21,7 @@
 	import type { DragEventData } from '@neodrag/svelte';
 
 	export let element: ITimelineElement = {} as ITimelineElement;
+	export let index: number;
 
 	$: isSelected = getSelectedElement($selectedElement);
 
@@ -486,8 +487,18 @@
 		// reset topOffset so the timeline element gets placed inside a track again
 		setTimeout(() => {
 			topOffset = 0;
+			// manually trigger update of the left offset so the new offset is actually updated
+			leftOffset = (element.playbackStartTime / CONSTS.secondsMultiplier) * $currentTimelineScale;
+
 			position = { x: leftOffset, y: topOffset };
-			console.log('element dropped on divider in testEnd -> topOffset reset:', position);
+			console.log(
+				'element dropped on divider in testEnd -> topOffset reset:',
+				position,
+				'element.playbackStartTime:',
+				element.playbackStartTime,
+				'(element.playbackStartTime / CONSTS.secondsMultiplier) * $currentTimelineScale:',
+				(element.playbackStartTime / CONSTS.secondsMultiplier) * $currentTimelineScale
+			);
 		}, 0);
 
 		// TODO: add element data to custom event so we can directly access it in the event listeners
@@ -630,6 +641,8 @@
 	style="width: {elementWidth}px; background-color: {isSelected
 		? tailwindColors.orange[500]
 		: tailwindColors.red[500]}; z-index: {dragging ? '50' : 'auto'}"
+	data-element-index={index}
+	data-element-offset={element.playbackStartTime}
 	use:draggable={{ position }}
 	on:mousedown={getMousePosition}
 	on:neodrag:start={testStart}
