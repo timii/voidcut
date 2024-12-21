@@ -29,6 +29,11 @@
 	// set the left offset once in the beginning
 	leftOffset = (element.playbackStartTime / CONSTS.secondsMultiplier) * $currentTimelineScale;
 
+	// the offset of the element within the parent
+	let topOffset = 0;
+
+	let position = { x: leftOffset, y: topOffset };
+
 	$: elementWidth = (element.duration / CONSTS.secondsMultiplier) * $currentTimelineScale;
 
 	// // call function everytime the store variable changes
@@ -381,6 +386,7 @@
 		}
 	}
 
+	// TODO: rename
 	function testStart(e: CustomEvent<DragEventData>) {
 		console.log('testStart -> e:', e);
 
@@ -436,6 +442,8 @@
 		// 	...e
 		// } as unknown as MouseEvent);
 	}
+
+	// TODO: rename
 	function test(e: CustomEvent<DragEventData>) {
 		console.log('test -> e:', e);
 
@@ -464,6 +472,8 @@
 		// 	...e
 		// } as unknown as MouseEvent);
 	}
+
+	// TODO: rename
 	function testEnd(e: CustomEvent<DragEventData>) {
 		console.log('testEnd -> e:', e);
 
@@ -473,9 +483,20 @@
 		mouseStartPosition = undefined;
 		elStartPosition = undefined;
 
+		// reset topOffset so the timeline element gets placed inside a track again
+		setTimeout(() => {
+			topOffset = 0;
+			position = { x: leftOffset, y: topOffset };
+			console.log('element dropped on divider in testEnd -> topOffset reset:', position);
+		}, 0);
+
+		// TODO: add element data to custom event so we can directly access it in the event listeners
 		// create and dispatch custom event
 		const event = new CustomEvent(CONSTS.customEventNameDropTimelineElement);
 		window.dispatchEvent(event);
+
+		// TODO: if at the point of mouse release the dragged element is neither over a timeline row or a divider we should check where to drop the element
+
 		// const detail = e.detail as any;
 		// onElementDrop({
 		// 	clientX: detail.offsetX,
@@ -603,20 +624,32 @@
 	bind:this={elementRef}
 ></div> -->
 
+<!-- #region drag element -->
 <div
 	class="timeline-row-element h-[50px] mr-5 rounded hover:cursor-pointer absolute"
 	style="width: {elementWidth}px; background-color: {isSelected
 		? tailwindColors.orange[500]
-		: tailwindColors.red[500]}; transform: translate3d({200}px, 0, 0)}; z-index: {dragging
-		? '50'
-		: 'auto'}"
-	use:draggable={{ position: { x: leftOffset, y: 0 } }}
+		: tailwindColors.red[500]}; z-index: {dragging ? '50' : 'auto'}"
+	use:draggable={{ position }}
 	on:mousedown={getMousePosition}
 	on:neodrag:start={testStart}
 	on:neodrag={test}
 	on:neodrag:end={testEnd}
 	bind:this={elementRef}
 ></div>
+<!-- TODO: old one that worked mostly -->
+<!-- <div
+	class="timeline-row-element h-[50px] mr-5 rounded hover:cursor-pointer absolute"
+	style="width: {elementWidth}px; background-color: {isSelected
+		? tailwindColors.orange[500]
+		: tailwindColors.red[500]}; z-index: {dragging ? '50' : 'auto'}"
+	use:draggable={{ position: { x: leftOffset, y: topOffset } }}
+	on:mousedown={getMousePosition}
+	on:neodrag:start={testStart}
+	on:neodrag={test}
+	on:neodrag:end={testEnd}
+	bind:this={elementRef}
+></div> -->
 
 <!-- <div
 	draggable="true"
