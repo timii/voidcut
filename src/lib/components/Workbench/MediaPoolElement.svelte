@@ -11,15 +11,24 @@
 
 	let elementRef: HTMLElement;
 	let isHovering = false;
+	let previewImageRef: Element;
 
-	// attach necessary information to dataTransfer object
+	// handle on drag start
 	function onDragElement(e: DragEvent) {
-		// console.log('drag element -> e', e, 'media data:', file);
-
 		// stringify file data to pass it via drag and drop
 		e.dataTransfer?.setData(CONSTS.mediaPoolTransferKey, JSON.stringify(file));
-		e.dataTransfer?.setData('text', 'placeholderText');
-		// console.log('drag element after setData -> e', e.dataTransfer);
+
+		// create temporary image element that holds the drag image
+		const img = new Image();
+		img.src = file.previewImage;
+
+		// manually set the drag image so it loads directly when dragging
+		e.dataTransfer?.setDragImage(
+			img,
+			// center the drag image
+			CONSTS.mediaPoolElementWidth / 2,
+			CONSTS.mediaPoolElementHeight / 2
+		);
 	}
 
 	// delete current element in the store value
@@ -38,7 +47,12 @@
 		on:mouseleave={() => (isHovering = false)}
 		bind:this={elementRef}
 	>
-		<img src={file.previewImage} alt="media preview" class="w-full h-full rounded-[6px]" />
+		<img
+			src={file.previewImage}
+			alt="media preview"
+			class="w-full h-full rounded-[6px]"
+			bind:this={previewImageRef}
+		/>
 
 		<!-- if the file has a duration show it in the element -->
 		{#if file.duration}

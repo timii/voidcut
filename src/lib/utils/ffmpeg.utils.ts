@@ -1,7 +1,7 @@
 import { FFmpeg } from "@ffmpeg/ffmpeg";
 import { availableMedia, exportOverlayOpen, exportState, ffmpegLoaded, ffmpegProgress, ffmpegProgressElapsedTime, ffmpegProgressPrevValue, processedFile, processedFileSize, timelineTracks } from "../../stores/store";
 import { get } from "svelte/store";
-import { convertDataUrlToUIntArray, convertFileToDataUrl, msToS, sToMS } from "./utils";
+import { convertDataUrlToUIntArray, convertFileToDataUrl, resizeFilePreview, msToS, sToMS } from "./utils";
 import { ExportState, type IFfmpegElement } from "$lib/interfaces/Ffmpeg";
 import { adjustingInterval } from "./betterInterval";
 import { CONSTS } from "./consts";
@@ -401,7 +401,7 @@ export async function generateAudioWaveform(file: File) {
 
     // turn outpout UIntArray into dataUrl
     const blob = new Blob([outputData.buffer], { type: 'image/png' })
-    const dataUrl = await convertFileToDataUrl(blob as File)
+    const dataUrl = await resizeFilePreview(blob as File)
 
     return dataUrl
 }

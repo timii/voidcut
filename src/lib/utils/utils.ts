@@ -14,6 +14,7 @@ let interval: {
 }
 let timelineScrollContainer: Element | null
 
+// #region save file in store
 // save a given array of media objects into the store 
 export function saveFilesToStore(files: IMedia[]) {
     // add given array of file(s) into store
@@ -23,6 +24,7 @@ export function saveFilesToStore(files: IMedia[]) {
     // availableMedia.subscribe(value => console.log("saveFilesToStore -> availableMedia:", value))
 }
 
+// #region file upload
 // handle given files when media is manually uploaded or drag and dropped
 export async function handleFileUpload(files: FileList) {
 
@@ -59,8 +61,10 @@ export async function handleFileUpload(files: FileList) {
             case MediaType.Image:
                 console.log("in switch image file type")
 
+                // TODO: create preview image for media pool element width and height as well
                 // convert uploaded file into dataUrl
-                const fileAsDataUrl = await convertFileToDataUrl(file)
+                const fileAsDataUrl = await resizeFilePreview(file)
+                console.log("fileAsDataUrl:", fileAsDataUrl)
                 fileMetadata = { src: fileAsDataUrl }
 
                 filePreviewImage = fileAsDataUrl
@@ -71,9 +75,11 @@ export async function handleFileUpload(files: FileList) {
 
                 // get metadata of current file
                 fileMetadata = await getFileMetadata(file, MediaType.Video)
+                console.log("in switch video file type 2")
 
                 // create image of uploaded media to show as preview
                 filePreviewImage = await getVideoPreviewImage(file)
+                console.log("in switch video file type 3 ")
                 break;
             default:
                 console.error("No fitting media type found")
@@ -99,7 +105,7 @@ export async function handleFileUpload(files: FileList) {
 
 // handle given media when it's drag and dropped into the timeline
 export function handleTimelineMediaDrop(media: IMedia, rowIndex?: number, elIndex?: number, startTime?: number) {
-    // console.log("handleTimelineMediaDrop -> media:", media)
+    // console.log("handleTimelineMediaDrop -> media:", media, "rowIndex:", rowIndex)
 
     // convert media type to timeline element type
     const timelineEl: ITimelineElement = {
@@ -155,13 +161,7 @@ export function handleTimelineMediaDrop(media: IMedia, rowIndex?: number, elInde
     // timelineTracks.subscribe(value => console.log("handleTimelineMediaDrop -> timelineTracks:", value))
 }
 
-export function createTrackWithElement(element: ITimelineElement) {
-    return {
-        trackId: generateId(),
-        elements: [element]
-    } as ITimelineTrack
-}
-
+// #region file helpers
 // creates a preview image using a given file
 function getVideoPreviewImage(file: File): Promise<string> {
     return new Promise((resolve, reject) => {
@@ -173,18 +173,19 @@ function getVideoPreviewImage(file: File): Promise<string> {
         video.onloadeddata = () => {
             let ctx = canvas.getContext("2d");
 
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
+            // resize the canvas to be the same size as the media pool element to resize it
+            canvas.width = CONSTS.mediaPoolElementWidth;
+            canvas.height = CONSTS.mediaPoolElementHeight;
 
             if (!ctx) {
                 reject()
                 return;
             }
 
-            ctx.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
+            ctx.drawImage(video, 0, 0, CONSTS.mediaPoolElementWidth, CONSTS.mediaPoolElementHeight);
             video.pause();
             URL.revokeObjectURL(video.src)
-            return resolve(canvas.toDataURL("image/png"));
+            return resolve(canvas.toDataURL('image/png'));
         };
     })
 }
@@ -226,31 +227,78 @@ function getFileMetadata(file: File, type: MediaType.Video | MediaType.Audio): P
     });
 }
 
+// resizes a given file to be the same size as a media pool element
+export function resizeFilePreview(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+        if (!FileReader) {
+            console.error('Error getting FileReader')
+            reject('Error getting FileReader')
+        }
+
+        let fr = new FileReader();
+
+        // read file content as a dataUrl
+        fr.readAsDataURL(file);
+
+        // add eventlistener to when the FileReader finished loading
+        fr.onload = (event) => {
+            // resize created preview image to be the same size as the media pool element by loading a temporary image into the canvas and resizing the canvas
+            const img = new Image();
+            // img.src = event.target?.result?.toString()!;
+            img.src = fr.result as string;
+
+            img.onload = () => {
+                const elem = document.createElement('canvas');
+
+                // set the canvas to be the same height as the media pool element
+                elem.width = CONSTS.mediaPoolElementWidth;
+                elem.height = CONSTS.mediaPoolElementHeight;
+
+                const ctx = elem.getContext('2d');
+                if (!ctx) {
+                    console.error('Error getting canvas context')
+                    reject('Error getting canvas context')
+
+                }
+
+                ctx!.drawImage(img, 0, 0, CONSTS.mediaPoolElementWidth, CONSTS.mediaPoolElementHeight);
+
+                const resizedImage = ctx!.canvas.toDataURL();
+                resolve(resizedImage as string)
+            }
+        };
+
+        // add eventlistener to when the FileReader throws an error
+        fr.onerror = (err) => {
+            console.error("Error while converting File to DataUrl", err)
+            reject(err)
+        }
+    })
+}
+
 // convert a given file into a data url string
 export function convertFileToDataUrl(file: File): Promise<string> {
     return new Promise((resolve, reject) => {
-        if (FileReader) {
-            let fr = new FileReader();
+        if (!FileReader) {
+            console.error('Error getting FileReader')
+            reject('Error getting FileReader')
+        }
 
-            // read file content as a dataUrl
-            fr.readAsDataURL(file);
+        let fr = new FileReader();
 
-            // add eventlistener to when the FileReader finished loading
-            fr.onloadend = () => {
-                // console.log('convertFileToDataUrl -> FileReader onload:', fr.result);
-                resolve(fr.result as string)
-                // testImage = fr.result as any;
-                // var source = document.createElement('source');
-                // source.setAttribute('src', fr.result as string);
-                // source.setAttribute('type', 'video/mp4');
-                // testVideo.appendChild(source);
-            };
+        // read file content as a dataUrl
+        fr.readAsDataURL(file);
 
-            // add eventlistener to when the FileReader throws an error
-            fr.onerror = (err) => {
-                console.error("Error while converting File to DataUrl", err)
-                reject(err)
-            }
+        // add eventlistener to when the FileReader finished loading
+        fr.onload = () => {
+            // return result of the reader as a dataUrl
+            resolve(fr.result as string)
+        };
+
+        // add eventlistener to when the FileReader throws an error
+        fr.onerror = (err) => {
+            console.error("Error while converting File to DataUrl", err)
+            reject(err)
         }
     })
 }
@@ -271,18 +319,9 @@ export function convertDataUrlToUIntArray(dataUrl: string) {
     return array;
 }
 
-// generate a unique id
-function generateId() {
-    return crypto.randomUUID() as string
-}
 
-// set all "beingDragged" values in store to false 
-export function resetAllBeingDragged() {
-    isThumbBeingDragged.set(false)
-    isTimelineElementBeingDragged.set(false)
-    draggedElement.set(null)
-}
 
+// #region playback
 // remove interval that handles the current playback time
 export function pausePlayback() {
     console.log("pausePlayback")
@@ -333,6 +372,7 @@ export function resumePlayback() {
     // playbackIntervalId.set(intervalId)
 }
 
+// #region general utils
 // TODO: make both functions more generic instead of always using the thumb position and instead use a number that can be passe via parameters
 // convert the current thumb position (in px) to the playback time (in ms) using the current timeline scale
 export function convertPxToPlaybackScale() {
@@ -344,6 +384,98 @@ export function convertPlaybackToPxScale() {
     return Math.round((get(currentPlaybackTime) / CONSTS.secondsMultiplier) * get(currentTimelineScale))
 }
 
+// generate a unique id
+function generateId() {
+    return crypto.randomUUID() as string
+}
+
+// set all "beingDragged" values in store to false 
+export function resetAllBeingDragged() {
+    isThumbBeingDragged.set(false)
+    isTimelineElementBeingDragged.set(false)
+    draggedElement.set(null)
+}
+
+// get all tailwind variables to use in components
+export function getTailwindVariables() {
+    return resolveConfig(tailwindConfig)
+}
+
+// get relative mouse coordinates to the given element DOMRect
+export function getRelativeMousePosition(e: MouseEvent, el: DOMRect) {
+    return {
+        x: e.clientX - el.left,
+        y: e.clientY - el.top
+    };
+}
+
+// #region scrolling utils
+// calculate if a given html element has a horizontal scrollbar
+export function hasHorizontalScrollbar(el: HTMLElement) {
+    return el.scrollWidth > el.clientWidth;
+}
+
+// calculate if a given html element has a vertical scrollbar
+export function hasVerticalScrollbar(el: HTMLElement) {
+    return el.scrollHeight > el.clientHeight;
+}
+
+// check if a given element is fully scrolled
+export function isElementFullyScrolled(el: HTMLElement): boolean {
+    return el.scrollWidth - el.scrollLeft === el.clientWidth
+}
+
+// #region time formatters
+// format a given time to a string in the format HH:MM:SS
+export function formatPlaybackTime(time: number) {
+    const milliseconds = Math.floor((time % 1000) / 10)
+    const seconds = Math.floor((time / 1000) % 60)
+    const minutes = Math.floor((time / (1000 * 60)) % 60)
+    const hours = Math.floor((time / (1000 * 60 * 60)) % 24);
+
+    const hoursString = `${(hours < 10) ? "0" + hours : hours}`;
+    const minutesString = (minutes < 10) ? "0" + minutes : minutes;
+    const secondsString = (seconds < 10) ? "0" + seconds : seconds;
+    const millisecondsString = `${(milliseconds < 10) ? "0" + milliseconds : milliseconds}`;
+
+    return hoursString + ":" + minutesString + ":" + secondsString + "." + millisecondsString;
+}
+
+// convert a given value in milliseconds to seconds
+export function msToS(value: number) {
+    return value / 1000
+}
+
+// convert a given value in seconds to milliseconds
+export function sToMS(value: number) {
+    return value * 1000
+}
+
+// format a given millseconds value to hours:minutes:seconds
+export function msToHr(value: number) {
+
+    let hours, minutes, seconds, total_hours, total_minutes, total_seconds;
+
+    total_seconds = Math.floor(value / 1000);
+    total_minutes = Math.floor(total_seconds / 60);
+    total_hours = Math.floor(total_minutes / 60);
+
+    seconds = (total_seconds % 60);
+    minutes = (total_minutes % 60);
+    hours = (total_hours % 24);
+
+    const s = seconds < 10 ? '0' + seconds : seconds;
+    const m = minutes < 10 ? '0' + minutes : minutes;
+    const h = hours < 10 ? '0' + hours : hours;
+
+    // if it less than an hour don't show the hours
+    if (hours === 0) {
+        return m + ':' + s;
+    }
+    return h + ':' + m + ':' + s;
+}
+
+// #region timeline utils
 // move the timeline thumb using a given mouse event
 export function moveTimelineThumb(e: MouseEvent) {
     e.preventDefault();
@@ -395,22 +527,6 @@ export function moveTimelineThumb(e: MouseEvent) {
         // console.log('isThumbBeingDragged?:', JSON.parse(JSON.stringify(get(isThumbBeingDragged))));
         isThumbBeingDragged.set(true);
     }
-
-}
-
-// calculate if a given html element has a horizontal scrollbar
-export function hasHorizontalScrollbar(el: HTMLElement) {
-    return el.scrollWidth > el.clientWidth;
-}
-
-// calculate if a given html element has a vertical scrollbar
-export function hasVerticalScrollbar(el: HTMLElement) {
-    return el.scrollHeight > el.clientHeight;
-}
-
-// get all tailwind variables to use in components
-export function getTailwindVariables() {
-    return resolveConfig(tailwindConfig)
 }
 
 // get index of timeline element that matches the given id
@@ -423,80 +539,6 @@ export function getIndexOfElementInTracks() {
             return [i, index];
         }
     }
-}
-
-// get relative mouse coordinates to the given element DOMRect
-export function getRelativeMousePosition(e: MouseEvent, el: DOMRect) {
-    return {
-        x: e.clientX - el.left,
-        y: e.clientY - el.top
-    };
-}
-
-// go through a given array of tracks and remove tracks that don't have any elements
-export function cleanUpEmptyTracks(tracks: ITimelineTrack[]) {
-    // check if there is an empty track in the array. If yes get the index
-    const index = tracks.findIndex(track => !track.elements || track.elements.length === 0)
-
-    if (index === -1) {
-        return tracks
-    }
-
-    tracks.splice(index, 1)
-}
-
-// format a given time to a string in the format HH:MM:SS
-export function formatPlaybackTime(time: number) {
-    const milliseconds = Math.floor((time % 1000) / 10)
-    const seconds = Math.floor((time / 1000) % 60)
-    const minutes = Math.floor((time / (1000 * 60)) % 60)
-    const hours = Math.floor((time / (1000 * 60 * 60)) % 24);
-
-    const hoursString = `${(hours < 10) ? "0" + hours : hours}`;
-    const minutesString = (minutes < 10) ? "0" + minutes : minutes;
-    const secondsString = (seconds < 10) ? "0" + seconds : seconds;
-    const millisecondsString = `${(milliseconds < 10) ? "0" + milliseconds : milliseconds}`;
-
-    return hoursString + ":" + minutesString + ":" + secondsString + "." + millisecondsString;
-}
-
-// check if a given element is fully scrolled
-export function isElementFullyScrolled(el: HTMLElement): boolean {
-    return el.scrollWidth - el.scrollLeft === el.clientWidth
-}
-
-// convert a given value in milliseconds to seconds
-export function msToS(value: number) {
-    return value / 1000
-}
-
-// convert a given value in seconds to milliseconds
-export function sToMS(value: number) {
-    return value * 1000
-}
-
-// format a given millseconds value to hours:minutes:seconds
-export function msToHr(value: number) {
-
-    let hours, minutes, seconds, total_hours, total_minutes, total_seconds;
-
-    total_seconds = Math.floor(value / 1000);
-    total_minutes = Math.floor(total_seconds / 60);
-    total_hours = Math.floor(total_minutes / 60);
-
-    seconds = (total_seconds % 60);
-    minutes = (total_minutes % 60);
-    hours = (total_hours % 24);
-
-    const s = seconds < 10 ? '0' + seconds : seconds;
-    const m = minutes < 10 ? '0' + minutes : minutes;
-    const h = hours < 10 ? '0' + hours : hours;
-
-    // if it less than an hour don't show the hours
-    if (hours === 0) {
-        return m + ':' + s;
-    }
-    return h + ':' + m + ':' + s;
 }
 
 // check if a given element overlaps with any element on a given track
@@ -516,25 +558,70 @@ export function isElementOverlapping(elBounds: ITimelineElementBounds, trackEls:
     })
 }
 
-// move a given list of timeline elements according to given element bounds so they don't overlap
-export function moveElementsOnTrack(elBounds: ITimelineElementBounds, trackEls: ITimelineElement[]) {
-    let moveAmount: number | undefined = undefined
+// go through a given array of tracks and remove tracks that don't have any elements
+export function cleanUpEmptyTracks(tracks: ITimelineTrack[]) {
+    // check if there is an empty track in the array. If yes get the index
+    const index = tracks.findIndex(track => !track.elements || track.elements.length === 0)
 
-    const tracks = trackEls.map(trackEl => {
+    if (index === -1) {
+        return tracks
+    }
+
+    tracks.splice(index, 1)
+}
+
+// create an empty track with a given element
+export function createTrackWithElement(element: ITimelineElement) {
+    return {
+        trackId: generateId(),
+        elements: [element]
+    } as ITimelineTrack
+}
+
+// move a given list of timeline elements according to given element bounds so they don't overlap
+export function moveElementsOnTrack(elBounds: ITimelineElementBounds, trackEls: ITimelineElement[], sameTrackElIndex?: number) {
+    let moveAmount: number | undefined = undefined
+    console.log(
+        'element dropped on track [moveElementsOnTrack] -> in start:',
+        JSON.parse(JSON.stringify(trackEls)), "elBounds:", elBounds
+    );
+
+    // TODO: implement logic to move elements differently according to where the dragged element was dropped on the element
+    const tracks = trackEls.map((trackEl, i) => {
         const trackElBounds: ITimelineElementBounds = { start: trackEl.playbackStartTime, end: trackEl.playbackStartTime + trackEl.duration }
+        const sameTrackAndSameIndex = sameTrackElIndex !== undefined && i === sameTrackElIndex
+        console.log(
+            'element dropped on track [moveElementsOnTrack] -> in map 1 trackElBounds:',
+            JSON.parse(JSON.stringify(trackElBounds)), "sameTrackAndSameIndex:", sameTrackAndSameIndex, "trackEl:", JSON.parse(JSON.stringify(trackEl))
+        );
 
         // check for the first element the dropped element overlaps and get the amount the overlapped element needs to be moved to the right. Move every element after that by the same amount to the right so we move the whole "block" of element by the same amount
-        if (isElementOverlapping(elBounds, [trackEl]) && moveAmount === undefined) {
+        if (isElementOverlapping(elBounds, [trackEl]) && moveAmount === undefined && !sameTrackAndSameIndex) {
             moveAmount = elBounds.end - trackElBounds.start;
+            console.log(
+                'element dropped on track [moveElementsOnTrack] -> in if moveAmount:', moveAmount,
+            );
         }
 
         // if moveAmount is defined move the current element by that amount
         if (moveAmount !== undefined) {
             trackEl.playbackStartTime += moveAmount
+            console.log(
+                'element dropped on track [moveElementsOnTrack] -> in second if trackEls:',
+                JSON.parse(JSON.stringify(trackEls))
+            );
         }
 
+        console.log(
+            'element dropped on track [moveElementsOnTrack] -> in map 2 trackEl:',
+            JSON.parse(JSON.stringify(trackEl))
+        );
         return trackEl
     })
 
+    console.log(
+        'element dropped on track [moveElementsOnTrack] -> end:',
+        JSON.parse(JSON.stringify(tracks))
+    );
     return tracks
 }
