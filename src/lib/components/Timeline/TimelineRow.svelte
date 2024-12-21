@@ -50,7 +50,7 @@
 		// listen to event when a timeline element is dropped
 		window.addEventListener(CONSTS.customEventNameDropTimelineElement, () => {
 			console.log(
-				`${CONSTS.customEventNameDropTimelineElement} event triggered in divider -> elementHoveredOverRow:`,
+				`${CONSTS.customEventNameDropTimelineElement} event triggered in row -> elementHoveredOverRow:`,
 				elementHoveredOverRow
 			);
 
@@ -99,7 +99,9 @@
 					'old trackIndex:',
 					trackIndex,
 					'new track index:',
-					index
+					index,
+					'tracks:',
+					tracks
 				);
 
 				if (elementIndexInTrack === -1) {
@@ -122,17 +124,22 @@
 				const xInMs = Math.round((x / $currentTimelineScale) * CONSTS.secondsMultiplier) || 0;
 				const foundElEnd = xInMs + foundEl.duration;
 				const elBounds: ITimelineElementBounds = { start: xInMs, end: foundElEnd };
+				const sameTrackMoveElIndex = index !== trackIndex ? undefined : elementIndexInTrack;
 
 				// check if the dropped element overlaps with any element on the track
 				const isOverlapping = isElementOverlapping(
 					elBounds,
 					tracks[index].elements,
-					index !== trackIndex ? undefined : elementIndexInTrack // if the element is dropped on the same track we ignore the dragged element index in the track
+					sameTrackMoveElIndex // if the element is dropped on the same track we ignore the dragged element index in the track
 				);
 
 				// if the dropped element overlaps any other element we move the elements accordingly so the element can fit on the track
 				if (isOverlapping) {
-					tracks[index].elements = moveElementsOnTrack(elBounds, tracks[index].elements);
+					tracks[index].elements = moveElementsOnTrack(
+						elBounds,
+						tracks[index].elements,
+						sameTrackMoveElIndex
+					);
 				}
 
 				// set the new playback start time (in ms)
@@ -178,11 +185,12 @@
 					// clean up old track if its empty now
 					cleanUpEmptyTracks(tracks);
 					console.log(
-						'element dropped on divider -> tracks after empty track is removed:',
+						'element dropped on track -> tracks after empty track is removed:',
 						JSON.parse(JSON.stringify(tracks))
 					);
 				}
 				// if the element is dropped on the same track
+				// TODO: remove if not necessary anymore
 				else {
 				}
 
@@ -317,6 +325,7 @@
 <div
 	class="timeline-row bg-ruler-color h-[50px] w-full mr-5 rounded flex"
 	style="background-color: {hoverElement ? 'red' : '#42424e'}"
+	data-row-index={index}
 	on:drop={onDropElement}
 	on:dragleave={onDropElement}
 	on:dragenter={onHoverElement}
