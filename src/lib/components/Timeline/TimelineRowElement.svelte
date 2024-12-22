@@ -650,7 +650,7 @@
 	on:neodrag:end={testEnd}
 	bind:this={elementRef}
 >
-	<div class="timeline-row-element-name text-[12px] text-background-color-light ml-1">
+	<div class="timeline-row-element-name text-[12px] text-background-color-light ml-1 truncate">
 		{element.mediaName}
 	</div>
 </div>
