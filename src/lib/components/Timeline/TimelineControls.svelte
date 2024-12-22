@@ -50,6 +50,9 @@
 				return tracks;
 			}
 		});
+
+		// reset the selected element id so no timeline element is selected after deletion
+		selectedElement.set('');
 	}
 </script>
 

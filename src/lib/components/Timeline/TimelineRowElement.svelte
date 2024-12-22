@@ -643,6 +643,7 @@
 		: tailwindColors.red[500]}; z-index: {dragging ? '50' : 'auto'}"
 	data-element-index={index}
 	data-element-offset={element.playbackStartTime}
+	data-element-id={element.elementId}
 	use:draggable={{ position }}
 	on:mousedown={getMousePosition}
 	on:neodrag:start={testStart}
