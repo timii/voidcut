@@ -649,7 +649,11 @@
 	on:neodrag={test}
 	on:neodrag:end={testEnd}
 	bind:this={elementRef}
-></div>
+>
+	<div class="timeline-row-element-name text-[12px] text-background-color-light ml-1">
+		{element.mediaName}
+	</div>
+</div>
 <!-- TODO: old one that worked mostly -->
 <!-- <div
 	class="timeline-row-element h-[50px] mr-5 rounded hover:cursor-pointer absolute"
