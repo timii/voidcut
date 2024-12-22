@@ -3,6 +3,8 @@ import type { MediaType } from "./Media";
 export interface ITimelineElement {
     elementId: string, // unique id of timeline element
     mediaId: string, // unique id of media
+    mediaName: string, // name of media
+    mediaImage: string, // preview image of the media
     type: MediaType, // enum type of element
     duration: number, // duration in milliseconds
     playbackStartTime: number, // time on timeline where element starts (in miliseconds)

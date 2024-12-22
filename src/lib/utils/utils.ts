@@ -111,6 +111,8 @@ export function handleTimelineMediaDrop(media: IMedia, rowIndex?: number, elInde
     const timelineEl: ITimelineElement = {
         duration: media.duration ? media.duration : 3000,
         mediaId: media.mediaId,
+        mediaName: media.name,
+        mediaImage: media.previewImage,
         type: media.type,
         elementId: generateId(),
         playbackStartTime: startTime ? startTime : 0,
