@@ -14,6 +14,7 @@
 		draggedElementPosition,
 		isThumbBeingDragged,
 		isTimelineElementBeingDragged,
+		isTimelineElementBeingResized,
 		selectedElement,
 		thumbOffset
 	} from '../../../stores/store';
@@ -54,6 +55,7 @@
 		leftOffset
 	);
 
+	// TODO: remove unused
 	const tailwindVariables = getTailwindVariables();
 	const tailwindColors = tailwindVariables.theme.colors;
 	let elementRef: HTMLElement;
@@ -516,16 +518,27 @@
 	}
 
 	function onResizeMouseMove(e: MouseEvent) {
+		// avoid the thumb being also moved to where the handle is
 		e.stopPropagation();
-		const onlyLeftButtonClicked = e.buttons === 1;
-		console.log(
-			'onResizeMouseMove:',
-			e,
-			'mouse held down:',
-			onlyLeftButtonClicked,
-			'buttons:',
-			e.buttons
-		);
+		e.stopImmediatePropagation();
+
+		const onlyPrimaryButtonClicked = e.buttons === 1;
+
+		if (onlyPrimaryButtonClicked && !$isThumbBeingDragged) {
+			// set store variable if not already true
+			if (!$isTimelineElementBeingResized) {
+				isTimelineElementBeingResized.set(true);
+			}
+
+			console.log(
+				'onResizeMouseMove:',
+				e,
+				'mouse held down:',
+				onlyPrimaryButtonClicked,
+				'buttons:',
+				e.buttons
+			);
+		}
 	}
 
 	//#region old stuff
@@ -674,14 +687,22 @@
 	>
 		{element.mediaName}
 	</div>
+
+	<!-- TODO: check if this works since when enebaling it the thumb sometimes doesnt work correctly when trying to drag the element -->
+	<!-- element image -->
+	<!-- <div
+		class="timeline-row-element-image absolute top-0 left-0 z-50"
+		style="background-image: {element.mediaImage}; width: 50px; height: 50px;"
+	></div> -->
+
 	<!-- element handles to resize an element -->
 	{#if isSelected || isHovering}
 		<div
-			class="timeline-row-element-handle-left absolute top-0 left-0 h-full bg-blue-400 w-2 cursor-col-resize"
+			class="timeline-row-element-handle absolute top-0 left-0 h-full bg-blue-400 w-2 cursor-col-resize rounded-l"
 			on:mousemove={onResizeMouseMove}
 		></div>
 		<div
-			class="timeline-row-element-handle-right absolute top-0 left-[calc(100%-8px)] h-full bg-blue-400 w-2 cursor-col-resize"
+			class="timeline-row-element-handle absolute top-0 left-[calc(100%-8px)] h-full bg-blue-400 w-2 cursor-col-resize rounded-r"
 			on:mousemove={onResizeMouseMove}
 		></div>
 	{/if}

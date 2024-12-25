@@ -30,7 +30,8 @@ export const startAmountOfTicks = writable(0); // amount of timeline ruler ticks
 export const playbackIntervalId = writable(0); // store to hold the playback interval id
 export const timelineTracks = writable<ITimelineTrack[]>([]) // array that holds all information about the elements on the timeline
 export const isThumbBeingDragged = writable(false);
-export const isTimelineElementBeingDragged = writable(false);
+export const isTimelineElementBeingDragged = writable(false); // keep track if a timeline element is being dragged
+export const isTimelineElementBeingResized = writable(false); // keep track if a timeline element is being resized
 // TODO: remove old store variable
 export const draggedElement = writable<ITimelineDraggedElement | null>(null); // contains information about the dragged timeline element
 export const draggedElementPosition = writable<ITimelineDraggedElementPosition | null>(null) // keeps track of the dragged element position

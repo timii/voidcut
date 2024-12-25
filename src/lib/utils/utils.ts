@@ -1,6 +1,6 @@
 import { MediaType, type IMedia, type IFileMetadata } from "$lib/interfaces/Media";
 import type { ITimelineDraggedElement, ITimelineElement, ITimelineElementBounds, ITimelineTrack } from "$lib/interfaces/Timeline";
-import { availableMedia, isTimelineElementBeingDragged, isThumbBeingDragged, timelineTracks, currentPlaybackTime, playbackIntervalId, currentTimelineScale, currentThumbPosition, thumbOffset, horizontalScroll, selectedElement, draggedElement, previewPlaying } from "../../stores/store";
+import { availableMedia, isTimelineElementBeingDragged, isThumbBeingDragged, timelineTracks, currentPlaybackTime, playbackIntervalId, currentTimelineScale, currentThumbPosition, thumbOffset, horizontalScroll, selectedElement, draggedElement, previewPlaying, isTimelineElementBeingResized } from "../../stores/store";
 import { CONSTS } from "./consts";
 import { adjustingInterval } from "./betterInterval";
 import { get } from "svelte/store";
@@ -395,6 +395,7 @@ function generateId() {
 export function resetAllBeingDragged() {
     isThumbBeingDragged.set(false)
     isTimelineElementBeingDragged.set(false)
+    isTimelineElementBeingResized.set(false)
     draggedElement.set(null)
 }
 
@@ -482,13 +483,13 @@ export function msToHr(value: number) {
 export function moveTimelineThumb(e: MouseEvent) {
     e.preventDefault();
 
-    const clickOriginOverElement = (e.target as HTMLElement).classList.contains('timeline-row-element')
+    const clickOriginOverElement = (e.target as HTMLElement).classList.contains('timeline-row-element') || (e.target as HTMLElement).classList.contains('timeline-row-element-handle')
     const originNotOverElOrThumbAlreadyMoving = !clickOriginOverElement || get(isThumbBeingDragged)
     const onlyPrimaryButtonClicked = e.buttons === 1
 
-    const moveThumb = onlyPrimaryButtonClicked && !get(isTimelineElementBeingDragged) && originNotOverElOrThumbAlreadyMoving
+    const moveThumb = onlyPrimaryButtonClicked && !get(isTimelineElementBeingDragged) && !get(isTimelineElementBeingResized) && originNotOverElOrThumbAlreadyMoving
 
-    // check if we should move the thumb or if something else is already being dragged
+    // check if we should move the thumb or if something else is already being dragged/resized/etc.
     if (!moveThumb) {
         return
     }
