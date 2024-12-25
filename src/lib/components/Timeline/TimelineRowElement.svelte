@@ -77,9 +77,7 @@
 		| undefined
 		| { mouseXInTimeline: number; mouseYInTimeline: number };
 	let elStartPosition: undefined | { left: number; top: number };
-	// let isSelected = false;
-	// let dropZonePositionLeft = 0;
-	// let elementHoveredOverRow = false;
+	let isHovering = false;
 
 	onMount(() => {
 		window.addEventListener('dragover', (e: DragEvent) => {
@@ -517,6 +515,19 @@
 		// } as unknown as MouseEvent);
 	}
 
+	function onResizeMouseMove(e: MouseEvent) {
+		e.stopPropagation();
+		const onlyLeftButtonClicked = e.buttons === 1;
+		console.log(
+			'onResizeMouseMove:',
+			e,
+			'mouse held down:',
+			onlyLeftButtonClicked,
+			'buttons:',
+			e.buttons
+		);
+	}
+
 	//#region old stuff
 	// function onElementDrag(e: MouseEvent) {
 	// 	// only drag element if mouse is held down and the timeline thumb is currently not being dragged
@@ -646,6 +657,8 @@
 	data-element-id={element.elementId}
 	use:draggable={{ position }}
 	on:mousedown={getMousePosition}
+	on:mouseenter={() => (isHovering = true)}
+	on:mouseleave={() => (isHovering = false)}
 	on:neodrag:start={testStart}
 	on:neodrag={test}
 	on:neodrag:end={testEnd}
@@ -654,7 +667,19 @@
 	<div class="timeline-row-element-name text-[12px] text-background-color-light ml-1 truncate">
 		{element.mediaName}
 	</div>
+	<!-- element handles to resize an element -->
+	{#if isSelected || isHovering}
+		<div
+			class="timeline-row-element-handle-left absolute top-0 left-0 h-full bg-blue-400 w-2 cursor-col-resize"
+			on:mousemove={onResizeMouseMove}
+		></div>
+		<div
+			class="timeline-row-element-handle-right absolute top-0 left-[calc(100%-8px)] h-full bg-blue-400 w-2 cursor-col-resize"
+			on:mousemove={onResizeMouseMove}
+		></div>
+	{/if}
 </div>
+
 <!-- TODO: old one that worked mostly -->
 <!-- <div
 	class="timeline-row-element h-[50px] mr-5 rounded hover:cursor-pointer absolute"
