@@ -648,14 +648,14 @@
 
 <!-- #region drag element -->
 <div
-	class="timeline-row-element h-[50px] mr-5 rounded hover:cursor-pointer absolute"
+	class="timeline-row-element h-[50px] mr-5 rounded cursor-grab absolute"
 	style="width: {elementWidth}px; background-color: {isSelected
 		? tailwindColors.orange[500]
 		: tailwindColors.red[500]}; z-index: {dragging ? '50' : 'auto'}"
 	data-element-index={index}
 	data-element-offset={element.playbackStartTime}
 	data-element-id={element.elementId}
-	use:draggable={{ position }}
+	use:draggable={{ position, handle: '.timeline-row-element-drag-area' }}
 	on:mousedown={getMousePosition}
 	on:mouseenter={() => (isHovering = true)}
 	on:mouseleave={() => (isHovering = false)}
@@ -664,7 +664,14 @@
 	on:neodrag:end={testEnd}
 	bind:this={elementRef}
 >
-	<div class="timeline-row-element-name text-[12px] text-background-color-light ml-1 truncate">
+	<!-- only clicking and dragging on this element will allow the parent to drag, anywhere else on the parent won’t work -->
+	<!-- width of the "drag-area" will be the full element - the handle sizes -->
+	<div class="timeline-row-element-drag-area w-[calc(100%-16px)] h-full absolute left-2"></div>
+
+	<!-- element name shown -->
+	<div
+		class="timeline-row-element-name text-[12px] text-background-color-light ml-3 truncate select-none"
+	>
 		{element.mediaName}
 	</div>
 	<!-- element handles to resize an element -->
