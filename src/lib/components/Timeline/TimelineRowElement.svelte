@@ -604,22 +604,36 @@
 			);
 
 			// calculate difference between starting x position and current x position
-			// we need the negative value of it to correctly update the width, since when the mouse moves to the right
-			// dx gets smaller, which is the opposite of what we want
 			const dx = resizeStartPosition - e.x;
 
 			// update starting x position for the next call of the mouse move
 			resizeStartPosition = e.x;
 
-			// check max and min values for the element width
+			const newWidth = parseInt(getComputedStyle(elementRef, '').width) + dx;
+			// TODO: use generic convert functions for this
+			const newWidthInMs =
+				Math.round((newWidth / $currentTimelineScale) * CONSTS.secondsMultiplier) || 0;
+
+			// check if current width + dx is equal or bigger than maxDuration, if yes we can't increase the size further
+			// if maxDuration is undefined the user can resize the element as much as they want to
+			if (element.maxDuration && newWidthInMs >= element.maxDuration) {
+				return;
+			}
+
+			const newLeftOffset = leftOffset + -dx;
+
+			// check if the new leftOffset goes outside the left border of the timeline row, if yes we can't resize further
+			if (newLeftOffset < 0) {
+				return;
+			}
 
 			// increase/decrease size of element accordingly
-			elementWidth = parseInt(getComputedStyle(elementRef, '').width) + dx;
+			elementWidth = newWidth;
 
-			// also move the element to the left by the same amount we increase/decreased the width by
-			leftOffset = leftOffset + -dx;
+			// calculate new leftOffset using the difference from last update
+			leftOffset = newLeftOffset;
 
-			// update the x position of the element by using the newly calculated leftOffset
+			// also move the element to the left by the same amount we increase/decreased the width
 			position = { ...position, x: leftOffset };
 
 			console.log(
@@ -633,7 +647,7 @@
 				dx
 			);
 
-			// update store value of element
+			// TODO: update store value of element
 		}
 	}
 
