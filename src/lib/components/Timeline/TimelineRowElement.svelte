@@ -80,6 +80,7 @@
 		| { mouseXInTimeline: number; mouseYInTimeline: number };
 	let elStartPosition: undefined | { left: number; top: number };
 	let isHovering = false;
+	let resizeStartPosition = -1;
 
 	onMount(() => {
 		window.addEventListener('dragover', (e: DragEvent) => {
@@ -517,7 +518,9 @@
 		// } as unknown as MouseEvent);
 	}
 
-	function onResizeMouseMove(e: MouseEvent) {
+	// #region resize
+	// handle the resizing of element using the right handle
+	function onResizeRight(e: MouseEvent) {
 		// avoid the thumb being also moved to where the handle is
 		e.stopPropagation();
 		e.stopImmediatePropagation();
@@ -531,13 +534,104 @@
 			}
 
 			console.log(
-				'onResizeMouseMove:',
-				e,
-				'mouse held down:',
-				onlyPrimaryButtonClicked,
-				'buttons:',
-				e.buttons
+				'onResizeMouseMove right before calculate -> resizeStartPosition:',
+				resizeStartPosition,
+				'elementWidth:',
+				elementWidth
 			);
+
+			// calculate difference between starting x position and current x position
+			// we need the negative value of it to correctly update the width, since when the mouse moves to the right
+			// dx gets smaller, which is the opposite of what we want
+			const dx = -(resizeStartPosition - e.x);
+
+			// update starting x position for the next call of the mouse move
+			resizeStartPosition = e.x;
+
+			// check max and min values for the element width
+
+			// increase/decrease size of element accordingly
+			elementWidth = parseInt(getComputedStyle(elementRef, '').width) + dx;
+
+			console.log(
+				'onResizeMouseMove right after calculate -> resizeStartPosition:',
+				resizeStartPosition,
+				'elementWidth:',
+				elementWidth,
+				'dx:',
+				dx
+			);
+
+			// update store value of element
+		}
+	}
+
+	// handle the resizing of element using the left handle
+	function onResizeLeft(e: MouseEvent) {
+		// avoid the thumb being also moved to where the handle is
+		e.stopPropagation();
+		e.stopImmediatePropagation();
+
+		const onlyPrimaryButtonClicked = e.buttons === 1;
+
+		if (onlyPrimaryButtonClicked && !$isThumbBeingDragged) {
+			// set store variable if not already true
+			if (!$isTimelineElementBeingResized) {
+				isTimelineElementBeingResized.set(true);
+			}
+
+			console.log(
+				'onResizeMouseMove left before calculate -> resizeStartPosition:',
+				resizeStartPosition,
+				'elementWidth:',
+				elementWidth
+			);
+
+			// calculate difference between starting x position and current x position
+			// we need the negative value of it to correctly update the width, since when the mouse moves to the right
+			// dx gets smaller, which is the opposite of what we want
+			const dx = resizeStartPosition - e.x;
+
+			// update starting x position for the next call of the mouse move
+			resizeStartPosition = e.x;
+
+			// check max and min values for the element width
+
+			// increase/decrease size of element accordingly
+			elementWidth = parseInt(getComputedStyle(elementRef, '').width) + dx;
+
+			// also move the element to the left by the same amount we increase/decreased the width by
+			leftOffset = leftOffset + -dx;
+
+			// update the x position of the element by using the newly calculated leftOffset
+			position = { ...position, x: leftOffset };
+
+			console.log(
+				'onResizeMouseMove left after calculate -> resizeStartPosition:',
+				resizeStartPosition,
+				'elementWidth:',
+				elementWidth,
+				'leftOffset:',
+				leftOffset,
+				'dx:',
+				dx
+			);
+
+			// update store value of element
+		}
+	}
+
+	// handle the first mouse down on an element handle
+	function onResizeSetStartingPosition(e: MouseEvent) {
+		// avoid the thumb being also moved to where the handle is
+		e.stopPropagation();
+		e.stopImmediatePropagation();
+
+		const onlyPrimaryButtonClicked = e.buttons === 1;
+
+		if (onlyPrimaryButtonClicked && !$isThumbBeingDragged) {
+			// initially set the starting position of the mouse so we can use it for the mouse move event
+			resizeStartPosition = e.x;
 		}
 	}
 
@@ -698,12 +792,14 @@
 	<!-- element handles to resize an element -->
 	{#if isSelected || isHovering}
 		<div
-			class="timeline-row-element-handle absolute top-0 left-0 h-full bg-blue-400 w-2 cursor-col-resize rounded-l"
-			on:mousemove={onResizeMouseMove}
+			class="timeline-row-element-handle absolute top-0 left-0 h-full bg-blue-400 w-2 cursor-ew-resize rounded-l"
+			on:mousemove={onResizeLeft}
+			on:mousedown={onResizeSetStartingPosition}
 		></div>
 		<div
-			class="timeline-row-element-handle absolute top-0 left-[calc(100%-8px)] h-full bg-blue-400 w-2 cursor-col-resize rounded-r"
-			on:mousemove={onResizeMouseMove}
+			class="timeline-row-element-handle absolute top-0 left-[calc(100%-8px)] h-full bg-blue-400 w-2 cursor-ew-resize rounded-r"
+			on:mousemove={onResizeRight}
+			on:mousedown={onResizeSetStartingPosition}
 		></div>
 	{/if}
 </div>

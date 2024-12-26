@@ -6,7 +6,8 @@ export interface ITimelineElement {
     mediaName: string, // name of media
     mediaImage: string, // preview image of the media
     type: MediaType, // enum type of element
-    duration: number, // duration in milliseconds
+    duration: number, // current duration in milliseconds (can be different after element has been resized)
+    maxDuration: number, // maximum duration in milliseconds
     playbackStartTime: number, // time on timeline where element starts (in miliseconds)
     trimFromStart: number, // how much is trimmed from the start (in milliseconds)
     trimFromEnd: number, // how much is trimmed from the end (in milliseconds)

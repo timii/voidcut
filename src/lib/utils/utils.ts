@@ -109,13 +109,14 @@ export function handleTimelineMediaDrop(media: IMedia, rowIndex?: number, elInde
 
     // convert media type to timeline element type
     const timelineEl: ITimelineElement = {
-        duration: media.duration ? media.duration : 3000,
+        duration: media.duration ? media.duration : 3000, // starting duration will be the same as the maxDuration
+        maxDuration: media.duration ? media.duration : 3000,
+        playbackStartTime: startTime ? startTime : 0,
         mediaId: media.mediaId,
         mediaName: media.name,
         mediaImage: media.previewImage,
         type: media.type,
         elementId: generateId(),
-        playbackStartTime: startTime ? startTime : 0,
         trimFromStart: 0,
         trimFromEnd: 0,
         videoOptions: {}
