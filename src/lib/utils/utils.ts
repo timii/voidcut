@@ -107,10 +107,19 @@ export async function handleFileUpload(files: FileList) {
 export function handleTimelineMediaDrop(media: IMedia, rowIndex?: number, elIndex?: number, startTime?: number) {
     // console.log("handleTimelineMediaDrop -> media:", media, "rowIndex:", rowIndex)
 
+    let maxDuration: number | undefined
+    // for images we need to not set a maxDuration since an image can be resized as much as the user wants to
+    if (media.type === MediaType.Image) {
+        maxDuration = undefined
+    } else {
+        maxDuration = media.duration || 3000
+    }
+
+
     // convert media type to timeline element type
     const timelineEl: ITimelineElement = {
         duration: media.duration ? media.duration : 3000, // starting duration will be the same as the maxDuration
-        maxDuration: media.duration ? media.duration : 3000,
+        maxDuration: maxDuration,
         playbackStartTime: startTime ? startTime : 0,
         mediaId: media.mediaId,
         mediaName: media.name,

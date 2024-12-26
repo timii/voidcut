@@ -5,7 +5,11 @@
 		ITimelineElement
 	} from '$lib/interfaces/Timeline';
 	import { CONSTS } from '$lib/utils/consts';
-	import { getRelativeMousePosition, getTailwindVariables } from '$lib/utils/utils';
+	import {
+		convertPlaybackToPxScale,
+		getRelativeMousePosition,
+		getTailwindVariables
+	} from '$lib/utils/utils';
 	import { onMount } from 'svelte';
 	import {
 		currentTimelineScale,
@@ -342,6 +346,7 @@
 		}
 	}
 
+	// #region drag stuff
 	// get the starting mouse position when starting the dragging movement
 	function getMousePosition(e: MouseEvent) {
 		console.log('getMousePosition -> e:', e);
@@ -548,10 +553,19 @@
 			// update starting x position for the next call of the mouse move
 			resizeStartPosition = e.x;
 
-			// check max and min values for the element width
+			const newWidth = parseInt(getComputedStyle(elementRef, '').width) + dx;
+			// TODO: use generic convert functions for this
+			const newWidthInMs =
+				Math.round((newWidth / $currentTimelineScale) * CONSTS.secondsMultiplier) || 0;
+
+			// check if current width + dx is equal or bigger than maxDuration, if yes we can't increase the size further
+			// if maxDuration is undefined the user can resize the element as much as they want to
+			if (element.maxDuration && newWidthInMs >= element.maxDuration) {
+				return;
+			}
 
 			// increase/decrease size of element accordingly
-			elementWidth = parseInt(getComputedStyle(elementRef, '').width) + dx;
+			elementWidth = newWidth;
 
 			console.log(
 				'onResizeMouseMove right after calculate -> resizeStartPosition:',
@@ -559,10 +573,12 @@
 				'elementWidth:',
 				elementWidth,
 				'dx:',
-				dx
+				dx,
+				'newWidthInMs:',
+				newWidthInMs
 			);
 
-			// update store value of element
+			// TODO: update store value of element
 		}
 	}
 
