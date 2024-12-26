@@ -523,6 +523,106 @@
 		// } as unknown as MouseEvent);
 	}
 
+	// handle the resizing of element using the left handle
+	function onResizeLeft(e: MouseEvent) {
+		// avoid the thumb being also moved to where the handle is
+		e.stopPropagation();
+		e.stopImmediatePropagation();
+
+		const onlyPrimaryButtonClicked = e.buttons === 1;
+
+		if (onlyPrimaryButtonClicked && !$isThumbBeingDragged) {
+			console.log(
+				'onResizeMouseMove left before calculate -> resizeStartPosition:',
+				resizeStartPosition,
+				'elementWidth:',
+				elementWidth
+			);
+
+			// calculate difference between starting x position and current x position
+			const dx = resizeStartPosition - e.x;
+
+			// update starting x position for the next call of the mouse move
+			resizeStartPosition = e.x;
+
+			const newWidth = parseInt(getComputedStyle(elementRef, '').width) + dx;
+			// TODO: use generic convert functions for this
+			const newWidthInMs =
+				Math.round((newWidth / $currentTimelineScale) * CONSTS.secondsMultiplier) || 0;
+
+			// check if current width + dx is bigger than maxDuration, if yes we can't increase the size further
+			// if maxDuration is undefined the user can resize the element as much as they want to
+			if (element.maxDuration && newWidthInMs > element.maxDuration) {
+				return;
+			}
+
+			const newLeftOffset = leftOffset + -dx;
+
+			// check if the new leftOffset goes outside the left border of the timeline row, if yes we can't resize further
+			if (newLeftOffset < 0) {
+				return;
+			}
+
+			// increase/decrease size of element accordingly
+			elementWidth = newWidth;
+
+			// calculate new leftOffset using the difference from last update
+			leftOffset = newLeftOffset;
+
+			// also move the element to the left by the same amount we increase/decreased the width
+			position = { ...position, x: leftOffset };
+
+			// TODO: use generic convert functions for this
+			const newLeftOffsetInMs =
+				Math.round((newLeftOffset / $currentTimelineScale) * CONSTS.secondsMultiplier) || 0;
+
+			// update duration, playbackStartTime and mediaStartTime of element in store
+			timelineTracks.update((tracks) => {
+				const curEl = tracks[rowIndex].elements[elementIndex];
+
+				let newMediaStartTime = element.mediaStartTime;
+
+				// only update the mediaStartTime when the current element is not an image
+				if (
+					element.type !== MediaType.Image &&
+					resizeStartWidth &&
+					newMediaStartTime !== undefined
+				) {
+					newMediaStartTime += resizeStartWidth - newWidthInMs;
+					newMediaStartTime = Math.max(newMediaStartTime, 0);
+				}
+
+				console.log(
+					'onResizeMouseMove left after calculate -> resizeStartPosition:',
+					resizeStartPosition,
+					'resizeStartWidth:',
+					resizeStartWidth,
+					'maxDuration:',
+					element.maxDuration,
+					'newWidthInMs:',
+					newWidthInMs,
+					'newMediaStartTime:',
+					newMediaStartTime,
+					'element.mediaStartTime:',
+					element.mediaStartTime,
+					'dx:',
+					dx
+				);
+
+				tracks[rowIndex].elements[elementIndex] = {
+					...curEl,
+					duration: newWidthInMs,
+					playbackStartTime: newLeftOffsetInMs,
+					mediaStartTime: newMediaStartTime
+				};
+
+				return tracks;
+			});
+
+			resizeStartWidth = newWidthInMs;
+		}
+	}
+
 	// #region resize
 	// handle the resizing of element using the right handle
 	function onResizeRight(e: MouseEvent) {
@@ -533,11 +633,6 @@
 		const onlyPrimaryButtonClicked = e.buttons === 1;
 
 		if (onlyPrimaryButtonClicked && !$isThumbBeingDragged) {
-			// set store variable if not already true
-			if (!$isTimelineElementBeingResized) {
-				isTimelineElementBeingResized.set(true);
-			}
-
 			console.log(
 				'onResizeMouseMove right before calculate -> resizeStartPosition:',
 				resizeStartPosition,
@@ -560,7 +655,7 @@
 
 			// check if current width + dx is equal or bigger than maxDuration, if yes we can't increase the size further
 			// if maxDuration is undefined the user can resize the element as much as they want to
-			if (element.maxDuration && newWidthInMs >= element.maxDuration) {
+			if (element.maxDuration && newWidthInMs > element.maxDuration) {
 				return;
 			}
 
@@ -578,81 +673,36 @@
 				newWidthInMs
 			);
 
-			// TODO: update store value of element
+			// update duration of element in store
+			timelineTracks.update((tracks) => {
+				const curEl = tracks[rowIndex].elements[elementIndex];
+
+				tracks[rowIndex].elements[elementIndex] = { ...curEl, duration: newWidthInMs };
+
+				return tracks;
+			});
 		}
 	}
 
-	// handle the resizing of element using the left handle
-	function onResizeLeft(e: MouseEvent) {
-		// avoid the thumb being also moved to where the handle is
-		e.stopPropagation();
-		e.stopImmediatePropagation();
-
-		const onlyPrimaryButtonClicked = e.buttons === 1;
-
-		if (onlyPrimaryButtonClicked && !$isThumbBeingDragged) {
-			// set store variable if not already true
-			if (!$isTimelineElementBeingResized) {
-				isTimelineElementBeingResized.set(true);
-			}
-
-			console.log(
-				'onResizeMouseMove left before calculate -> resizeStartPosition:',
-				resizeStartPosition,
-				'elementWidth:',
-				elementWidth
-			);
-
-			// calculate difference between starting x position and current x position
-			const dx = resizeStartPosition - e.x;
-
-			// update starting x position for the next call of the mouse move
-			resizeStartPosition = e.x;
-
-			const newWidth = parseInt(getComputedStyle(elementRef, '').width) + dx;
+	// handle the first mouse down on an element handle on the left side
+	function onHandleMouseDownLeft(e: MouseEvent) {
+		setResizeStartPosition(e, () => {
 			// TODO: use generic convert functions for this
-			const newWidthInMs =
-				Math.round((newWidth / $currentTimelineScale) * CONSTS.secondsMultiplier) || 0;
+			const elementWidthInMs =
+				Math.round((elementWidth / $currentTimelineScale) * CONSTS.secondsMultiplier) || 0;
 
-			// check if current width + dx is equal or bigger than maxDuration, if yes we can't increase the size further
-			// if maxDuration is undefined the user can resize the element as much as they want to
-			if (element.maxDuration && newWidthInMs >= element.maxDuration) {
-				return;
-			}
-
-			const newLeftOffset = leftOffset + -dx;
-
-			// check if the new leftOffset goes outside the left border of the timeline row, if yes we can't resize further
-			if (newLeftOffset < 0) {
-				return;
-			}
-
-			// increase/decrease size of element accordingly
-			elementWidth = newWidth;
-
-			// calculate new leftOffset using the difference from last update
-			leftOffset = newLeftOffset;
-
-			// also move the element to the left by the same amount we increase/decreased the width
-			position = { ...position, x: leftOffset };
-
-			console.log(
-				'onResizeMouseMove left after calculate -> resizeStartPosition:',
-				resizeStartPosition,
-				'elementWidth:',
-				elementWidth,
-				'leftOffset:',
-				leftOffset,
-				'dx:',
-				dx
-			);
-
-			// TODO: update store value of element
-		}
+			// only for the left side resizing we need to keep track of the starting duration/width so we set it on mouse down
+			resizeStartWidth = elementWidthInMs;
+		});
 	}
 
-	// handle the first mouse down on an element handle
-	function onResizeSetStartingPosition(e: MouseEvent) {
+	// handle the first mouse down on an element handle on the right side
+	function onHandleMouseDownRight(e: MouseEvent) {
+		setResizeStartPosition(e);
+	}
+
+	// handle event and set starting position for both left and right handle mouse down events
+	function setResizeStartPosition(e: MouseEvent, customBehavior?: () => void) {
 		// avoid the thumb being also moved to where the handle is
 		e.stopPropagation();
 		e.stopImmediatePropagation();
@@ -660,8 +710,14 @@
 		const onlyPrimaryButtonClicked = e.buttons === 1;
 
 		if (onlyPrimaryButtonClicked && !$isThumbBeingDragged) {
+			isTimelineElementBeingResized.set(true);
+
 			// initially set the starting position of the mouse so we can use it for the mouse move event
 			resizeStartPosition = e.x;
+
+			if (customBehavior) {
+				customBehavior();
+			}
 		}
 	}
 
@@ -789,7 +845,8 @@
 	style="width: {elementWidth}px; background-color: {isSelected
 		? tailwindColors.orange[500]
 		: tailwindColors.red[500]}; z-index: {dragging ? '50' : 'auto'}"
-	data-element-index={index}
+	data-element-el-index={elementIndex}
+	data-element-row-index={rowIndex}
 	data-element-offset={element.playbackStartTime}
 	data-element-id={element.elementId}
 	use:draggable={{ position, handle: '.timeline-row-element-drag-area' }}
@@ -824,12 +881,12 @@
 		<div
 			class="timeline-row-element-handle absolute top-0 left-0 h-full bg-blue-400 w-2 cursor-ew-resize rounded-l"
 			on:mousemove={onResizeLeft}
-			on:mousedown={onResizeSetStartingPosition}
+			on:mousedown={onHandleMouseDownLeft}
 		></div>
 		<div
 			class="timeline-row-element-handle absolute top-0 left-[calc(100%-8px)] h-full bg-blue-400 w-2 cursor-ew-resize rounded-r"
 			on:mousemove={onResizeRight}
-			on:mousedown={onResizeSetStartingPosition}
+			on:mousedown={onHandleMouseDownRight}
 		></div>
 	{/if}
 </div>
