@@ -5,11 +5,7 @@
 		ITimelineElement
 	} from '$lib/interfaces/Timeline';
 	import { CONSTS } from '$lib/utils/consts';
-	import {
-		convertPlaybackToPxScale,
-		getRelativeMousePosition,
-		getTailwindVariables
-	} from '$lib/utils/utils';
+	import { getRelativeMousePosition, getTailwindVariables } from '$lib/utils/utils';
 	import { onMount } from 'svelte';
 	import {
 		currentTimelineScale,
@@ -20,13 +16,16 @@
 		isTimelineElementBeingDragged,
 		isTimelineElementBeingResized,
 		selectedElement,
-		thumbOffset
+		thumbOffset,
+		timelineTracks
 	} from '../../../stores/store';
 	import { draggable } from '@neodrag/svelte';
 	import type { DragEventData } from '@neodrag/svelte';
+	import { MediaType } from '$lib/interfaces/Media';
 
 	export let element: ITimelineElement = {} as ITimelineElement;
-	export let index: number;
+	export let elementIndex: number;
+	export let rowIndex: number;
 
 	$: isSelected = getSelectedElement($selectedElement);
 
@@ -85,6 +84,7 @@
 	let elStartPosition: undefined | { left: number; top: number };
 	let isHovering = false;
 	let resizeStartPosition = -1;
+	let resizeStartWidth: number | undefined = undefined;
 
 	onMount(() => {
 		window.addEventListener('dragover', (e: DragEvent) => {
@@ -397,6 +397,10 @@
 	function testStart(e: CustomEvent<DragEventData>) {
 		console.log('testStart -> e:', e);
 
+		if ($isTimelineElementBeingResized) {
+			return;
+		}
+
 		// first clear store value and set correct value afterwards to trigger store change to all subscribers
 		selectedElement.set('');
 		selectedElement.set(element.elementId);
@@ -539,8 +543,15 @@
 				elementWidth
 			);
 
+			const elementIsNotAnImage = element.type !== MediaType.Image;
+
 			// calculate difference between starting x position and current x position
 			const dx = resizeStartPosition - e.x;
+
+			// we need to block the resize if we try to increase the element size even though we haven't trimmed anything from that side
+			if (dx > 0 && element.trimFromStart === 0 && elementIsNotAnImage) {
+				return;
+			}
 
 			// update starting x position for the next call of the mouse move
 			resizeStartPosition = e.x;
@@ -580,16 +591,12 @@
 			timelineTracks.update((tracks) => {
 				const curEl = tracks[rowIndex].elements[elementIndex];
 
-				let newMediaStartTime = element.mediaStartTime;
+				let newTrimFromStart = element.trimFromStart;
 
 				// only update the mediaStartTime when the current element is not an image
-				if (
-					element.type !== MediaType.Image &&
-					resizeStartWidth &&
-					newMediaStartTime !== undefined
-				) {
-					newMediaStartTime += resizeStartWidth - newWidthInMs;
-					newMediaStartTime = Math.max(newMediaStartTime, 0);
+				if (elementIsNotAnImage && resizeStartWidth) {
+					newTrimFromStart += resizeStartWidth - newWidthInMs;
+					newTrimFromStart = Math.max(newTrimFromStart, 0);
 				}
 
 				console.log(
@@ -601,10 +608,10 @@
 					element.maxDuration,
 					'newWidthInMs:',
 					newWidthInMs,
-					'newMediaStartTime:',
-					newMediaStartTime,
-					'element.mediaStartTime:',
-					element.mediaStartTime,
+					'newTrimFromStart:',
+					newTrimFromStart,
+					'element.trimFromStart:',
+					element.trimFromStart,
 					'dx:',
 					dx
 				);
@@ -613,7 +620,7 @@
 					...curEl,
 					duration: newWidthInMs,
 					playbackStartTime: newLeftOffsetInMs,
-					mediaStartTime: newMediaStartTime
+					trimFromStart: newTrimFromStart
 				};
 
 				return tracks;
@@ -633,17 +640,28 @@
 		const onlyPrimaryButtonClicked = e.buttons === 1;
 
 		if (onlyPrimaryButtonClicked && !$isThumbBeingDragged) {
-			console.log(
-				'onResizeMouseMove right before calculate -> resizeStartPosition:',
-				resizeStartPosition,
-				'elementWidth:',
-				elementWidth
-			);
+			const elementIsNotAnImage = element.type !== MediaType.Image;
 
 			// calculate difference between starting x position and current x position
 			// we need the negative value of it to correctly update the width, since when the mouse moves to the right
 			// dx gets smaller, which is the opposite of what we want
 			const dx = -(resizeStartPosition - e.x);
+
+			console.log(
+				'onResizeMouseMove right before calculate -> resizeStartPosition:',
+				resizeStartPosition,
+				'elementWidth:',
+				elementWidth,
+				'dx:',
+				dx,
+				'element.trimFromEnd:',
+				element.trimFromEnd
+			);
+
+			// we need to block the resize if we try to increase the element size even though we haven't trimmed anything from that side
+			if (dx > 0 && element.trimFromEnd === 0 && elementIsNotAnImage) {
+				return;
+			}
 
 			// update starting x position for the next call of the mouse move
 			resizeStartPosition = e.x;
@@ -662,47 +680,50 @@
 			// increase/decrease size of element accordingly
 			elementWidth = newWidth;
 
-			console.log(
-				'onResizeMouseMove right after calculate -> resizeStartPosition:',
-				resizeStartPosition,
-				'elementWidth:',
-				elementWidth,
-				'dx:',
-				dx,
-				'newWidthInMs:',
-				newWidthInMs
-			);
-
 			// update duration of element in store
 			timelineTracks.update((tracks) => {
 				const curEl = tracks[rowIndex].elements[elementIndex];
 
-				tracks[rowIndex].elements[elementIndex] = { ...curEl, duration: newWidthInMs };
+				let newTrimFromEnd = element.trimFromEnd;
+
+				// only update the mediaStartTime when the current element is not an image
+				if (elementIsNotAnImage && resizeStartWidth) {
+					newTrimFromEnd += resizeStartWidth - newWidthInMs;
+					newTrimFromEnd = Math.max(newTrimFromEnd, 0);
+				}
+
+				console.log(
+					'onResizeMouseMove right after calculate -> resizeStartPosition:',
+					resizeStartPosition,
+					'resizeStartWidth:',
+					resizeStartWidth,
+					'maxDuration:',
+					element.maxDuration,
+					'newWidthInMs:',
+					newWidthInMs,
+					'newTrimFromEnd:',
+					newTrimFromEnd,
+					'element.trimFromEnd:',
+					element.trimFromEnd,
+					'dx:',
+					dx
+				);
+
+				tracks[rowIndex].elements[elementIndex] = {
+					...curEl,
+					duration: newWidthInMs,
+					trimFromEnd: newTrimFromEnd
+				};
 
 				return tracks;
 			});
+
+			resizeStartWidth = newWidthInMs;
 		}
 	}
 
-	// handle the first mouse down on an element handle on the left side
-	function onHandleMouseDownLeft(e: MouseEvent) {
-		setResizeStartPosition(e, () => {
-			// TODO: use generic convert functions for this
-			const elementWidthInMs =
-				Math.round((elementWidth / $currentTimelineScale) * CONSTS.secondsMultiplier) || 0;
-
-			// only for the left side resizing we need to keep track of the starting duration/width so we set it on mouse down
-			resizeStartWidth = elementWidthInMs;
-		});
-	}
-
-	// handle the first mouse down on an element handle on the right side
-	function onHandleMouseDownRight(e: MouseEvent) {
-		setResizeStartPosition(e);
-	}
-
-	// handle event and set starting position for both left and right handle mouse down events
-	function setResizeStartPosition(e: MouseEvent, customBehavior?: () => void) {
+	// handle the first mouse down on an element handle
+	function onHandleMouseDown(e: MouseEvent) {
 		// avoid the thumb being also moved to where the handle is
 		e.stopPropagation();
 		e.stopImmediatePropagation();
@@ -715,9 +736,12 @@
 			// initially set the starting position of the mouse so we can use it for the mouse move event
 			resizeStartPosition = e.x;
 
-			if (customBehavior) {
-				customBehavior();
-			}
+			// TODO: use generic convert functions for this
+			const elementWidthInMs =
+				Math.round((elementWidth / $currentTimelineScale) * CONSTS.secondsMultiplier) || 0;
+
+			// only for the left side resizing we need to keep track of the starting duration/width so we set it on mouse down
+			resizeStartWidth = elementWidthInMs;
 		}
 	}
 
@@ -881,12 +905,12 @@
 		<div
 			class="timeline-row-element-handle absolute top-0 left-0 h-full bg-blue-400 w-2 cursor-ew-resize rounded-l"
 			on:mousemove={onResizeLeft}
-			on:mousedown={onHandleMouseDownLeft}
+			on:mousedown={onHandleMouseDown}
 		></div>
 		<div
 			class="timeline-row-element-handle absolute top-0 left-[calc(100%-8px)] h-full bg-blue-400 w-2 cursor-ew-resize rounded-r"
 			on:mousemove={onResizeRight}
-			on:mousedown={onHandleMouseDownRight}
+			on:mousedown={onHandleMouseDown}
 		></div>
 	{/if}
 </div>

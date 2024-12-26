@@ -108,7 +108,8 @@ export function handleTimelineMediaDrop(media: IMedia, rowIndex?: number, elInde
     // console.log("handleTimelineMediaDrop -> media:", media, "rowIndex:", rowIndex)
 
     let maxDuration: number | undefined
-    // for images we need to not set a maxDuration since an image can be resized as much as the user wants to
+
+    // for images we need to handle a few properties differently
     if (media.type === MediaType.Image) {
         maxDuration = undefined
     } else {
@@ -121,13 +122,13 @@ export function handleTimelineMediaDrop(media: IMedia, rowIndex?: number, elInde
         duration: media.duration ? media.duration : 3000, // starting duration will be the same as the maxDuration
         maxDuration: maxDuration,
         playbackStartTime: startTime ? startTime : 0,
+        trimFromStart: 0,
+        trimFromEnd: 0,
         mediaId: media.mediaId,
         mediaName: media.name,
         mediaImage: media.previewImage,
         type: media.type,
         elementId: generateId(),
-        trimFromStart: 0,
-        trimFromEnd: 0,
         videoOptions: {}
     }
 
