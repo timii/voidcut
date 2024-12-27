@@ -350,7 +350,11 @@
 	// get the starting mouse position when starting the dragging movement
 	function getMousePosition(e: MouseEvent) {
 		console.log('getMousePosition -> e:', e);
-		if (!mouseStartPosition && !$isThumbBeingDragged) {
+		if ($isTimelineElementBeingResized || $isThumbBeingDragged) {
+			return;
+		}
+
+		if (!mouseStartPosition) {
 			if (!tracksElBoundRect) {
 				// TODO: refactor this out into a util function since we use these two lines quite often
 				const tracksEl = document.getElementsByClassName('timeline-tracks')[0];
@@ -397,7 +401,7 @@
 	function testStart(e: CustomEvent<DragEventData>) {
 		console.log('testStart -> e:', e);
 
-		if ($isTimelineElementBeingResized) {
+		if ($isTimelineElementBeingResized || $isThumbBeingDragged) {
 			return;
 		}
 
@@ -458,6 +462,10 @@
 	function test(e: CustomEvent<DragEventData>) {
 		console.log('test -> e:', e);
 
+		if ($isTimelineElementBeingResized || $isThumbBeingDragged) {
+			return;
+		}
+
 		if (elStartPosition && mouseStartPositioninTimeline) {
 			draggedElementPosition.set({
 				left: e.detail.offsetX + CONSTS.timelineRowOffset,
@@ -487,6 +495,10 @@
 	// TODO: rename
 	function testEnd(e: CustomEvent<DragEventData>) {
 		console.log('testEnd -> e:', e);
+
+		if ($isTimelineElementBeingResized || $isThumbBeingDragged) {
+			return;
+		}
 
 		// reset all variables to intial values
 		dragging = false;
@@ -527,11 +539,16 @@
 		// } as unknown as MouseEvent);
 	}
 
+	// TODO: handle the case when the mouse is fast than the resize change
 	// handle the resizing of element using the left handle
 	function onResizeLeft(e: MouseEvent) {
 		// avoid the thumb being also moved to where the handle is
 		e.stopPropagation();
 		e.stopImmediatePropagation();
+
+		if ($isTimelineElementBeingDragged || $isThumbBeingDragged) {
+			return;
+		}
 
 		const onlyPrimaryButtonClicked = e.buttons === 1;
 
@@ -637,6 +654,10 @@
 		e.stopPropagation();
 		e.stopImmediatePropagation();
 
+		if ($isTimelineElementBeingDragged || $isThumbBeingDragged) {
+			return;
+		}
+
 		const onlyPrimaryButtonClicked = e.buttons === 1;
 
 		if (onlyPrimaryButtonClicked && !$isThumbBeingDragged) {
@@ -727,6 +748,10 @@
 		// avoid the thumb being also moved to where the handle is
 		e.stopPropagation();
 		e.stopImmediatePropagation();
+
+		if ($isTimelineElementBeingDragged || $isThumbBeingDragged) {
+			return;
+		}
 
 		const onlyPrimaryButtonClicked = e.buttons === 1;
 
