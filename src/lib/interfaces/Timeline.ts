@@ -55,3 +55,13 @@ export interface ITimelineElementBounds {
     start: number; // start of the timeline element (in milliseconds)
     end: number; // end of the timeline element (in milliseconds)
 }
+
+export enum TimelineElementResizeSide {
+    LEFT = 'left',
+    RIGHT = 'right',
+}
+
+export interface ITimelineElementResizeData {
+    side: TimelineElementResizeSide, // which side of the timeline element is being resized
+    timelineElementId: string; // the unique id of the element that is bein resized
+}

@@ -1,8 +1,9 @@
 <script lang="ts">
-	import type {
-		ITimelineDraggedElement,
-		ITimelineDraggedElementPosition,
-		ITimelineElement
+	import {
+		type ITimelineDraggedElement,
+		type ITimelineDraggedElementPosition,
+		type ITimelineElement,
+		TimelineElementResizeSide
 	} from '$lib/interfaces/Timeline';
 	import { CONSTS } from '$lib/utils/consts';
 	import { getRelativeMousePosition, getTailwindVariables } from '$lib/utils/utils';
@@ -12,6 +13,7 @@
 		draggedElement,
 		draggedElementData,
 		draggedElementPosition,
+		elementResizeData,
 		isThumbBeingDragged,
 		isTimelineElementBeingDragged,
 		isTimelineElementBeingResized,
@@ -86,12 +88,33 @@
 	let resizeStartPosition = -1;
 	let resizeStartWidth: number | undefined = undefined;
 
+	// #region onMount
 	onMount(() => {
 		window.addEventListener('dragover', (e: DragEvent) => {
 			if ($isTimelineElementBeingDragged) {
 				e.preventDefault();
 				e.stopPropagation();
 				console.log('event listener on window while dragging');
+			}
+		});
+
+		// listen to the left resize event and handle resize on call
+		window.addEventListener(CONSTS.customEventNameElementResizeLeft, (e: Event) => {
+			const eventDetail = (e as CustomEvent).detail;
+
+			// only resize if the element id in the details match the current element
+			if (eventDetail.elementId === element.elementId) {
+				onResizeLeft(eventDetail.event);
+			}
+		});
+
+		// listen to the right resize event and handle resize on call
+		window.addEventListener(CONSTS.customEventNameElementResizeRight, (e: Event) => {
+			const eventDetail = (e as CustomEvent).detail;
+
+			// only resize if the element id in the details match the current element
+			if (eventDetail.elementId === element.elementId) {
+				onResizeRight(eventDetail.event);
 			}
 		});
 	});
@@ -539,6 +562,7 @@
 		// } as unknown as MouseEvent);
 	}
 
+	// #region resize
 	// TODO: handle the case when the mouse is fast than the resize change
 	// handle the resizing of element using the left handle
 	function onResizeLeft(e: MouseEvent) {
@@ -647,7 +671,6 @@
 		}
 	}
 
-	// #region resize
 	// handle the resizing of element using the right handle
 	function onResizeRight(e: MouseEvent) {
 		// avoid the thumb being also moved to where the handle is
@@ -744,7 +767,7 @@
 	}
 
 	// handle the first mouse down on an element handle
-	function onHandleMouseDown(e: MouseEvent) {
+	function onHandleMouseDown(e: MouseEvent, side: TimelineElementResizeSide) {
 		// avoid the thumb being also moved to where the handle is
 		e.stopPropagation();
 		e.stopImmediatePropagation();
@@ -757,6 +780,7 @@
 
 		if (onlyPrimaryButtonClicked && !$isThumbBeingDragged) {
 			isTimelineElementBeingResized.set(true);
+			elementResizeData.set({ side, timelineElementId: element.elementId });
 
 			// initially set the starting position of the mouse so we can use it for the mouse move event
 			resizeStartPosition = e.x;
@@ -930,12 +954,12 @@
 		<div
 			class="timeline-row-element-handle absolute top-0 left-0 h-full bg-blue-400 w-2 cursor-ew-resize rounded-l"
 			on:mousemove={onResizeLeft}
-			on:mousedown={onHandleMouseDown}
+			on:mousedown={(e) => onHandleMouseDown(e, TimelineElementResizeSide.LEFT)}
 		></div>
 		<div
 			class="timeline-row-element-handle absolute top-0 left-[calc(100%-8px)] h-full bg-blue-400 w-2 cursor-ew-resize rounded-r"
 			on:mousemove={onResizeRight}
-			on:mousedown={onHandleMouseDown}
+			on:mousedown={(e) => onHandleMouseDown(e, TimelineElementResizeSide.RIGHT)}
 		></div>
 	{/if}
 </div>

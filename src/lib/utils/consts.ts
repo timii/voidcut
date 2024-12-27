@@ -45,6 +45,16 @@ export const CONSTS = {
     customEventNameDropTimelineElement: 'drop-timeline-element',
 
     /**
+     * The custom event name for when a timeline element is resized on the left side
+     */
+    customEventNameElementResizeLeft: 'resize-timeline-element-left',
+
+    /**
+     * The custom event name for when a timeline element is resized on the right side
+     */
+    customEventNameElementResizeRight: 'resize-timeline-element-right',
+
+    /**
      * The amount of time between each interval when the timeline scrolls
      */
     timelineScrollIntervalTimer: 50,

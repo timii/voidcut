@@ -1,10 +1,12 @@
 <script lang="ts">
 	import type { IMedia } from '$lib/interfaces/Media';
 	import {
+		handleElementResizing,
 		handleTimelineMediaDrop,
 		hasHorizontalScrollbar,
 		hasVerticalScrollbar,
 		moveTimelineThumb,
+		onlyPrimaryButtonClicked,
 		resetAllBeingDragged
 	} from '$lib/utils/utils';
 	import { onMount } from 'svelte';
@@ -15,6 +17,8 @@
 		currentThumbPosition,
 		currentTimelineScale,
 		horizontalScroll,
+		isThumbBeingDragged,
+		isTimelineElementBeingResized,
 		maxPlaybackTime,
 		startAmountOfTicks,
 		thumbOffset,
@@ -248,6 +252,24 @@
 			);
 		}
 	}
+
+	// handle the pointermove event while over the timeline
+	function handleTimelinePointerMove(e: MouseEvent) {
+		// check first if we have even held down only the primary button
+		if (!onlyPrimaryButtonClicked(e)) {
+			return;
+		}
+
+		// if timeline thumb is already being dragged handle further timeline thumb dragging
+		if ($isThumbBeingDragged) {
+			moveTimelineThumb(e);
+		}
+
+		// if a timeline element is currently being resized further handle resizing
+		if ($isTimelineElementBeingResized) {
+			handleElementResizing(e);
+		}
+	}
 </script>
 
 <div class="flex flex-col h-full gap-2 timeline-container">
@@ -262,7 +284,7 @@
 		on:dragleave={onDropElement}
 		on:dragenter={onHoverElement}
 		on:dragover={onHoverElement}
-		on:pointermove={moveTimelineThumb}
+		on:pointermove={handleTimelinePointerMove}
 		on:mousedown={moveTimelineThumb}
 		on:scroll={onTimelineScroll}
 		style="background-color: {hoverElement ? '#2e2e35' : ''};"

@@ -1,6 +1,5 @@
 <script lang="ts">
 	import type {
-		ITimelineDraggedElement,
 		ITimelineDraggedElementPosition,
 		ITimelineElementBounds,
 		ITimelineTrack
@@ -8,7 +7,6 @@
 	import { onMount } from 'svelte';
 	import {
 		currentTimelineScale,
-		draggedElement,
 		draggedElementData,
 		draggedElementPosition,
 		isTimelineElementBeingDragged,
@@ -19,12 +17,10 @@
 	import { CONSTS } from '$lib/utils/consts';
 	import {
 		cleanUpEmptyTracks,
-		getTailwindVariables,
 		handleTimelineMediaDrop,
 		isElementOverlapping,
 		moveElementsOnTrack
 	} from '$lib/utils/utils';
-	import colors from 'tailwindcss/colors';
 	import type { IMedia } from '$lib/interfaces/Media';
 
 	export let track: ITimelineTrack;
@@ -356,7 +352,7 @@
 			? 'unset'
 			: 'none'}; background-color: green; left: {dropZonePositionLeft}px;"
 	></div>
-	{#each track.elements as element, index}
-		<TimelineRowElement {element} {index}></TimelineRowElement>
+	{#each track.elements as element, elementIndex}
+		<TimelineRowElement {element} {elementIndex} rowIndex={index}></TimelineRowElement>
 	{/each}
 </div>

@@ -1,6 +1,6 @@
 import { MediaType, type IMedia, type IFileMetadata } from "$lib/interfaces/Media";
-import type { ITimelineDraggedElement, ITimelineElement, ITimelineElementBounds, ITimelineTrack } from "$lib/interfaces/Timeline";
-import { availableMedia, isTimelineElementBeingDragged, isThumbBeingDragged, timelineTracks, currentPlaybackTime, playbackIntervalId, currentTimelineScale, currentThumbPosition, thumbOffset, horizontalScroll, selectedElement, draggedElement, previewPlaying, isTimelineElementBeingResized } from "../../stores/store";
+import { TimelineElementResizeSide, type ITimelineDraggedElement, type ITimelineElement, type ITimelineElementBounds, type ITimelineTrack } from "$lib/interfaces/Timeline";
+import { availableMedia, isTimelineElementBeingDragged, isThumbBeingDragged, timelineTracks, currentPlaybackTime, playbackIntervalId, currentTimelineScale, currentThumbPosition, thumbOffset, horizontalScroll, selectedElement, draggedElement, previewPlaying, isTimelineElementBeingResized, elementResizeData } from "../../stores/store";
 import { CONSTS } from "./consts";
 import { adjustingInterval } from "./betterInterval";
 import { get } from "svelte/store";
@@ -423,6 +423,10 @@ export function getRelativeMousePosition(e: MouseEvent, el: DOMRect) {
     };
 }
 
+// check if only the primary button is clicked for a given MouseEvent
+export function onlyPrimaryButtonClicked(e: MouseEvent) { return e.buttons === 1 }
+
+
 // #region scrolling utils
 // calculate if a given html element has a horizontal scrollbar
 export function hasHorizontalScrollbar(el: HTMLElement) {
@@ -489,16 +493,60 @@ export function msToHr(value: number) {
     return h + ':' + m + ':' + s;
 }
 
+// #region resizing utils
+// checks whether to resize on the left or right side of the element  
+export function handleElementResizing(e: MouseEvent) {
+    // avoid the thumb being also moved to where the handle is
+    e.stopPropagation();
+    e.stopImmediatePropagation();
+
+    // if another element or thumg being dragged don't resize
+    if (get(isTimelineElementBeingDragged) || get(isThumbBeingDragged)) {
+        return;
+    }
+
+    // don't resize if not only primary button is clicked
+    if (!onlyPrimaryButtonClicked(e)) {
+        return;
+    }
+
+    const elResizeData = get(elementResizeData)
+
+    // if no resize side is given we can't decide what side to handle
+    if (!elResizeData) {
+        return
+    }
+
+    const eventDetail = { detail: { event: e, elementId: elResizeData.timelineElementId } }
+
+    // handle left side resizing
+    if (elResizeData.side === TimelineElementResizeSide.LEFT) {
+        // create and dispatch custom event with the mouse event in the detail. The TimelineRowElement component listens to the event and handles the resizing
+        const event = new CustomEvent(CONSTS.customEventNameElementResizeLeft, eventDetail);
+        window.dispatchEvent(event);
+    }
+
+    // handle right side resizing
+    if (elResizeData.side === TimelineElementResizeSide.RIGHT) {
+        // create and dispatch custom event with the mouse event in the detail. The TimelineRowElement component listens to the event and handles the resizing
+        const event = new CustomEvent(CONSTS.customEventNameElementResizeRight, eventDetail);
+        window.dispatchEvent(event);
+
+    }
+}
+
 // #region timeline utils
 // move the timeline thumb using a given mouse event
 export function moveTimelineThumb(e: MouseEvent) {
     e.preventDefault();
 
+    // check if the original click is over a timeline element
     const clickOriginOverElement = (e.target as HTMLElement).classList.contains('timeline-row-element') || (e.target as HTMLElement).classList.contains('timeline-row-element-handle')
-    const originNotOverElOrThumbAlreadyMoving = !clickOriginOverElement || get(isThumbBeingDragged)
-    const onlyPrimaryButtonClicked = e.buttons === 1
 
-    const moveThumb = onlyPrimaryButtonClicked && !get(isTimelineElementBeingDragged) && !get(isTimelineElementBeingResized) && originNotOverElOrThumbAlreadyMoving
+    const originNotOverElOrThumbAlreadyMoving = !clickOriginOverElement || get(isThumbBeingDragged)
+
+    // only move thumb if only the primary button is clicked, nothing else is being dragged/resized and the click origin is not over an element
+    const moveThumb = onlyPrimaryButtonClicked(e) && !get(isTimelineElementBeingDragged) && !get(isTimelineElementBeingResized) && originNotOverElOrThumbAlreadyMoving
 
     // check if we should move the thumb or if something else is already being dragged/resized/etc.
     if (!moveThumb) {
