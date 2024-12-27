@@ -608,6 +608,11 @@
 				return;
 			}
 
+			// if the new width is smaller than the minimum width, the element size can't be decreaseed further
+			if (newWidthInMs < CONSTS.timelineElementMinWidthMs) {
+				return;
+			}
+
 			const newLeftOffset = leftOffset + -dx;
 
 			// check if the new leftOffset goes outside the left border of the timeline row, if yes we can't resize further
@@ -718,6 +723,11 @@
 			// check if current width + dx is equal or bigger than maxDuration, if yes we can't increase the size further
 			// if maxDuration is undefined the user can resize the element as much as they want to
 			if (element.maxDuration && newWidthInMs > element.maxDuration) {
+				return;
+			}
+
+			// if the new width is smaller than the minimum width, the element size can't be decreaseed further
+			if (newWidthInMs < CONSTS.timelineElementMinWidthMs) {
 				return;
 			}
 
