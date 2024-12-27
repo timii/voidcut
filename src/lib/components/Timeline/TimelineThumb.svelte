@@ -8,7 +8,7 @@
 		isThumbBeingDragged
 	} from '../../../stores/store';
 	import {
-		convertPlaybackToPxScale,
+		convertMsToPx,
 		isElementFullyScrolled,
 		moveTimelineThumb,
 		pausePlayback
@@ -37,9 +37,7 @@
 			if ($isThumbBeingDragged === true) {
 				return;
 			}
-			// console.log('in timelineThumb before -> $currentThumbPosition,', $currentThumbPosition);
-			$currentThumbPosition = convertPlaybackToPxScale();
-			// console.log('in timelineThumb after -> $currentThumbPosition,', $currentThumbPosition);
+			$currentThumbPosition = convertMsToPx($currentPlaybackTime);
 
 			const thumbBoundingRect = thumbElementRef?.getBoundingClientRect();
 			const scrollContainerBoundingRect = timelineScrollContainer?.getBoundingClientRect();

@@ -47,7 +47,6 @@ export async function handleFileUpload(files: FileList) {
         let filePreviewImage: string = '';
         switch (fileType) {
             case MediaType.Audio:
-                console.log("in switch audio file type")
 
                 // get metadata for the audio file
                 fileMetadata = await getFileMetadata(file, MediaType.Audio)
@@ -59,7 +58,6 @@ export async function handleFileUpload(files: FileList) {
                 }
                 break;
             case MediaType.Image:
-                console.log("in switch image file type")
 
                 // TODO: create preview image for media pool element width and height as well
                 // convert uploaded file into dataUrl
@@ -71,15 +69,12 @@ export async function handleFileUpload(files: FileList) {
 
                 break;
             case MediaType.Video:
-                console.log("in switch video file type")
 
                 // get metadata of current file
                 fileMetadata = await getFileMetadata(file, MediaType.Video)
-                console.log("in switch video file type 2")
 
                 // create image of uploaded media to show as preview
                 filePreviewImage = await getVideoPreviewImage(file)
-                console.log("in switch video file type 3 ")
                 break;
             default:
                 console.error("No fitting media type found")
@@ -116,6 +111,7 @@ export function handleTimelineMediaDrop(media: IMedia, rowIndex?: number, elInde
         maxDuration = media.duration || 3000
     }
 
+    // TODO: handle cases for media thats very short (such as half a second or less or so) 
 
     // convert media type to timeline element type
     const timelineEl: ITimelineElement = {
@@ -386,16 +382,16 @@ export function resumePlayback() {
 }
 
 // #region general utils
-// TODO: make both functions more generic instead of always using the thumb position and instead use a number that can be passe via parameters
-// convert the current thumb position (in px) to the playback time (in ms) using the current timeline scale
-export function convertPxToPlaybackScale() {
-    return Math.round((get(currentThumbPosition) / get(currentTimelineScale)) * CONSTS.secondsMultiplier) || 0
+// convert a given pixel value into a milliseconds value using the current timeline scale
+export function convertPxToMs(value: number) {
+    return Math.round((value / get(currentTimelineScale)) * CONSTS.secondsMultiplier) || 0
 }
 
-// convert the current playback time (in ms) to the thumb position (in px) using the current timeline scale
-export function convertPlaybackToPxScale() {
-    return Math.round((get(currentPlaybackTime) / CONSTS.secondsMultiplier) * get(currentTimelineScale))
+// convert a given milliseconds value into a pixel value using the current timeline scale
+export function convertMsToPx(value: number) {
+    return Math.round((value / CONSTS.secondsMultiplier) * get(currentTimelineScale))
 }
+
 
 // generate a unique id
 function generateId() {
@@ -426,6 +422,10 @@ export function getRelativeMousePosition(e: MouseEvent, el: DOMRect) {
 // check if only the primary button is clicked for a given MouseEvent
 export function onlyPrimaryButtonClicked(e: MouseEvent) { return e.buttons === 1 }
 
+// check if a given element is of type image
+export function elementIsAnImage(el: ITimelineElement | IMedia) {
+    return el.type === MediaType.Image
+}
 
 // #region scrolling utils
 // calculate if a given html element has a horizontal scrollbar
@@ -582,7 +582,7 @@ export function moveTimelineThumb(e: MouseEvent) {
 
     currentThumbPosition.set(newPos);
     // calculate playback time using the the new thumb position and write it into the store
-    const playbackTime = convertPxToPlaybackScale();
+    const playbackTime = convertPxToMs(get(currentThumbPosition));
     currentPlaybackTime.set(playbackTime);
 
     if (!get(isThumbBeingDragged)) {

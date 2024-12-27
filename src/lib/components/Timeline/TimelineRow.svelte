@@ -17,6 +17,8 @@
 	import { CONSTS } from '$lib/utils/consts';
 	import {
 		cleanUpEmptyTracks,
+		convertMsToPx,
+		convertPxToMs,
 		handleTimelineMediaDrop,
 		isElementOverlapping,
 		moveElementsOnTrack
@@ -115,9 +117,8 @@
 
 				// TODO: check track index of dragged element and if its the same as the current row just change the playback start time, else we also need to remove it from the current row and move it into the new one with the updated playback start time
 
-				// TODO: use utils function here instead
 				// convert the x value from px into ms
-				const xInMs = Math.round((x / $currentTimelineScale) * CONSTS.secondsMultiplier) || 0;
+				const xInMs = convertPxToMs(x);
 				const foundElEnd = xInMs + foundEl.duration;
 				const elBounds: ITimelineElementBounds = { start: xInMs, end: foundElEnd };
 				const sameTrackMoveElIndex = index !== trackIndex ? undefined : elementIndexInTrack;
@@ -264,14 +265,14 @@
 			return;
 		}
 
-		// parse it back to be a object again
+		// parse it back to be an object again
 		const mediaData: IMedia = JSON.parse(mediaDataString);
 		const duration = mediaData.duration;
 		if (!duration) {
 			return;
 		}
-		dropZoneWidth = Math.round((duration / CONSTS.secondsMultiplier) * $currentTimelineScale);
-		// console.log('hover media element over row -> e:', e, 'mediaData:', mediaData);
+
+		dropZoneWidth = convertMsToPx(duration);
 	}
 
 	function onDropElement(e: DragEvent) {

@@ -6,7 +6,14 @@
 		TimelineElementResizeSide
 	} from '$lib/interfaces/Timeline';
 	import { CONSTS } from '$lib/utils/consts';
-	import { getRelativeMousePosition, getTailwindVariables } from '$lib/utils/utils';
+	import {
+		convertMsToPx,
+		convertPxToMs,
+		elementIsAnImage,
+		getRelativeMousePosition,
+		getTailwindVariables,
+		onlyPrimaryButtonClicked
+	} from '$lib/utils/utils';
 	import { onMount } from 'svelte';
 	import {
 		currentTimelineScale,
@@ -32,15 +39,18 @@
 	$: isSelected = getSelectedElement($selectedElement);
 
 	// dynamically calculate left offset of element
+	// here we actually don't want to use the util function to convert to px since we want the leftOffset to update when the currentTimelineScale changes
 	$: leftOffset = (element.playbackStartTime / CONSTS.secondsMultiplier) * $currentTimelineScale;
+
 	// set the left offset once in the beginning
-	leftOffset = (element.playbackStartTime / CONSTS.secondsMultiplier) * $currentTimelineScale;
+	leftOffset = convertMsToPx(element.playbackStartTime);
 
 	// the offset of the element within the parent
 	let topOffset = 0;
 
 	let position = { x: leftOffset, y: topOffset };
 
+	// here we actually don't want to use the util function to convert to px since we want the elementWidth to update when the currentTimelineScale changes
 	$: elementWidth = (element.duration / CONSTS.secondsMultiplier) * $currentTimelineScale;
 
 	// // call function everytime the store variable changes
@@ -55,7 +65,7 @@
 		'scale:',
 		$currentTimelineScale,
 		'calc:',
-		(element.duration / CONSTS.secondsMultiplier) * $currentTimelineScale,
+		convertMsToPx(element.duration),
 		'leftOffset:',
 		leftOffset
 	);
@@ -533,7 +543,7 @@
 		setTimeout(() => {
 			topOffset = 0;
 			// manually trigger update of the left offset so the new offset is actually updated
-			leftOffset = (element.playbackStartTime / CONSTS.secondsMultiplier) * $currentTimelineScale;
+			leftOffset = convertMsToPx(element.playbackStartTime);
 
 			position = { x: leftOffset, y: topOffset };
 			console.log(
@@ -541,8 +551,8 @@
 				position,
 				'element.playbackStartTime:',
 				element.playbackStartTime,
-				'(element.playbackStartTime / CONSTS.secondsMultiplier) * $currentTimelineScale:',
-				(element.playbackStartTime / CONSTS.secondsMultiplier) * $currentTimelineScale
+				'convertMsToPx(element.playbackStartTime):',
+				convertMsToPx(element.playbackStartTime)
 			);
 		}, 0);
 
@@ -563,7 +573,7 @@
 	}
 
 	// #region resize
-	// TODO: handle the case when the mouse is fast than the resize change
+	// TODO: set a minimum width for resizing and try to combine both left and right resizing function into one
 	// handle the resizing of element using the left handle
 	function onResizeLeft(e: MouseEvent) {
 		// avoid the thumb being also moved to where the handle is
@@ -574,106 +584,104 @@
 			return;
 		}
 
-		const onlyPrimaryButtonClicked = e.buttons === 1;
+		if (!onlyPrimaryButtonClicked(e)) {
+			return;
+		}
 
-		if (onlyPrimaryButtonClicked && !$isThumbBeingDragged) {
+		console.log(
+			'onResizeMouseMove left before calculate -> resizeStartPosition:',
+			resizeStartPosition,
+			'elementWidth:',
+			elementWidth
+		);
+
+		// calculate difference between starting x position and current x position
+		const dx = resizeStartPosition - e.x;
+
+		// we need to block the resize if we try to increase the element size even though we haven't trimmed anything from that side
+		if (dx > 0 && element.trimFromStart === 0 && !elementIsAnImage(element)) {
+			return;
+		}
+
+		// update starting x position for the next call of the mouse move
+		resizeStartPosition = e.x;
+
+		// add the pixel difference to the width
+		const newWidth = parseInt(getComputedStyle(elementRef, '').width) + dx;
+
+		// convert the new width into milliseconds
+		const newWidthInMs = convertPxToMs(newWidth);
+
+		// check if current width + dx is bigger than maxDuration, if yes we can't increase the size further
+		// if maxDuration is undefined the user can resize the element as much as they want to
+		if (element.maxDuration && newWidthInMs > element.maxDuration) {
+			return;
+		}
+
+		// if the new width is smaller than the minimum width, the element size can't be decreaseed further
+		if (newWidthInMs < CONSTS.timelineElementMinWidthMs) {
+			return;
+		}
+
+		const newLeftOffset = leftOffset + -dx;
+
+		// check if the new leftOffset goes outside the left border of the timeline row, if yes we can't resize further
+		if (newLeftOffset < 0) {
+			return;
+		}
+
+		// increase/decrease size of element accordingly
+		elementWidth = newWidth;
+
+		// calculate new leftOffset using the difference from last update
+		leftOffset = newLeftOffset;
+
+		// also move the element to the left by the same amount we increase/decreased the width
+		position = { ...position, x: leftOffset };
+
+		// convert new offset into milliseconds to use as playbackStartTime
+		const newLeftOffsetInMs = convertPxToMs(newLeftOffset);
+
+		// update duration, playbackStartTime and mediaStartTime of element in store
+		timelineTracks.update((tracks) => {
+			const curEl = tracks[rowIndex].elements[elementIndex];
+
+			let newTrimFromStart = element.trimFromStart;
+
+			// only update the mediaStartTime when the current element is not an image
+			if (!elementIsAnImage(element) && resizeStartWidth) {
+				newTrimFromStart += resizeStartWidth - newWidthInMs;
+				newTrimFromStart = Math.max(newTrimFromStart, 0);
+			}
+
 			console.log(
-				'onResizeMouseMove left before calculate -> resizeStartPosition:',
+				'onResizeMouseMove left after calculate -> resizeStartPosition:',
 				resizeStartPosition,
-				'elementWidth:',
-				elementWidth
+				'resizeStartWidth:',
+				resizeStartWidth,
+				'maxDuration:',
+				element.maxDuration,
+				'newWidthInMs:',
+				newWidthInMs,
+				'newTrimFromStart:',
+				newTrimFromStart,
+				'element.trimFromStart:',
+				element.trimFromStart,
+				'dx:',
+				dx
 			);
 
-			const elementIsNotAnImage = element.type !== MediaType.Image;
+			tracks[rowIndex].elements[elementIndex] = {
+				...curEl,
+				duration: newWidthInMs,
+				playbackStartTime: newLeftOffsetInMs,
+				trimFromStart: newTrimFromStart
+			};
 
-			// calculate difference between starting x position and current x position
-			const dx = resizeStartPosition - e.x;
+			return tracks;
+		});
 
-			// we need to block the resize if we try to increase the element size even though we haven't trimmed anything from that side
-			if (dx > 0 && element.trimFromStart === 0 && elementIsNotAnImage) {
-				return;
-			}
-
-			// update starting x position for the next call of the mouse move
-			resizeStartPosition = e.x;
-
-			const newWidth = parseInt(getComputedStyle(elementRef, '').width) + dx;
-			// TODO: use generic convert functions for this
-			const newWidthInMs =
-				Math.round((newWidth / $currentTimelineScale) * CONSTS.secondsMultiplier) || 0;
-
-			// check if current width + dx is bigger than maxDuration, if yes we can't increase the size further
-			// if maxDuration is undefined the user can resize the element as much as they want to
-			if (element.maxDuration && newWidthInMs > element.maxDuration) {
-				return;
-			}
-
-			// if the new width is smaller than the minimum width, the element size can't be decreaseed further
-			if (newWidthInMs < CONSTS.timelineElementMinWidthMs) {
-				return;
-			}
-
-			const newLeftOffset = leftOffset + -dx;
-
-			// check if the new leftOffset goes outside the left border of the timeline row, if yes we can't resize further
-			if (newLeftOffset < 0) {
-				return;
-			}
-
-			// increase/decrease size of element accordingly
-			elementWidth = newWidth;
-
-			// calculate new leftOffset using the difference from last update
-			leftOffset = newLeftOffset;
-
-			// also move the element to the left by the same amount we increase/decreased the width
-			position = { ...position, x: leftOffset };
-
-			// TODO: use generic convert functions for this
-			const newLeftOffsetInMs =
-				Math.round((newLeftOffset / $currentTimelineScale) * CONSTS.secondsMultiplier) || 0;
-
-			// update duration, playbackStartTime and mediaStartTime of element in store
-			timelineTracks.update((tracks) => {
-				const curEl = tracks[rowIndex].elements[elementIndex];
-
-				let newTrimFromStart = element.trimFromStart;
-
-				// only update the mediaStartTime when the current element is not an image
-				if (elementIsNotAnImage && resizeStartWidth) {
-					newTrimFromStart += resizeStartWidth - newWidthInMs;
-					newTrimFromStart = Math.max(newTrimFromStart, 0);
-				}
-
-				console.log(
-					'onResizeMouseMove left after calculate -> resizeStartPosition:',
-					resizeStartPosition,
-					'resizeStartWidth:',
-					resizeStartWidth,
-					'maxDuration:',
-					element.maxDuration,
-					'newWidthInMs:',
-					newWidthInMs,
-					'newTrimFromStart:',
-					newTrimFromStart,
-					'element.trimFromStart:',
-					element.trimFromStart,
-					'dx:',
-					dx
-				);
-
-				tracks[rowIndex].elements[elementIndex] = {
-					...curEl,
-					duration: newWidthInMs,
-					playbackStartTime: newLeftOffsetInMs,
-					trimFromStart: newTrimFromStart
-				};
-
-				return tracks;
-			});
-
-			resizeStartWidth = newWidthInMs;
-		}
+		resizeStartWidth = newWidthInMs;
 	}
 
 	// handle the resizing of element using the right handle
@@ -686,94 +694,93 @@
 			return;
 		}
 
-		const onlyPrimaryButtonClicked = e.buttons === 1;
+		if (!onlyPrimaryButtonClicked(e)) {
+			return;
+		}
 
-		if (onlyPrimaryButtonClicked && !$isThumbBeingDragged) {
-			const elementIsNotAnImage = element.type !== MediaType.Image;
+		// calculate difference between starting x position and current x position
+		// we need the negative value of it to correctly update the width, since when the mouse moves to the right
+		// dx gets smaller, which is the opposite of what we want
+		const dx = -(resizeStartPosition - e.x);
 
-			// calculate difference between starting x position and current x position
-			// we need the negative value of it to correctly update the width, since when the mouse moves to the right
-			// dx gets smaller, which is the opposite of what we want
-			const dx = -(resizeStartPosition - e.x);
+		console.log(
+			'onResizeMouseMove right before calculate -> resizeStartPosition:',
+			resizeStartPosition,
+			'elementWidth:',
+			elementWidth,
+			'dx:',
+			dx,
+			'element.trimFromEnd:',
+			element.trimFromEnd
+		);
+
+		// we need to block the resize if we try to increase the element size even though we haven't trimmed anything from that side
+		if (dx > 0 && element.trimFromEnd === 0 && !elementIsAnImage(element)) {
+			return;
+		}
+
+		// update starting x position for the next call of the mouse move
+		resizeStartPosition = e.x;
+
+		// add the pixel difference to the width
+		const newWidth = parseInt(getComputedStyle(elementRef, '').width) + dx;
+
+		// convert the new width into milliseconds
+		const newWidthInMs = convertPxToMs(newWidth);
+
+		// check if current width + dx is equal or bigger than maxDuration, if yes we can't increase the size further
+		// if maxDuration is undefined the user can resize the element as much as they want to
+		if (element.maxDuration && newWidthInMs > element.maxDuration) {
+			return;
+		}
+
+		// if the new width is smaller than the minimum width, the element size can't be decreaseed further
+		if (newWidthInMs < CONSTS.timelineElementMinWidthMs) {
+			return;
+		}
+
+		// increase/decrease size of element accordingly
+		elementWidth = newWidth;
+
+		// update duration of element in store
+		timelineTracks.update((tracks) => {
+			const curEl = tracks[rowIndex].elements[elementIndex];
+
+			let newTrimFromEnd = element.trimFromEnd;
+
+			// only update the mediaStartTime when the current element is not an image
+			if (!elementIsAnImage(element) && resizeStartWidth) {
+				newTrimFromEnd += resizeStartWidth - newWidthInMs;
+				newTrimFromEnd = Math.max(newTrimFromEnd, 0);
+			}
 
 			console.log(
-				'onResizeMouseMove right before calculate -> resizeStartPosition:',
+				'onResizeMouseMove right after calculate -> resizeStartPosition:',
 				resizeStartPosition,
-				'elementWidth:',
-				elementWidth,
-				'dx:',
-				dx,
+				'resizeStartWidth:',
+				resizeStartWidth,
+				'maxDuration:',
+				element.maxDuration,
+				'newWidthInMs:',
+				newWidthInMs,
+				'newTrimFromEnd:',
+				newTrimFromEnd,
 				'element.trimFromEnd:',
-				element.trimFromEnd
+				element.trimFromEnd,
+				'dx:',
+				dx
 			);
 
-			// we need to block the resize if we try to increase the element size even though we haven't trimmed anything from that side
-			if (dx > 0 && element.trimFromEnd === 0 && elementIsNotAnImage) {
-				return;
-			}
+			tracks[rowIndex].elements[elementIndex] = {
+				...curEl,
+				duration: newWidthInMs,
+				trimFromEnd: newTrimFromEnd
+			};
 
-			// update starting x position for the next call of the mouse move
-			resizeStartPosition = e.x;
+			return tracks;
+		});
 
-			const newWidth = parseInt(getComputedStyle(elementRef, '').width) + dx;
-			// TODO: use generic convert functions for this
-			const newWidthInMs =
-				Math.round((newWidth / $currentTimelineScale) * CONSTS.secondsMultiplier) || 0;
-
-			// check if current width + dx is equal or bigger than maxDuration, if yes we can't increase the size further
-			// if maxDuration is undefined the user can resize the element as much as they want to
-			if (element.maxDuration && newWidthInMs > element.maxDuration) {
-				return;
-			}
-
-			// if the new width is smaller than the minimum width, the element size can't be decreaseed further
-			if (newWidthInMs < CONSTS.timelineElementMinWidthMs) {
-				return;
-			}
-
-			// increase/decrease size of element accordingly
-			elementWidth = newWidth;
-
-			// update duration of element in store
-			timelineTracks.update((tracks) => {
-				const curEl = tracks[rowIndex].elements[elementIndex];
-
-				let newTrimFromEnd = element.trimFromEnd;
-
-				// only update the mediaStartTime when the current element is not an image
-				if (elementIsNotAnImage && resizeStartWidth) {
-					newTrimFromEnd += resizeStartWidth - newWidthInMs;
-					newTrimFromEnd = Math.max(newTrimFromEnd, 0);
-				}
-
-				console.log(
-					'onResizeMouseMove right after calculate -> resizeStartPosition:',
-					resizeStartPosition,
-					'resizeStartWidth:',
-					resizeStartWidth,
-					'maxDuration:',
-					element.maxDuration,
-					'newWidthInMs:',
-					newWidthInMs,
-					'newTrimFromEnd:',
-					newTrimFromEnd,
-					'element.trimFromEnd:',
-					element.trimFromEnd,
-					'dx:',
-					dx
-				);
-
-				tracks[rowIndex].elements[elementIndex] = {
-					...curEl,
-					duration: newWidthInMs,
-					trimFromEnd: newTrimFromEnd
-				};
-
-				return tracks;
-			});
-
-			resizeStartWidth = newWidthInMs;
-		}
+		resizeStartWidth = newWidthInMs;
 	}
 
 	// handle the first mouse down on an element handle
@@ -795,11 +802,9 @@
 			// initially set the starting position of the mouse so we can use it for the mouse move event
 			resizeStartPosition = e.x;
 
-			// TODO: use generic convert functions for this
-			const elementWidthInMs =
-				Math.round((elementWidth / $currentTimelineScale) * CONSTS.secondsMultiplier) || 0;
+			const elementWidthInMs = convertPxToMs(elementWidth);
 
-			// only for the left side resizing we need to keep track of the starting duration/width so we set it on mouse down
+			// keep track of the starting duration/width so we set it on mouse down
 			resizeStartWidth = elementWidthInMs;
 		}
 	}

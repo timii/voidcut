@@ -15,6 +15,7 @@
 	import { initializeFfmpeg } from '$lib/utils/ffmpeg.utils';
 	import Overlay from '$lib/components/shared/Overlay.svelte';
 	import ExportDialog from '$lib/components/header/ExportDialog.svelte';
+	import { convertPxToMs } from '$lib/utils/utils';
 
 	const baseImgPath = 'src/lib/assets/';
 	const imageUrls = [
@@ -26,7 +27,7 @@
 	];
 	$: preloadImageUrls = imageUrls.map((url) => baseImgPath + url);
 
-	// TODO: add onMount hook that resets the Dragging storte values on mouse up for the whole window
+	// TODO: add onMount hook that resets the dragging store values on mouse up for the whole window
 	onMount(async () => {
 		// initialize all the ffmpeg stuff in the background
 		// using async in this onMount is only fine if we don't
@@ -37,9 +38,11 @@
 
 	//  listen to window changes and update the store variable on change
 	function onWindowResize(width: number) {
-		const widthInMs = Math.round(
-			((width - $thumbOffset) / $currentTimelineScale) * CONSTS.secondsMultiplier
-		);
+		// subtract the offset from the window width
+		const windowSizeMinusOffset = width - $thumbOffset;
+
+		// convert the width into milliseconds to comapre it to the playbacktime that is also in milliseconds
+		const widthInMs = convertPxToMs(windowSizeMinusOffset);
 
 		// we only update the store variable if the window width is bigger than the most right end of any element (+ a smaller buffer)
 		if (widthInMs <= $maxPlaybackTime + 1000) {

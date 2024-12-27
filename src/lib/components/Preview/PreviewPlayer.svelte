@@ -50,13 +50,21 @@
 
 			const curPlaybackTime = $currentPlaybackTime;
 			// TODO: check if current element is within the playback time
+
 			const beforeElStart = curPlaybackTime < el.properties.playbackStartTime;
 			const afterElEnd =
 				curPlaybackTime >= el.properties.playbackStartTime + el.properties.duration;
+
+			// check if the current playback time is after the element started and before it ended
 			const atElTime = !beforeElStart && !afterElEnd;
+
 			const isMediaPlaying = !htmlEl.paused;
+
+			// calculate the current element time in seconds
 			const curElTime =
 				($currentPlaybackTime - el.properties.playbackStartTime) / CONSTS.secondsMultiplier;
+
+			// check if the element is out of sync
 			const elTimeOutOfSync =
 				curElTime < htmlEl.currentTime - 0.2 || curElTime > htmlEl.currentTime + 0.2;
 
