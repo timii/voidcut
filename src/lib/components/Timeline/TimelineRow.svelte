@@ -248,7 +248,8 @@
 		e.preventDefault();
 		e.stopPropagation();
 		hoverElement = true;
-		// subtract hald the media pool element width so drop zone starts at the left of the element
+
+		// subtract the media pool element width so drop zone starts at the left of the element
 		dropZonePositionLeft = Math.max(
 			e.clientX - CONSTS.mediaPoolElementWidth,
 			CONSTS.timelineRowOffset

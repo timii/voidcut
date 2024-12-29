@@ -623,6 +623,7 @@
 			return;
 		}
 
+		// add the size difference to the left offset
 		const newLeftOffset = leftOffset + -dx;
 
 		// check if the new leftOffset goes outside the left border of the timeline row, if yes we can't resize further
@@ -688,7 +689,6 @@
 	function onResizeRight(e: MouseEvent) {
 		// avoid the thumb being also moved to where the handle is
 		e.stopPropagation();
-		e.stopImmediatePropagation();
 
 		if ($isTimelineElementBeingDragged || $isThumbBeingDragged) {
 			return;
@@ -787,7 +787,9 @@
 	function onHandleMouseDown(e: MouseEvent, side: TimelineElementResizeSide) {
 		// avoid the thumb being also moved to where the handle is
 		e.stopPropagation();
-		e.stopImmediatePropagation();
+
+		// prevent weird behavior where the element handles are being dragged
+		e.preventDefault();
 
 		if ($isTimelineElementBeingDragged || $isThumbBeingDragged) {
 			return;
