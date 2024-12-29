@@ -1,5 +1,5 @@
 import { MediaType, type IMedia, type IFileMetadata } from "$lib/interfaces/Media";
-import { TimelineElementResizeSide, type ITimelineDraggedElement, type ITimelineElement, type ITimelineElementBounds, type ITimelineTrack } from "$lib/interfaces/Timeline";
+import { TimelineElementResizeSide, type ITimelineElement, type ITimelineElementBounds, type ITimelineTrack } from "$lib/interfaces/Timeline";
 import { availableMedia, isTimelineElementBeingDragged, isThumbBeingDragged, timelineTracks, currentPlaybackTime, playbackIntervalId, currentTimelineScale, currentThumbPosition, thumbOffset, horizontalScroll, selectedElement, draggedElement, previewPlaying, isTimelineElementBeingResized, elementResizeData } from "../../stores/store";
 import { CONSTS } from "./consts";
 import { adjustingInterval } from "./betterInterval";
@@ -620,11 +620,8 @@ export function isElementOverlapping(elBounds: ITimelineElementBounds, trackEls:
     })
 }
 
-// get the right element bound for the next element on the left side of a given element on a given track
-// return the right end of the left element in milliseconds, if one exists
-export function getNextLeftElementBound(trackIndex: number, elementIndex: number): number | undefined {
-    console.error("getNextLeftElementBounds -> trackIndex:", trackIndex, "elementIndex:", elementIndex)
-
+// get the element end time for the next element on the left side of a given element on a given track
+export function getNextLeftElementEndTime(trackIndex: number, elementIndex: number): number | undefined {
     // if the given element is the first in the track we can directly return undefined
     if (elementIndex === 0) {
         undefined
@@ -644,8 +641,36 @@ export function getNextLeftElementBound(trackIndex: number, elementIndex: number
         return undefined
     }
 
-    // return the right edge of the element
+    // return the end time of the element in milliseconds
     return elementBefore.playbackStartTime + elementBefore.duration
+}
+
+// get the element start time for the next element on the right side of a given element on a given track
+export function getNextRightElementStartTime(trackIndex: number, elementIndex: number): number | undefined {
+    console.error("getNextRightElementStartTime -> trackIndex:", trackIndex, "elementIndex:", elementIndex)
+
+    const tracks = get(timelineTracks)
+
+    // handle the case where we pass a track or element index that is out of bounds 
+    if (trackIndex > tracks.length || elementIndex > tracks[trackIndex].elements.length) {
+        return undefined
+
+    }
+
+    // if the given element is the last element in the track we can directly return undefined
+    if (elementIndex === tracks[trackIndex].elements.length - 1) {
+        undefined
+    }
+
+    // get the element in the track just after the given element index
+    const elementAfter = tracks[trackIndex].elements[elementIndex + 1]
+
+    if (!elementAfter) {
+        return undefined
+    }
+
+    // return the start time of the element in milliseconds
+    return elementAfter.playbackStartTime
 }
 
 // go through a given array of tracks and remove tracks that don't have any elements

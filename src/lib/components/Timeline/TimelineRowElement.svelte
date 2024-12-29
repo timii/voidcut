@@ -643,7 +643,7 @@
 		const doesElToTheLeftExist =
 			resizeData !== undefined && resizeData.nextElBounds.nextLeftEl !== undefined;
 
-		// TODO: check if the element overlaps with any element to the left, if yes we can't resize further
+		// check if the element overlaps with any element to the left, if yes we can't resize further
 		if (doesElToTheLeftExist && newLeftOffsetInMs < resizeData.nextElBounds.nextLeftEl!) {
 			return;
 		}
@@ -739,6 +739,26 @@
 		// convert the new width into milliseconds
 		const newWidthInMs = convertPxToMs(newWidth);
 
+		const resizeData = $elementResizeData;
+
+		const elEndTime = element.playbackStartTime + newWidthInMs;
+
+		console.error(
+			'resizeRight -> end time:',
+			elEndTime,
+			'right element start time:',
+			resizeData?.nextElBounds.nextRightEl
+		);
+
+		// check if an element to the right even exists on the current track
+		const doesElToTheRightExist =
+			resizeData !== undefined && resizeData.nextElBounds.nextRightEl !== undefined;
+
+		// check if the element overlaps with any element to the right, if yes we can't resize further
+		if (doesElToTheRightExist && elEndTime > resizeData.nextElBounds.nextRightEl!) {
+			return;
+		}
+
 		// check if current width + dx is equal or bigger than maxDuration, if yes we can't increase the size further
 		// if maxDuration is undefined the user can resize the element as much as they want to
 		if (element.maxDuration && newWidthInMs > element.maxDuration) {
@@ -806,18 +826,18 @@
 			return;
 		}
 
-		// get the right edge of the next element to the left
-		const leftElBound = getNextLeftElementBound(rowIndex, elementIndex);
+		// get the end time of the next element to the left
+		const leftElEndTime = getNextLeftElementEndTime(rowIndex, elementIndex);
 
-		// TODO: add the same for right side
-		// const leftElBound = getNextLeftElementBound(rowIndex, elementIndex);
+		// get the start time of the next element to the right
+		const rightElStartTime = getNextRightElementStartTime(rowIndex, elementIndex);
 
 		if (onlyPrimaryButtonClicked(e) && !$isThumbBeingDragged) {
 			isTimelineElementBeingResized.set(true);
 			elementResizeData.set({
 				side,
 				timelineElementId: element.elementId,
-				nextElBounds: { nextLeftEl: leftElBound, nextRightEl: 0 }
+				nextElBounds: { nextLeftEl: leftElEndTime, nextRightEl: rightElStartTime }
 			});
 
 			// initially set the starting position of the mouse so we can use it for the mouse move event
@@ -978,7 +998,7 @@
 		{element.mediaName}
 	</div>
 
-	<!-- TODO: check if this works since when enebaling it the thumb sometimes doesnt work correctly when trying to drag the element -->
+	<!-- TODO: check if this works since when enabling it the thumb sometimes doesnt work correctly when trying to drag the element -->
 	<!-- element image -->
 	<!-- <div
 		class="timeline-row-element-image absolute top-0 left-0 z-50"
