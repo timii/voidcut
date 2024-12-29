@@ -56,6 +56,11 @@ export interface ITimelineElementBounds {
     end: number; // end of the timeline element (in milliseconds)
 }
 
+export interface ITimelineNextElementBounds {
+    nextLeftEl: number | undefined; // the amount of milliseconds where the next element is to the left, undefined if no element to the left 
+    nextRightEl: number | undefined; // the amount of milliseconds where the next element is to the right, undefined if no element to the right
+}
+
 export enum TimelineElementResizeSide {
     LEFT = 'left',
     RIGHT = 'right',
@@ -64,4 +69,5 @@ export enum TimelineElementResizeSide {
 export interface ITimelineElementResizeData {
     side: TimelineElementResizeSide, // which side of the timeline element is being resized
     timelineElementId: string; // the unique id of the element that is bein resized
+    nextElBounds: ITimelineNextElementBounds
 }

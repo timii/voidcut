@@ -631,17 +631,28 @@
 			return;
 		}
 
-		// increase/decrease size of element accordingly
-		elementWidth = newWidth;
-
 		// calculate new leftOffset using the difference from last update
 		leftOffset = newLeftOffset;
 
-		// also move the element to the left by the same amount we increase/decreased the width
-		position = { ...position, x: leftOffset };
-
 		// convert new offset into milliseconds to use as playbackStartTime
 		const newLeftOffsetInMs = convertPxToMs(newLeftOffset);
+
+		const resizeData = $elementResizeData;
+
+		// check if a element to the left even exists on the current track
+		const doesElToTheLeftExist =
+			resizeData !== undefined && resizeData.nextElBounds.nextLeftEl !== undefined;
+
+		// TODO: check if the element overlaps with any element to the left, if yes we can't resize further
+		if (doesElToTheLeftExist && newLeftOffsetInMs < resizeData.nextElBounds.nextLeftEl!) {
+			return;
+		}
+
+		// increase/decrease size of element accordingly
+		elementWidth = newWidth;
+
+		// also move the element to the left by the same amount we increase/decreased the width
+		position = { ...position, x: leftOffset };
 
 		// update duration, playbackStartTime and mediaStartTime of element in store
 		timelineTracks.update((tracks) => {
@@ -795,11 +806,19 @@
 			return;
 		}
 
-		const onlyPrimaryButtonClicked = e.buttons === 1;
+		// get the right edge of the next element to the left
+		const leftElBound = getNextLeftElementBound(rowIndex, elementIndex);
 
-		if (onlyPrimaryButtonClicked && !$isThumbBeingDragged) {
+		// TODO: add the same for right side
+		// const leftElBound = getNextLeftElementBound(rowIndex, elementIndex);
+
+		if (onlyPrimaryButtonClicked(e) && !$isThumbBeingDragged) {
 			isTimelineElementBeingResized.set(true);
-			elementResizeData.set({ side, timelineElementId: element.elementId });
+			elementResizeData.set({
+				side,
+				timelineElementId: element.elementId,
+				nextElBounds: { nextLeftEl: leftElBound, nextRightEl: 0 }
+			});
 
 			// initially set the starting position of the mouse so we can use it for the mouse move event
 			resizeStartPosition = e.x;
