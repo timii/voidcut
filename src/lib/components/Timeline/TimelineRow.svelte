@@ -267,7 +267,10 @@
 
 		// parse it back to be an object again
 		const mediaData: IMedia = JSON.parse(mediaDataString);
-		const duration = mediaData.duration;
+
+		// set a default duration for media elements such as images that don't have a duration
+		const duration = mediaData.duration || 3000;
+
 		if (!duration) {
 			return;
 		}
