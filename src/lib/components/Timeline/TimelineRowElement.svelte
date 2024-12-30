@@ -3,6 +3,7 @@
 		type ITimelineDraggedElement,
 		type ITimelineDraggedElementPosition,
 		type ITimelineElement,
+		type ITimelineTrack,
 		TimelineElementResizeSide
 	} from '$lib/interfaces/Timeline';
 	import { CONSTS } from '$lib/utils/consts';
