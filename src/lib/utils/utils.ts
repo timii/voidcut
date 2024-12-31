@@ -811,6 +811,36 @@ export function moveElementToCorrectIndex(el: ITimelineElement, index: number, t
     return trackEls
 }
 
+// wrapper function that handles all the logic for checking and updating if a given element is at the correct index after moving, returns the updated track elements
+export function handleElementIndeces(newEl: ITimelineElement, newElStartTime: number, trackEls: ITimelineElement[], index: number, pushElFirst?: boolean): ITimelineElement[] {
+    // update the playback start time for the moved element
+    newEl.playbackStartTime = newElStartTime;
+
+    // for moving an element from a different track we first add the element to the end of the track and then check if the index is correct or if we need to update it
+    if (pushElFirst) {
+        trackEls.push(newEl)
+    }
+
+    // check if the index of the element inside the track is still correct after changing the playbackStartTime, if not we need to update it
+    if (!isElementAtCorrectIndex(newEl, index, trackEls)) {
+        console.error(
+            'Timeline -> row drop-timeline-element -> element is not at the correct index anymore -> track:',
+            [...trackEls],
+            'foundEl',
+            Object.assign({}, newEl),
+            'prevElementIndex:',
+            index
+        );
+        //  update the element index inside the track
+        trackEls = moveElementToCorrectIndex(
+            newEl,
+            index,
+            trackEls
+        );
+    }
+    return trackEls;
+}
+
 // move a given list of timeline elements according to given element bounds so they don't overlap
 export function moveElementsOnTrack(elBounds: ITimelineElementBounds, trackEls: ITimelineElement[], sameTrackElIndex?: number) {
     let moveAmount: number | undefined = undefined
