@@ -19,6 +19,7 @@
 		cleanUpEmptyTracks,
 		convertMsToPx,
 		convertPxToMs,
+		handleOverlapping,
 		handleTimelineMediaDrop,
 		isElementAtCorrectIndex,
 		isElementOverlapping,
@@ -134,27 +135,12 @@
 
 				// element was moved in the same track
 				if (draggedData.prevTrackIndex === index) {
-					// check if the new position of the element overlaps with any other element on the track
-					const isOverlapping = isElementOverlapping(
+					// check and handle if any elements overlap after moving and update the track elements if necessary
+					tracks[index].elements = handleOverlapping(
 						elBoundsInMs,
 						tracks[index].elements,
 						prevElementIndex // we ignore the index of the dragged element so we don't check if the element overlaps with itself
 					);
-
-					console.error('Timeline -> row drop-timeline-element -> isOverlapping:', isOverlapping);
-
-					// if the element overlaps with any other element we move the elements accordingly so the element can fit on the track
-					if (isOverlapping) {
-						tracks[index].elements = moveElementsOnTrack(
-							elBoundsInMs,
-							tracks[index].elements,
-							prevElementIndex
-						);
-						console.error(
-							'Timeline -> row drop-timeline-element -> elements overlaps after track:',
-							[...tracks[index].elements]
-						);
-					}
 
 					// update the playback start time for the moved element
 					foundEl.playbackStartTime = elBoundsInMs.start;
@@ -200,30 +186,12 @@
 					// 	JSON.parse(JSON.stringify(tracks[index]))
 					// );
 
-					// check if the new position of the element overlaps with any other element on the track
-					const isOverlapping = isElementOverlapping(
+					// check and handle if any elements overlap after moving and update the track elements if necessary
+					tracks[index].elements = handleOverlapping(
 						elBoundsInMs,
 						tracks[index].elements,
-						undefined // we don't need to check any previous index here since the new element has not yet been added to the track
+						undefined // we also set this to be undefined since the element was dragged from a different track
 					);
-
-					console.error(
-						'Timeline -> element dropped on track -> row drop-timeline-element -> isOverlapping:',
-						isOverlapping
-					);
-
-					// if the element overlaps with any other element we move the elements accordingly so the element can fit on the track
-					if (isOverlapping) {
-						tracks[index].elements = moveElementsOnTrack(
-							elBoundsInMs,
-							tracks[index].elements,
-							undefined // we also set this to be undefined since the element was dragged from a different track
-						);
-						console.error(
-							'Timeline -> element dropped on track -> row drop-timeline-element -> elements overlaps after track:',
-							[...tracks[index].elements]
-						);
-					}
 
 					// update the playback start time for the moved element
 					foundEl.playbackStartTime = elBoundsInMs.start;
@@ -261,7 +229,7 @@
 					// clean up old track if its empty now
 					cleanUpEmptyTracks(tracks);
 					console.log(
-						'element dropped on track -> tracks after empty track is removed:',
+						'Timeline -> element dropped on track -> tracks after empty track is removed:',
 						JSON.parse(JSON.stringify(tracks))
 					);
 				}

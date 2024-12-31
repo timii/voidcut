@@ -620,6 +620,33 @@ export function isElementOverlapping(elBounds: ITimelineElementBounds, trackEls:
     })
 }
 
+// wrapper function that handles all the overlapping logic when moving an element adn returns the updated elements
+export function handleOverlapping(newElBounds: ITimelineElementBounds, trackEls: ITimelineElement[], index?: number): ITimelineElement[] {
+    // check if the new position of the element overlaps with any other element on the track
+    const isOverlapping = isElementOverlapping(
+        newElBounds,
+        trackEls,
+        index
+    );
+
+    console.error('Timeline -> handleOverlapping -> isOverlapping:', isOverlapping);
+
+    // if the element overlaps with any other element we move the elements accordingly so the element can fit on the track
+    if (isOverlapping) {
+        trackEls = moveElementsOnTrack(
+            newElBounds,
+            trackEls,
+            index
+        );
+        console.error(
+            'Timeline -> handleOverlapping -> elements overlaps after track:',
+            [...trackEls]
+        );
+    }
+
+    return trackEls
+}
+
 // get the element end time for the next element on the left side of a given element on a given track
 export function getNextLeftElementEndTime(trackIndex: number, elementIndex: number): number | undefined {
     // if the given element is the first in the track we can directly return undefined
