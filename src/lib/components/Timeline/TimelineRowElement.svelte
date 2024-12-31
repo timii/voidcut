@@ -11,6 +11,9 @@
 		convertMsToPx,
 		convertPxToMs,
 		elementIsAnImage,
+		getIndexOfElementInTrack,
+		getNextLeftElementEndTime,
+		getNextRightElementStartTime,
 		getRelativeMousePosition,
 		getTailwindVariables,
 		onlyPrimaryButtonClicked
@@ -31,7 +34,6 @@
 	} from '../../../stores/store';
 	import { draggable } from '@neodrag/svelte';
 	import type { DragEventData } from '@neodrag/svelte';
-	import { MediaType } from '$lib/interfaces/Media';
 
 	export let element: ITimelineElement = {} as ITimelineElement;
 	export let elementIndex: number;
@@ -997,6 +999,19 @@
 		class="timeline-row-element-name text-[12px] text-background-color-light ml-3 truncate select-none"
 	>
 		{element.mediaName}
+	</div>
+
+	<!-- TODO: JUST FOR DEBUGGING. REMOVE AFTER TESTING -->
+	<div
+		class="timeline-row-element-name text-[10px] text-background-color-light ml-3 truncate select-none"
+	>
+		{element.playbackStartTime / CONSTS.secondsMultiplier}s / {element.duration /
+			CONSTS.secondsMultiplier}s
+	</div>
+	<div
+		class="timeline-row-element-name text-[10px] text-background-color-light ml-3 truncate select-none"
+	>
+		index:{elementIndex}
 	</div>
 
 	<!-- TODO: check if this works since when enabling it the thumb sometimes doesnt work correctly when trying to drag the element -->

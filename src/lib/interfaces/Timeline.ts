@@ -48,7 +48,9 @@ export interface ITimelineDraggedElementData {
     width: number; // width of the dragged timeline element
     height: number; // height of the dragged timeline element
     elementId: string; // timline element id
-    data: ITimelineElement  // all the information about the dragged element
+    data: ITimelineElement;  // all the information about the dragged element
+    prevTrackIndex: number; // the previous track index of the dragged element  
+    prevElementIndex: number; // the element index inside the previous track of the dragged element  
 }
 
 export interface ITimelineElementBounds {

@@ -591,8 +591,8 @@ export function moveTimelineThumb(e: MouseEvent) {
     }
 }
 
-// get index of timeline element that matches the given id
-export function getIndexOfElementInTracks() {
+// get index of selected timeline element that matches in all tracks
+export function getIndexOfSelectedElementInTracks() {
     const tracks = get(timelineTracks)
     const selectedElementId = get(selectedElement)
     for (let i = 0; i < tracks.length; i++) {
@@ -693,6 +693,100 @@ export function createTrackWithElement(element: ITimelineElement) {
     } as ITimelineTrack
 }
 
+// check if a given element is at the correct index inside a given track 
+export function isElementAtCorrectIndex(el: ITimelineElement, index: number, trackEls: ITimelineElement[]): boolean {
+    // if the track only has one element and the index is 0 we can directly return true since its the only element on the track
+    if (trackEls.length === 1 && index === 0) {
+        return true
+    }
+
+    // handle the case where the index is bigger than the track length
+    if (index > trackEls.length - 1) {
+        console.error(`Error checking if the element is at the correct index: index ${index} is bigger than the track length`)
+        return true
+    }
+
+    // keep track of the element before and after the index
+    let elementBefore: ITimelineElement | undefined
+    let elementAfter: ITimelineElement | undefined
+
+    // if the element is not the first element we get the element before 
+    if (index > 0) {
+        elementBefore = trackEls[index - 1]
+    }
+
+    // if the element is not the last element we get the element after 
+    if (index < trackEls.length - 1) {
+        elementAfter = trackEls[index + 1]
+    }
+
+    // check if the playback start time of the element before is after the start of the given element
+    const isElementBeforeStartTimeSmallerThanElStartTime = elementBefore !== undefined && elementBefore.playbackStartTime < el.playbackStartTime
+
+    // check if the playback start time of the element after is before the start of the given element
+    const isElementAfterStartTimeBiggerThanElStartTime = elementAfter !== undefined && elementAfter.playbackStartTime > el.playbackStartTime
+
+    console.error(
+        'Timeline -> isElementAtCorrectIndex -> elementBefore:', elementBefore, "elementAfter:", elementAfter, "el:", el, "at correct index:", isElementBeforeStartTimeSmallerThanElStartTime && isElementAfterStartTimeBiggerThanElStartTime
+    );
+
+    // return if both the element before and after have a correct playback start time relative to the given element
+    return isElementBeforeStartTimeSmallerThanElStartTime && isElementAfterStartTimeBiggerThanElStartTime
+}
+
+// sort a given track by playbackStartTime
+export function moveElementToCorrectIndex(el: ITimelineElement, index: number, trackEls: ITimelineElement[]): ITimelineElement[] {
+    // naive solution of just sorting the array by the playbackStartTime, could be performing worse with more elements
+    // trackEls.sort((a, b) => a.playbackStartTime - b.playbackStartTime)
+
+    // handle the case where the index is bigger than the track length
+    if (index > trackEls.length - 1) {
+        console.error(`Error checking if the element is at the correct index: index ${index} is bigger than the track length`)
+        return trackEls
+    }
+
+    const startingTrackLength = [...trackEls].length
+
+    // remove element from array using its previous index
+    trackEls.splice(index, 1)
+    console.error('Timeline -> moveElementToCorrectIndex -> after remove:', [...trackEls]);
+
+    for (let i = 0; i < trackEls.length; i++) {
+        // keep track if the current element start time is after the element start time
+        const curStartTimeAfterElement = trackEls[i].playbackStartTime > el.playbackStartTime
+        console.error('Timeline -> moveElementToCorrectIndex -> in for loop i:', i, "curStartTimeAfterElement:", curStartTimeAfterElement);
+
+        // if the start time of the current element is before the element we can directly jump to the next iteration in the loop
+        if (!curStartTimeAfterElement) {
+            continue
+        }
+
+        // // remove element from array using its previous index
+        // trackEls.splice(index, 1)
+
+
+        if (i === 0) {
+            trackEls.splice(0, 0, el)
+        }
+        else {
+            trackEls.splice(i - 1, 0, el)
+        }
+        console.error('Timeline -> moveElementToCorrectIndex -> after add in loop:', [...trackEls]);
+
+        // we moved the element so we can break out of the loop
+        break;
+    }
+
+    // if no element had a start time after the given element we just push it to the back
+    if (trackEls.length < startingTrackLength) {
+        trackEls.push(el)
+        console.error('Timeline -> moveElementToCorrectIndex -> after push after loop:', [...trackEls]);
+    }
+
+    console.error('Timeline -> moveElementToCorrectIndex -> trackEls end:', [...trackEls]);
+    return trackEls
+}
+
 // move a given list of timeline elements according to given element bounds so they don't overlap
 export function moveElementsOnTrack(elBounds: ITimelineElementBounds, trackEls: ITimelineElement[], sameTrackElIndex?: number) {
     let moveAmount: number | undefined = undefined
@@ -702,6 +796,7 @@ export function moveElementsOnTrack(elBounds: ITimelineElementBounds, trackEls: 
     );
 
     // TODO: implement logic to move elements differently according to where the dragged element was dropped on the element
+    // map through the given list of track elements and update them if necessary
     const tracks = trackEls.map((trackEl, i) => {
         const trackElBounds: ITimelineElementBounds = { start: trackEl.playbackStartTime, end: trackEl.playbackStartTime + trackEl.duration }
         const sameTrackAndSameIndex = sameTrackElIndex !== undefined && i === sameTrackElIndex

@@ -20,8 +20,10 @@
 		convertMsToPx,
 		convertPxToMs,
 		handleTimelineMediaDrop,
+		isElementAtCorrectIndex,
 		isElementOverlapping,
-		moveElementsOnTrack
+		moveElementsOnTrack,
+		moveElementToCorrectIndex
 	} from '$lib/utils/utils';
 	import type { IMedia } from '$lib/interfaces/Media';
 
@@ -52,50 +54,47 @@
 				elementHoveredOverRow
 			);
 
+			// if no data for the dragged element is defined or no element is hovered over the row we just return
 			if (!$draggedElementData || !$draggedElementPosition || !elementHoveredOverRow) return;
 
-			// get position of dropped element along the x axis
-			const xWithoutOffset = $draggedElementPosition.left - CONSTS.timelineRowOffset;
-			const x = xWithoutOffset < CONSTS.timelineRowOffset ? 0 : xWithoutOffset;
-			const elementId = $draggedElementData.elementId;
+			const draggedData = $draggedElementData;
+			const draggedPosition = $draggedElementPosition;
 
-			console.log('drop-timeline-element -> dropped element on the x axis:', x);
+			// get position of dropped element along the x axis
+			const xWithoutOffset = draggedPosition.left - CONSTS.timelineRowOffset;
+			const x = xWithoutOffset < CONSTS.timelineRowOffset ? 0 : xWithoutOffset;
+			const elementEnd = x + draggedData.width;
+			const elementId = draggedData.elementId;
+
+			// convert the dragged element bounds from px into ms
+			const elBoundsInMs: ITimelineElementBounds = {
+				start: convertPxToMs(x),
+				end: convertPxToMs(elementEnd)
+			};
+
+			console.log(
+				'Timeline -> row drop-timeline-element -> dropped element on the x axis:',
+				x,
+				'elementEnd:',
+				elementEnd,
+				'elBoundsInMs:',
+				elBoundsInMs
+			);
 
 			// move timeline element to correct position in the row
 			// TODO: move other elements if necessary
+			// TODO: fix logic when dropping an element onto the row and index it correctly
+			// currently when dropping an element before another one the dropped element just gets appended
 			timelineTracks.update((tracks) => {
-				// find dragged element using the element id
-				// let foundEl = undefined;
-				// let i = 0;
-				// while (!foundEl && i < tracks.length) {
-				// 	foundEl = tracks[i].elements.find((el) => el.elementId === elementId);
-				// 	i++;
-				// }
-
-				// find previous index of dragged element in previous track using the element id
-				let elementIndexInTrack = -1;
-				// keep track of the previous track index of the dragged element
-				let trackIndex = 0;
-				while (elementIndexInTrack === -1 && trackIndex < tracks.length) {
-					console.log(
-						'element dropped on track -> in while tracks:',
-						JSON.parse(JSON.stringify(tracks)),
-						'trackIndex:',
-						trackIndex
-					);
-					elementIndexInTrack = tracks[trackIndex].elements.findIndex(
-						(el) => el.elementId === elementId
-					);
-					if (elementIndexInTrack === -1) {
-						trackIndex++;
-					}
-				}
+				// get the previous track and element index of dragged element
+				const prevTrackIndex = draggedData.prevTrackIndex;
+				const prevElementIndex = draggedData.prevElementIndex;
 
 				console.log(
-					'element dropped on track -> after while elementIndexOnTrack:',
-					elementIndexInTrack,
+					'Timeline -> element dropped on track -> after while old element index:',
+					prevElementIndex,
 					'old trackIndex:',
-					trackIndex,
+					prevTrackIndex,
 					'new track index:',
 					index,
 					'tracks:',
@@ -106,7 +105,8 @@
 					return tracks;
 				}
 
-				const foundEl = tracks[trackIndex].elements[elementIndexInTrack];
+				// get the dragged element from the previous track
+				const foundEl = tracks[prevTrackIndex].elements[prevElementIndex];
 
 				console.log(
 					'element dropped on track -> after while foundEl:',
@@ -115,45 +115,53 @@
 					trackIndex
 				);
 
-				// TODO: check track index of dragged element and if its the same as the current row just change the playback start time, else we also need to remove it from the current row and move it into the new one with the updated playback start time
-
-				// convert the x value from px into ms
-				const xInMs = convertPxToMs(x);
-				const foundElEnd = xInMs + foundEl.duration;
-				const elBounds: ITimelineElementBounds = { start: xInMs, end: foundElEnd };
-				const sameTrackMoveElIndex = index !== trackIndex ? undefined : elementIndexInTrack;
-
-				// check if the dropped element overlaps with any element on the track
-				const isOverlapping = isElementOverlapping(
-					elBounds,
-					tracks[index].elements,
-					sameTrackMoveElIndex // if the element is dropped on the same track we ignore the dragged element index in the track
-				);
-
-				// if the dropped element overlaps any other element we move the elements accordingly so the element can fit on the track
-				if (isOverlapping) {
-					tracks[index].elements = moveElementsOnTrack(
-						elBounds,
+				// element was moved in the same track
+				if (draggedData.prevTrackIndex === index) {
+					// check if the new position of the element overlaps with any other element on the track
+					const isOverlapping = isElementOverlapping(
+						elBoundsInMs,
 						tracks[index].elements,
-						sameTrackMoveElIndex
+						prevElementIndex // we ignore the previous element index so we don't check if the element overlaps with itself
 					);
+
+					console.error('Timeline -> row drop-timeline-element -> isOverlapping:', isOverlapping);
+
+					// if the element overlaps with any other element we move the elements accordingly so the element can fit on the track
+					if (isOverlapping) {
+						tracks[index].elements = moveElementsOnTrack(
+							elBoundsInMs,
+							tracks[index].elements,
+							prevElementIndex
+						);
+						console.error('Timeline -> row drop-timeline-element -> elements overlap track:', [
+							...tracks[index].elements
+						]);
+					}
+
+					// update the playback start time for the moved element
+					foundEl.playbackStartTime = elBoundsInMs.start;
+
+					// check if the index of the element is still correct after changing the playbackStartTime, if not we need to update it
+					if (!isElementAtCorrectIndex(foundEl, prevElementIndex, tracks[index].elements)) {
+						console.error(
+							'Timeline -> row drop-timeline-element -> element is not at the correct index anymore -> track:',
+							[...tracks[index].elements],
+							'foundEl',
+							Object.assign({}, foundEl),
+							'prevElementIndex:',
+							prevElementIndex
+						);
+						//  update the element index inside the track
+						const updatedTrack = moveElementToCorrectIndex(
+							foundEl,
+							prevElementIndex,
+							tracks[index].elements
+						);
+
+						// overwrite the current track with the updated track
+						tracks[index].elements = updatedTrack;
+					}
 				}
-
-				// set the new playback start time (in ms)
-				foundEl.playbackStartTime = xInMs;
-				console.log(
-					'element dropped on track after new playbacktime set -> foundEl:',
-					foundEl,
-					'x in ms:',
-					xInMs,
-					'isOverlapping:',
-					isOverlapping,
-					'elementIndexInTrack:',
-					elementIndexInTrack
-				);
-
-				// if the element is moved to a different track
-				if (index !== trackIndex) {
 					// remove dragged element from old track
 					tracks[trackIndex].elements.splice(elementIndexInTrack, 1);
 					console.log(
