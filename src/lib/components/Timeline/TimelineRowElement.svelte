@@ -483,7 +483,9 @@
 			height: elDomRect.height,
 			width: elDomRect.width,
 			elementId: element.elementId,
-			data: element
+			data: element,
+			prevTrackIndex: rowIndex,
+			prevElementIndex: elementIndex
 		});
 
 		draggedElementPosition.set(null);

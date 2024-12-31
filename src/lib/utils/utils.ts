@@ -765,12 +765,9 @@ export function moveElementToCorrectIndex(el: ITimelineElement, index: number, t
         // trackEls.splice(index, 1)
 
 
-        if (i === 0) {
-            trackEls.splice(0, 0, el)
-        }
-        else {
-            trackEls.splice(i - 1, 0, el)
-        }
+        // add the element at the current index since the current element will be pushed after the element has been added
+        trackEls.splice(i, 0, el)
+
         console.error('Timeline -> moveElementToCorrectIndex -> after add in loop:', [...trackEls]);
 
         // we moved the element so we can break out of the loop
