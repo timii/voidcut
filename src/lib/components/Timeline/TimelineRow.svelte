@@ -357,7 +357,8 @@
 			? 'unset'
 			: 'none'}; background-color: green; left: {dropZonePositionLeft}px;"
 	></div>
-	{#each track.elements as element, elementIndex}
+	<!-- use the elementId of each element as the unqiue key to use when the data changes -->
+	{#each track.elements as element, elementIndex (element.elementId)}
 		<TimelineRowElement {element} {elementIndex} rowIndex={index}></TimelineRowElement>
 	{/each}
 </div>
