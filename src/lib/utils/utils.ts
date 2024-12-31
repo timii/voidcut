@@ -726,12 +726,12 @@ export function isElementAtCorrectIndex(el: ITimelineElement, index: number, tra
     // check if the playback start time of the element after is before the start of the given element
     const isElementAfterStartTimeBiggerThanElStartTime = elementAfter !== undefined && elementAfter.playbackStartTime > el.playbackStartTime
 
-    console.error(
-        'Timeline -> isElementAtCorrectIndex -> elementBefore:', elementBefore, "elementAfter:", elementAfter, "el:", el, "at correct index:", isElementBeforeStartTimeSmallerThanElStartTime && isElementAfterStartTimeBiggerThanElStartTime
-    );
+    // console.error(
+    //     'Timeline -> isElementAtCorrectIndex -> elementBefore:', elementBefore, "elementAfter:", elementAfter, "el:", el, "at correct index:", (isElementBeforeStartTimeSmallerThanElStartTime || elementBefore === undefined) && (isElementAfterStartTimeBiggerThanElStartTime || elementAfter === undefined)
+    // );
 
     // return if both the element before and after have a correct playback start time relative to the given element
-    return isElementBeforeStartTimeSmallerThanElStartTime && isElementAfterStartTimeBiggerThanElStartTime
+    return (isElementBeforeStartTimeSmallerThanElStartTime || elementBefore === undefined) && (isElementAfterStartTimeBiggerThanElStartTime || elementAfter === undefined)
 }
 
 // sort a given track by playbackStartTime

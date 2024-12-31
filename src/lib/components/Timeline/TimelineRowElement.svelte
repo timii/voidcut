@@ -45,6 +45,9 @@
 	// here we actually don't want to use the util function to convert to px since we want the leftOffset to update when the currentTimelineScale changes
 	$: leftOffset = (element.playbackStartTime / CONSTS.secondsMultiplier) * $currentTimelineScale;
 
+	// reset the position value for the element whenever any of the parameters changes
+	$: resetPosition(element.playbackStartTime, CONSTS.secondsMultiplier, $currentTimelineScale);
+
 	// set the left offset once in the beginning
 	leftOffset = convertMsToPx(element.playbackStartTime);
 
@@ -176,6 +179,24 @@
 	// 	dx = dy = 0;
 	// }
 	//
+
+	// set a new position using the updated values and reset y offset
+	function resetPosition(startTime: number, multiplier: number, scale: number) {
+		const newOffset = (startTime / multiplier) * scale;
+		console.warn(
+		// 	`Timeline -> timeline row element ${element.mediaName} change value:`,
+		// 	startTime,
+		// 	'multiplier',
+		// 	multiplier,
+		// 	'scale',
+		// 	scale,
+		// 	'newOffset:',
+		// 	newOffset
+		// );
+
+		// update the position, also reset y offset so the element gets placed into track again
+		position = { x: newOffset, y: 0 };
+	}
 
 	function getSelectedElement(el: string) {
 		const curELEqualsSelectedEl = el === element.elementId;
@@ -542,22 +563,36 @@
 		mouseStartPosition = undefined;
 		elStartPosition = undefined;
 
-		// reset topOffset so the timeline element gets placed inside a track again
-		setTimeout(() => {
-			topOffset = 0;
-			// manually trigger update of the left offset so the new offset is actually updated
-			leftOffset = convertMsToPx(element.playbackStartTime);
+		// reset position so the timeline element gets placed inside a track again
+		// setTimeout(() => {
+		// 	topOffset = 0;
+		// 	// manually trigger update of the left offset so the new offset is actually updated
+		// 	leftOffset = convertMsToPx(element.playbackStartTime);
 
-			position = { x: leftOffset, y: topOffset };
-			console.log(
-				'element dropped on divider in testEnd -> topOffset reset:',
-				position,
-				'element.playbackStartTime:',
-				element.playbackStartTime,
-				'convertMsToPx(element.playbackStartTime):',
-				convertMsToPx(element.playbackStartTime)
-			);
-		}, 0);
+		// 	// leftOffset = $draggedElementPosition
+		// 	// 	? $draggedElementPosition.left - CONSTS.timelineRowOffset
+		// 	// 	: leftOffset;
+
+		// 	console.error(
+		// 		'Timeline -> timeline element dropped leftOffset:',
+		// 		leftOffset,
+		// 		'playbackStartTime:',
+		// 		element.playbackStartTime
+		// 	);
+
+		// 	position = {
+		// 		x: leftOffset,
+		// 		y: topOffset
+		// 	};
+		// 	console.log(
+		// 		'element dropped on divider in testEnd -> topOffset reset:',
+		// 		position,
+		// 		'element.playbackStartTime:',
+		// 		element.playbackStartTime,
+		// 		'convertMsToPx(element.playbackStartTime):',
+		// 		convertMsToPx(element.playbackStartTime)
+		// 	);
+		// }, 0);
 
 		// TODO: add element data to custom event so we can directly access it in the event listeners
 		// create and dispatch custom event

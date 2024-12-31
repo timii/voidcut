@@ -141,7 +141,7 @@
 					// update the playback start time for the moved element
 					foundEl.playbackStartTime = elBoundsInMs.start;
 
-					// check if the index of the element is still correct after changing the playbackStartTime, if not we need to update it
+					// check if the index of the element inside the track is still correct after changing the playbackStartTime, if not we need to update it
 					if (!isElementAtCorrectIndex(foundEl, prevElementIndex, tracks[index].elements)) {
 						console.error(
 							'Timeline -> row drop-timeline-element -> element is not at the correct index anymore -> track:',

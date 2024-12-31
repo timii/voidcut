@@ -9,7 +9,7 @@
 	import DeleteIcon from '$lib/assets/timeline/delete.png';
 	import IncreaseIcon from '$lib/assets/timeline/increase.png';
 	import DecreaseIcon from '$lib/assets/timeline/decrease.png';
-	import { formatPlaybackTime, getIndexOfElementInTracks } from '$lib/utils/utils';
+	import { formatPlaybackTime, getIndexOfSelectedElementInTracks } from '$lib/utils/utils';
 
 	function increaseTimelineScale() {
 		currentTimelineScale.update((value) => value * 2);
@@ -31,7 +31,7 @@
 			'timelineTracks:',
 			$timelineTracks
 		);
-		const indeces = getIndexOfElementInTracks();
+		const indeces = getIndexOfSelectedElementInTracks();
 		if (!indeces) {
 			return;
 		}
