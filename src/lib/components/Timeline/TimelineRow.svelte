@@ -1,8 +1,9 @@
 <script lang="ts">
-	import type {
-		ITimelineDraggedElementPosition,
-		ITimelineElementBounds,
-		ITimelineTrack
+	import {
+		TimelineDropArea,
+		type ITimelineDraggedElementPosition,
+		type ITimelineElementBounds,
+		type ITimelineTrack
 	} from '$lib/interfaces/Timeline';
 	import { onMount } from 'svelte';
 	import {
@@ -143,7 +144,7 @@
 						undefined // we also set this to be undefined since the element was dragged from a different track
 					);
 
-					// check and handle if the element with the updated start time is still at the correct index and if not update the track element
+					// check and handle if the element with the updated start time is still at the correct index and if not update the track elements
 					tracks[index].elements = handleElementIndeces(
 						foundEl,
 						elBoundsInMs.start,
@@ -160,7 +161,7 @@
 					);
 				}
 
-				console.error(
+				console.log(
 					'Timeline -> row drop-timeline-element -> just before returning tracks -> tracks:',
 					[...tracks]
 				);
@@ -270,7 +271,6 @@
 
 		// parse it back to be an object again
 		const mediaData: IMedia = JSON.parse(mediaDataString);
-		const duration = mediaData.duration;
 		console.log('drop element -> mediaData:', mediaData);
 
 		// only handle files when actually dropped
@@ -284,12 +284,14 @@
 		// 	return tracks;
 		// });
 		console.log('drop element -> left:', dropZonePositionLeft, dropZonePositionLeft - $thumbOffset);
-		const startTimeInPx = dropZonePositionLeft - $thumbOffset;
-		const startTimeInMs = (startTimeInPx / $currentTimelineScale) * 1000;
-		// TODO: make second index dynamic
-		handleTimelineMediaDrop(mediaData, index, 1, startTimeInMs);
 
-		// handleTimelineMediaDrop(mediaData, index);
+		// get the left offset where the element was dropped
+		const startTimeInPx = dropZonePositionLeft - CONSTS.timelineRowOffset;
+
+		// convert the left offset from px into ms
+		const startTimeInMs = (startTimeInPx / $currentTimelineScale) * CONSTS.secondsMultiplier;
+
+		handleTimelineMediaDrop(mediaData, TimelineDropArea.TRACK, index, startTimeInMs);
 	}
 </script>
 

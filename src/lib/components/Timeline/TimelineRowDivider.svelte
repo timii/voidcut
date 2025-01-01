@@ -1,12 +1,7 @@
 <script lang="ts">
-	import type {
-		ITimelineDraggedElement,
-		ITimelineDraggedElementPosition,
-		ITimelineTrack
-	} from '$lib/interfaces/Timeline';
+	import { TimelineDropArea, type ITimelineDraggedElementPosition } from '$lib/interfaces/Timeline';
 	import { onMount } from 'svelte';
 	import {
-		draggedElement,
 		draggedElementData,
 		draggedElementPosition,
 		isTimelineElementBeingDragged,
@@ -183,9 +178,11 @@
 		const mediaData: IMedia = JSON.parse(mediaDataString);
 
 		// only handle files when actually dropped
-		if (mediaData && e.type !== 'dragleave') {
-			handleTimelineMediaDrop(mediaData, index);
+		if (!mediaData || e.type === 'dragleave') {
+			return;
 		}
+
+		handleTimelineMediaDrop(mediaData, TimelineDropArea.DIVIDER, index);
 	}
 
 	function onScroll(e: Event) {

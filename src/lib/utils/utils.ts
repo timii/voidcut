@@ -1,5 +1,5 @@
 import { MediaType, type IMedia, type IFileMetadata } from "$lib/interfaces/Media";
-import { TimelineElementResizeSide, type ITimelineElement, type ITimelineElementBounds, type ITimelineTrack } from "$lib/interfaces/Timeline";
+import { TimelineDropArea, TimelineElementResizeSide, type ITimelineElement, type ITimelineElementBounds, type ITimelineTrack } from "$lib/interfaces/Timeline";
 import { availableMedia, isTimelineElementBeingDragged, isThumbBeingDragged, timelineTracks, currentPlaybackTime, playbackIntervalId, currentTimelineScale, currentThumbPosition, thumbOffset, horizontalScroll, selectedElement, draggedElement, previewPlaying, isTimelineElementBeingResized, elementResizeData } from "../../stores/store";
 import { CONSTS } from "./consts";
 import { adjustingInterval } from "./betterInterval";
@@ -98,9 +98,9 @@ export async function handleFileUpload(files: FileList) {
     saveFilesToStore(mediaArr);
 }
 
-// handle given media when it's drag and dropped into the timeline
-export function handleTimelineMediaDrop(media: IMedia, rowIndex?: number, elIndex?: number, startTime?: number) {
-    // console.log("handleTimelineMediaDrop -> media:", media, "rowIndex:", rowIndex)
+// handle given media when it's dropped into the timeline
+export function handleTimelineMediaDrop(media: IMedia, dropArea: TimelineDropArea, rowIndex?: number, startTime?: number) {
+    console.log("timeline -> handleTimelineMediaDrop -> rowIndex:", rowIndex, "startTime:", startTime)
 
     let maxDuration: number | undefined
 
@@ -128,46 +128,74 @@ export function handleTimelineMediaDrop(media: IMedia, rowIndex?: number, elInde
         videoOptions: {}
     }
 
-    // const tracksCopy = get(timelineTracks)
-    // if there already exists a track add it to the track
-    // if (tracksCopy.length >= 1) {
-    //     tracksCopy[0].elements.push(timelineEl)
-    //     timelineTracks.set(tracksCopy)
-
-    // } else {
-
-    // create a new track and add the new element into it
-    // const timelineTrack: ITimelineTrack = {
-    //     trackId: generateId(),
-    //     elements: [timelineEl]
-    // }
+    // create an empty track with the newly created element
     const timelineTrack = createTrackWithElement(timelineEl)
 
-    console.log("handleTimelineMediaDrop -> index:", elIndex)
-    // TODO: refactor this whole if else
-    if (elIndex === undefined) {
-        if (rowIndex !== undefined) {
-            // add new track object at given row index
-            timelineTracks.update(arr => arr.toSpliced(rowIndex, 0, timelineTrack))
-        } else {
-            // append new track object into timeline tracks
+    // handle the element drop differently depending on where the element was dropped (timeline, divider or track)
+    switch (dropArea) {
+        // element dropped on the timeline but not a track or divider
+        case TimelineDropArea.TIMELINE:
+
+            // add the newly created track to the end of the timeline track array
             timelineTracks.update(arr => [...arr, timelineTrack])
-        }
-    } else {
-        // add new timeline element into given row index
-        timelineTracks.update(arr => {
-            // console.log("handleTimelineMediaDrop -> add at given index:", test.toSpliced(elIndex, 0, timelineTrack))
-            const trackIndex = rowIndex !== undefined && rowIndex >= 0 ? rowIndex : 0
-            arr[trackIndex].elements.splice(elIndex, 0, timelineEl)
-            return arr
-            // return arr.toSpliced(elIndex, 0, timelineTrack)
 
-        })
+            break;
+
+        // element dropped on a timeline divider
+        case TimelineDropArea.DIVIDER:
+
+            // check if rowIndex is undefind, if thats the case we can't add the new track at the correct position so we break out of the switch case
+            if (rowIndex === undefined) {
+                break;
+            }
+
+            // add the newly created track at the given index into timeline track array 
+            timelineTracks.update(arr => arr.toSpliced(rowIndex, 0, timelineTrack))
+            break;
+
+        // element dropped on a timeline track
+        case TimelineDropArea.TRACK:
+
+            // check if rowIndex or startTime is undefind, if thats the case we can't add the new element at the correct position and time so we break out of the switch cases
+            if (rowIndex === undefined || startTime === undefined) {
+                break;
+            }
+
+            // add new timeline element into given row index
+            timelineTracks.update(tracks => {
+
+                // convert the dragged element bounds from px into ms
+                const elBounds: ITimelineElementBounds = {
+                    start: timelineEl.playbackStartTime,
+                    end: timelineEl.playbackStartTime + timelineEl.duration
+                };
+
+                // check and handle if any elements overlap after adding the element and update the track elements if necessary
+                tracks[rowIndex].elements = handleOverlapping(
+                    elBounds,
+                    tracks[rowIndex].elements,
+                    undefined // we also set this to be undefined since the element was was just created, so it doesn't ahve a previous index
+                );
+
+                // check and handle if the element with the updated start time is still at the correct index and if not update the track elements
+                tracks[rowIndex].elements = handleElementIndeces(
+                    timelineEl,
+                    elBounds.start,
+                    tracks[rowIndex].elements,
+                    tracks[rowIndex].elements.length, // we use the current length here and not length - 1 since we will add the element inside the function and then the length will be increased by one and we want the index of the last element
+                    true
+                );
+
+                return tracks
+            })
+
+            break;
+
+        default:
+            // shouldn't be reachable
+            console.error(`No correct drop area was provided: drop area ${dropArea} not defined`)
+            break;
     }
-    // }
-
-    // console.log('handleTimelineMediaDrop -> tracks', timelineTrack);
-    // timelineTracks.subscribe(value => console.log("handleTimelineMediaDrop -> timelineTracks:", value))
 }
 
 // #region file helpers
@@ -629,7 +657,7 @@ export function handleOverlapping(newElBounds: ITimelineElementBounds, trackEls:
         index
     );
 
-    console.error('Timeline -> handleOverlapping -> isOverlapping:', isOverlapping);
+    console.log('Timeline -> handleOverlapping -> isOverlapping:', isOverlapping);
 
     // if the element overlaps with any other element we move the elements accordingly so the element can fit on the track
     if (isOverlapping) {
@@ -859,7 +887,9 @@ export function moveElementsOnTrack(elBounds: ITimelineElementBounds, trackEls: 
             JSON.parse(JSON.stringify(trackElBounds)), "sameTrackAndSameIndex:", sameTrackAndSameIndex, "trackEl:", JSON.parse(JSON.stringify(trackEl))
         );
 
-        // check for the first element the dropped element overlaps and get the amount the overlapped element needs to be moved to the right. Move every element after that by the same amount to the right so we move the whole "block" of element by the same amount
+        // check for the first element the dropped element overlaps and get the amount the overlapped element needs to be moved to the right. Move every element after that by the same amount to the right so we move the whole "block" of elements by the same amount. This is a naive solution of moving elements but it should be enough for now
+        // TODO: refactor this whole moving logic to be better and not just move everything to the right but also check if we can move an element to the left and what elements need to be moved
+        // TODO: we should instead remove the "spaces" between "block" of elements and then move them
         if (isElementOverlapping(elBounds, [trackEl]) && moveAmount === undefined && !sameTrackAndSameIndex) {
             moveAmount = elBounds.end - trackElBounds.start;
             console.log(

@@ -25,7 +25,7 @@
 		timelineTracks,
 		verticalScroll
 	} from '../../../stores/store';
-	import type { ITimelineTrack } from '$lib/interfaces/Timeline';
+	import { TimelineDropArea, type ITimelineTrack } from '$lib/interfaces/Timeline';
 	import TimelineControls from './TimelineControls.svelte';
 	import { CONSTS } from '$lib/utils/consts';
 	import TimelineRowDivider from './TimelineRowDivider.svelte';
@@ -89,14 +89,15 @@
 
 	// get the max playback time everytime the timelineTracks store changes
 	$: getMaxPlaybackTime($timelineTracks);
-	// // call this function every time the timelineTracks store variable changes
-	// $: $timelineTracks,
-	// 	(() => {
-	// 		console.log('Timeline -> timelineTracks changed:', $timelineTracks);
-	// 	})();
 
 	function getMaxPlaybackTime(tracks: ITimelineTrack[]) {
-		console.log('Timeline -> timelineTracks changed:', $timelineTracks);
+		console.log(
+			'Timeline -> timelineTracks changed:',
+			$timelineTracks,
+			'first track elements:',
+			$timelineTracks.length > 0 ? $timelineTracks[0].elements : []
+		);
+
 		// go through each row and element and check what the last playback time is
 		if (tracks.length > 0) {
 			let maxTime = 0;
@@ -140,12 +141,27 @@
 	}
 
 	function onDropElement(e: DragEvent) {
+		// TODO: refactor most of this logic into a util function since we mostly do the same for both dropping media element here, divider and the timelineRow
 		// prevent default behavior
 		e.preventDefault();
 		e.stopPropagation();
 		hoverElement = false;
 
-		handleAddElementToTimeline(e);
+		// get data from dropped element
+		let mediaDataString = e.dataTransfer?.getData(CONSTS.mediaPoolTransferKey);
+		if (!mediaDataString) {
+			return;
+		}
+
+		// parse it back to be an object again
+		const mediaData: IMedia = JSON.parse(mediaDataString);
+
+		// only handle files when actually dropped
+		if (!mediaData || e.type === 'dragleave') {
+			return;
+		}
+
+		handleTimelineMediaDrop(mediaData, TimelineDropArea.TIMELINE);
 	}
 
 	function onHoverElement(e: DragEvent) {
@@ -172,38 +188,38 @@
 		// );
 	}
 
-	function onHoverOverDivider(e: DragEvent) {
-		// prevent default behavior
-		e.preventDefault();
-		e.stopPropagation();
-		(e.target as HTMLDivElement).classList.add('drag-over');
-	}
+	// function onHoverOverDivider(e: DragEvent) {
+	// 	// prevent default behavior
+	// 	e.preventDefault();
+	// 	e.stopPropagation();
+	// 	(e.target as HTMLDivElement).classList.add('drag-over');
+	// }
 
-	function onDropOverDivider(e: DragEvent, index: number) {
-		// prevent default behavior
-		e.preventDefault();
-		e.stopPropagation();
-		(e.target as HTMLDivElement).classList.remove('drag-over');
+	// function onDropOverDivider(e: DragEvent, index: number) {
+	// 	// prevent default behavior
+	// 	e.preventDefault();
+	// 	e.stopPropagation();
+	// 	(e.target as HTMLDivElement).classList.remove('drag-over');
 
-		handleAddElementToTimeline(e, index);
-	}
+	// 	// handleAddElementToTimeline(e, index);
+	// }
 
 	// TODO: add comment
-	function handleAddElementToTimeline(e: DragEvent, index?: number) {
-		// get data from dropped element
-		let mediaDataString = e.dataTransfer?.getData(CONSTS.mediaPoolTransferKey);
-		if (!mediaDataString) {
-			return;
-		}
+	// function handleAddElementToTimeline(e: DragEvent) {
+	// 	// get data from dropped element
+	// 	let mediaDataString = e.dataTransfer?.getData(CONSTS.mediaPoolTransferKey);
+	// 	if (!mediaDataString) {
+	// 		return;
+	// 	}
 
-		// parse it back to be an object again
-		const mediaData: IMedia = JSON.parse(mediaDataString);
+	// 	// parse it back to be an object again
+	// 	const mediaData: IMedia = JSON.parse(mediaDataString);
 
-		// only handle files when actually dropped
-		if (mediaData && e.type !== 'dragleave') {
-			handleTimelineMediaDrop(mediaData, index);
-		}
-	}
+	// 	// only handle files when actually dropped
+	// 	if (mediaData && e.type !== 'dragleave') {
+	// 		handleTimelineMediaDrop(mediaData, index);
+	// 	}
+	// }
 
 	// listen to scrolling in the timeline
 	function onTimelineScroll(e: Event) {
