@@ -183,7 +183,7 @@
 	// set a new position using the updated values and reset y offset
 	function resetPosition(startTime: number, multiplier: number, scale: number) {
 		const newOffset = (startTime / multiplier) * scale;
-		console.warn(
+		// console.warn(
 		// 	`Timeline -> timeline row element ${element.mediaName} change value:`,
 		// 	startTime,
 		// 	'multiplier',
@@ -228,6 +228,8 @@
 		};
 		return clickInfo;
 	}
+
+	// #region
 
 	function onElementClick(e: MouseEvent) {
 		// avoid timeline thumb being dragged when clicking on element
@@ -402,6 +404,8 @@
 			);
 		}
 	}
+
+	// #endregion
 
 	// #region drag stuff
 	// get the starting mouse position when starting the dragging movement
@@ -1048,7 +1052,7 @@
 	<div
 		class="timeline-row-element-name text-[10px] text-background-color-light ml-3 truncate select-none"
 	>
-		index:{elementIndex}
+		elIndex:{elementIndex}/row:{rowIndex}
 	</div>
 
 	<!-- TODO: check if this works since when enabling it the thumb sometimes doesnt work correctly when trying to drag the element -->

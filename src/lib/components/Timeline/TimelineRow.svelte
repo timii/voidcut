@@ -21,11 +21,7 @@
 		convertPxToMs,
 		handleElementIndeces,
 		handleOverlapping,
-		handleTimelineMediaDrop,
-		isElementAtCorrectIndex,
-		isElementOverlapping,
-		moveElementsOnTrack,
-		moveElementToCorrectIndex
+		handleTimelineMediaDrop
 	} from '$lib/utils/utils';
 	import type { IMedia } from '$lib/interfaces/Media';
 
@@ -275,10 +271,7 @@
 		// parse it back to be an object again
 		const mediaData: IMedia = JSON.parse(mediaDataString);
 		const duration = mediaData.duration;
-
-		if (!duration) {
-			return;
-		}
+		console.log('drop element -> mediaData:', mediaData);
 
 		// only handle files when actually dropped
 		if (!mediaData || e.type === 'dragleave') {

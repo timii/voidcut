@@ -620,7 +620,7 @@ export function isElementOverlapping(elBounds: ITimelineElementBounds, trackEls:
     })
 }
 
-// wrapper function that handles all the overlapping logic when moving an element adn returns the updated elements
+// wrapper function that handles all the overlapping logic when moving an element, returns the updated track elements
 export function handleOverlapping(newElBounds: ITimelineElementBounds, trackEls: ITimelineElement[], index?: number): ITimelineElement[] {
     // check if the new position of the element overlaps with any other element on the track
     const isOverlapping = isElementOverlapping(
