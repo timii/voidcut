@@ -877,14 +877,19 @@ export function moveElementsOnTrack(elBounds: ITimelineElementBounds, trackEls: 
         JSON.parse(JSON.stringify(trackEls)), "elBounds:", elBounds
     );
 
+    // keep track if we already moved the first overlapping element
+    let firstElementAdjusted = false
+
     // TODO: implement logic to move elements differently according to where the dragged element was dropped on the element
     // map through the given list of track elements and update them if necessary
     const tracks = trackEls.map((trackEl, i) => {
+        // calculate the bounds of current element 
         const trackElBounds: ITimelineElementBounds = { start: trackEl.playbackStartTime, end: trackEl.playbackStartTime + trackEl.duration }
+
         const sameTrackAndSameIndex = sameTrackElIndex !== undefined && i === sameTrackElIndex
         console.log(
             'element dropped on track [moveElementsOnTrack] -> in map 1 trackElBounds:',
-            JSON.parse(JSON.stringify(trackElBounds)), "sameTrackAndSameIndex:", sameTrackAndSameIndex, "trackEl:", JSON.parse(JSON.stringify(trackEl))
+            JSON.parse(JSON.stringify(trackElBounds)), "sameTrackAndSameIndex:", sameTrackAndSameIndex,
         );
 
         // check for the first element the dropped element overlaps and get the amount the overlapped element needs to be moved to the right. Move every element after that by the same amount to the right so we move the whole "block" of elements by the same amount. This is a naive solution of moving elements but it should be enough for now
@@ -893,22 +898,47 @@ export function moveElementsOnTrack(elBounds: ITimelineElementBounds, trackEls: 
         if (isElementOverlapping(elBounds, [trackEl]) && moveAmount === undefined && !sameTrackAndSameIndex) {
             moveAmount = elBounds.end - trackElBounds.start;
             console.log(
-                'element dropped on track [moveElementsOnTrack] -> in if moveAmount:', moveAmount,
+                'element dropped on track [moveElementsOnTrack] -> in if moveAmount:', moveAmount, "first element adjusted:", firstElementAdjusted
             );
         }
 
-        // if moveAmount is defined move the current element by that amount
-        if (moveAmount !== undefined) {
-            trackEl.playbackStartTime += moveAmount
+        // now that the first element has been adjusted we also want to check if and and by how much we need to move the following elements
+        if (moveAmount !== undefined && firstElementAdjusted) {
+            // get the previous element with its updated end time
+            const prevEl = trackEls[i - 1]
+            const newPrevElEndTime = prevEl.playbackStartTime + prevEl.duration
+
+            // check if we need to move this element as well by checking if it now overlaps with the previous element that was updated
+            const elementOverlapping = newPrevElEndTime > trackElBounds.start
+
+            // if the current element now overlaps with the previous one we update the current playback start time to be the end time of the previous element to move it directly behind the previous element 
+            if (elementOverlapping) {
+                trackEl.playbackStartTime = newPrevElEndTime
+            }
+
             console.log(
-                'element dropped on track [moveElementsOnTrack] -> in second if trackEls:',
-                JSON.parse(JSON.stringify(trackEls))
+                'element dropped on track [moveElementsOnTrack] -> in if element has been adjusted trackEls:',
+                JSON.parse(JSON.stringify(trackEls)), "previous element overlapping:", elementOverlapping
             );
         }
+
+        // if moveAmount is defined and no element has been adjusted yet, move the current element by that amount
+        if (moveAmount !== undefined && !firstElementAdjusted) {
+            trackEl.playbackStartTime += moveAmount
+
+            // we now adjusted the first overlapping element so we keep track of that
+            firstElementAdjusted = true
+            console.log(
+                'element dropped on track [moveElementsOnTrack] -> in if no element adjusted trackEls:',
+                JSON.parse(JSON.stringify(trackEls)),
+            );
+        }
+
+
 
         console.log(
             'element dropped on track [moveElementsOnTrack] -> in map 2 trackEl:',
-            JSON.parse(JSON.stringify(trackEl))
+            JSON.parse(JSON.stringify(trackEls))
         );
         return trackEl
     })
