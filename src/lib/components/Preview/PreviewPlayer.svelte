@@ -197,7 +197,7 @@
 
 <div class="relative w-full h-full bg-black preview-player">
 	<!-- for each element in the timeline show a video/audio/image element -->
-	{#each timelineElements as element, i}
+	{#each timelineElements as element, i (element.elementId)}
 		{#if element.type === MediaType.Video}
 			<!-- TODO: hide controls at the end when everything works -->
 			<video

@@ -36,7 +36,7 @@
 </script>
 
 <div
-	class="mediapool-container h-full"
+	class="h-full mediapool-container"
 	on:drop={onDropFile}
 	on:dragleave={onDropFile}
 	on:dragenter={onHoverFile}
@@ -44,8 +44,8 @@
 	style="background-color: {hoverFile ? '#2e2e35' : ''};"
 >
 	{#if $availableMedia && $availableMedia.length !== 0}
-		<div class="mediapool flex flex-row flex-wrap overflow-y-auto h-full content-start gap-2">
-			{#each $availableMedia as media, i}
+		<div class="flex flex-row flex-wrap content-start h-full gap-4 overflow-y-auto mediapool">
+			{#each $availableMedia as media, i (media.mediaId)}
 				<MediaPoolElement file={media} index={i}></MediaPoolElement>
 			{/each}
 		</div>

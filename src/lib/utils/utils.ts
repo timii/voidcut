@@ -880,8 +880,11 @@ export function moveElementsOnTrack(elBounds: ITimelineElementBounds, trackEls: 
     // keep track if we already moved the first overlapping element
     let firstElementAdjusted = false
 
-    // TODO: implement logic to move elements differently according to where the dragged element was dropped on the element
-    // map through the given list of track elements and update them if necessary
+    // TODO: What we should also try out now is if the element was dropped on the right half of an element we try and move the elements to the left if possible
+    // we can try this checking if the element was dropped either on the left or right side of the element
+    // if it was the right side we can check if there are gaps between elements to the left 
+    // we can keep our current solution for now which should be enough
+
     const tracks = trackEls.map((trackEl, i) => {
         // calculate the bounds of current element 
         const trackElBounds: ITimelineElementBounds = { start: trackEl.playbackStartTime, end: trackEl.playbackStartTime + trackEl.duration }
@@ -892,9 +895,7 @@ export function moveElementsOnTrack(elBounds: ITimelineElementBounds, trackEls: 
             JSON.parse(JSON.stringify(trackElBounds)), "sameTrackAndSameIndex:", sameTrackAndSameIndex,
         );
 
-        // check for the first element the dropped element overlaps and get the amount the overlapped element needs to be moved to the right. Move every element after that by the same amount to the right so we move the whole "block" of elements by the same amount. This is a naive solution of moving elements but it should be enough for now
-        // TODO: refactor this whole moving logic to be better and not just move everything to the right but also check if we can move an element to the left and what elements need to be moved
-        // TODO: we should instead remove the "spaces" between "block" of elements and then move them
+        // check for the first element the dropped element overlaps and get the amount the overlapped element needs to be moved to the right
         if (isElementOverlapping(elBounds, [trackEl]) && moveAmount === undefined && !sameTrackAndSameIndex) {
             moveAmount = elBounds.end - trackElBounds.start;
             console.log(
@@ -902,7 +903,7 @@ export function moveElementsOnTrack(elBounds: ITimelineElementBounds, trackEls: 
             );
         }
 
-        // now that the first element has been adjusted we also want to check if and and by how much we need to move the following elements
+        // now that the first element has been adjusted we also want to check if and, if yes, by how much we need to move the following elements
         if (moveAmount !== undefined && firstElementAdjusted) {
             // get the previous element with its updated end time
             const prevEl = trackEls[i - 1]

@@ -11,7 +11,6 @@
 		convertMsToPx,
 		convertPxToMs,
 		elementIsAnImage,
-		getIndexOfElementInTrack,
 		getNextLeftElementEndTime,
 		getNextRightElementStartTime,
 		getRelativeMousePosition,
@@ -650,6 +649,8 @@
 		// update starting x position for the next call of the mouse move
 		resizeStartPosition = e.x;
 
+		console.error('onResizeLeft -> elementRef:', elementRef);
+
 		// add the pixel difference to the width
 		const newWidth = parseInt(getComputedStyle(elementRef, '').width) + dx;
 
@@ -680,6 +681,13 @@
 
 		// convert new offset into milliseconds to use as playbackStartTime
 		const newLeftOffsetInMs = convertPxToMs(newLeftOffset);
+
+		console.error(
+			'resizeLeft -> newLeftOffsetInMs:',
+			newLeftOffsetInMs,
+			'endTime:',
+			newLeftOffsetInMs + newWidthInMs
+		);
 
 		const resizeData = $elementResizeData;
 
