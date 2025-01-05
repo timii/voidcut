@@ -24,8 +24,6 @@ The goal of voidcut was to create a simple tool that I can use myself without ne
 
 ## Features
 
-TODO check other video editors and their description
-
 - **Web-Based Convenience**: Accessible from any modern browser. No installation required.
 - **Intuitive Interface**: Designed with simplicity in mind.
 - **Non-Linear Editing**: Drag-and-drop timeline editing for easy trimming, cutting, and overlapping clips.
