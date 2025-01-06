@@ -17,7 +17,7 @@
 	let playerElementsMap: IPlayerElementsMap = {};
 	$: filterPlayerElementsMap(playerElementsMap);
 
-	// handle playing and pausing elements when the previewPlaying store value changes
+	// handle playing and pausing elements when the playback is being paused/played store value changes
 	$: handlePlayingElements($previewPlaying);
 
 	// handle playing and pausing elements when the currentPlaybackTime store value changes
@@ -48,21 +48,21 @@
 			// type the el property to get correct typing
 			const htmlEl = el.el as HTMLMediaElement;
 
-			const curPlaybackTime = $currentPlaybackTime;
-			// TODO: check if current element is within the playback time
-
-			const beforeElStart = curPlaybackTime < el.properties.playbackStartTime;
-			const afterElEnd =
-				curPlaybackTime >= el.properties.playbackStartTime + el.properties.duration;
+			// check if current element is within the playback time
+			const beforeElStart = playbackTime < el.properties.playbackStartTime;
+			const afterElEnd = playbackTime >= el.properties.playbackStartTime + el.properties.duration;
 
 			// check if the current playback time is after the element started and before it ended
 			const atElTime = !beforeElStart && !afterElEnd;
 
 			const isMediaPlaying = !htmlEl.paused;
 
-			// calculate the current element time in seconds
-			const curElTime =
-				($currentPlaybackTime - el.properties.playbackStartTime) / CONSTS.secondsMultiplier;
+			const trimLeft = el.properties.trimFromStart;
+			const elStartTime = el.properties.playbackStartTime - trimLeft;
+
+			// calculate the time where the element should be played
+			// take left trim into consideration to update the current media time when starting to play
+			const curElTime = (playbackTime - elStartTime) / CONSTS.secondsMultiplier;
 
 			// check if the element is out of sync
 			const elTimeOutOfSync =
@@ -83,9 +83,12 @@
 				'curElTime:',
 				curElTime,
 				'htmlEl.currentTime:',
-				htmlEl.currentTime
+				htmlEl.currentTime,
+				'trimLeft:',
+				trimLeft
 			);
 
+			// check if the playback time is within the element time on the timeline
 			if (!atElTime) {
 				if (isMediaPlaying) htmlEl.pause();
 				return;
@@ -94,12 +97,10 @@
 			if (!isMediaPlaying) {
 				htmlEl.play();
 			}
-
-			// playing ? htmlEl.play() : htmlEl.pause();
 		});
 	}
 
-	// TODO: not implemented
+	// handles what elements needs to be updated when pausing/resuming playback
 	function handlePlayingElements(playing: boolean) {
 		console.log(
 			'handlePlayingElements -> playing:',
@@ -115,16 +116,29 @@
 				return;
 			}
 			console.log('in for each map -> el:', el);
-			// TODO: check if current element is within the playback time
+
+			const playbackTime = $currentPlaybackTime;
+
+			// check if current element is within the playback time
+			const beforeElStart = playbackTime < el.properties.playbackStartTime;
+			const afterElEnd = playbackTime >= el.properties.playbackStartTime + el.properties.duration;
+
+			// check if the current playback time is after the element started and before it ended
+			const atElTime = !beforeElStart && !afterElEnd;
 
 			// type the el property to get correct typing
 			const htmlEl = el.el as HTMLMediaElement;
+
+			const elStartTime = el.properties.playbackStartTime - el.properties.trimFromStart;
+
 			// take the element offset in the timeline into consideration
-			const currentElTime = $currentPlaybackTime - el.properties.playbackStartTime;
+			const currentElTime = $currentPlaybackTime - elStartTime;
 			console.log('in for each map -> currentElTime:', currentElTime);
-			if (currentElTime >= 0) {
+
+			if (currentElTime >= 0 && atElTime) {
 				// set currentTime of element to current playback time (in seconds)
 				htmlEl.currentTime = currentElTime / CONSTS.secondsMultiplier;
+
 				// play/pause the element depending the "previewPlaying" store value
 				playing ? htmlEl.play() : htmlEl.pause();
 			}
@@ -187,7 +201,7 @@
 		return flatArr.length > 0 ? flatArr : [];
 	}
 
-	// Check if given element should be displayed or not
+	// calculate if given element should be displayed or not by checking if the current playback time is within the element time on the timeline
 	function displayMediaElement(time: number, el: IPlayerElement) {
 		return time - el.playbackStartTime >= 0 && time - el.playbackStartTime <= el.duration
 			? 'unset'
