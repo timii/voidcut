@@ -1,9 +1,9 @@
 <script lang="ts">
 	import {
+		type ISelectedElement,
 		type ITimelineDraggedElement,
 		type ITimelineDraggedElementPosition,
 		type ITimelineElement,
-		type ITimelineTrack,
 		TimelineElementResizeSide
 	} from '$lib/interfaces/Timeline';
 	import { CONSTS } from '$lib/utils/consts';
@@ -197,13 +197,13 @@
 		position = { x: newOffset, y: 0 };
 	}
 
-	function getSelectedElement(el: string) {
-		const curELEqualsSelectedEl = el === element.elementId;
+	function getSelectedElement(el: ISelectedElement) {
+		const curELEqualsSelectedEl = el.elementId === element.elementId;
 
 		if (curELEqualsSelectedEl) {
 			// unselect this element if its currently selected and the new id is the same as this element
 			if (isSelected) {
-				selectedElement.set('');
+				selectedElement.set({ elementId: '', mediaType: undefined });
 				return false;
 			} else {
 				return true;
@@ -465,9 +465,10 @@
 			return;
 		}
 
+		// TODO: check if we even still need this
 		// first clear store value and set correct value afterwards to trigger store change to all subscribers
-		selectedElement.set('');
-		selectedElement.set(element.elementId);
+		selectedElement.set({ mediaType: undefined, elementId: '' });
+		selectedElement.set({ mediaType: element.type, elementId: element.elementId });
 
 		const curEl = e.detail.currentNode;
 		const elDomRect = curEl.getBoundingClientRect();

@@ -63,6 +63,17 @@ export interface ITimelineNextElementBounds {
     nextRightEl: number | undefined; // the amount of milliseconds where the next element is to the right, undefined if no element to the right
 }
 
+export interface ITimelineElementResizeData {
+    side: TimelineElementResizeSide, // which side of the timeline element is being resized
+    timelineElementId: string; // the unique id of the element that is bein resized
+    nextElBounds: ITimelineNextElementBounds; // the bounds of the next elements to the left and right
+}
+
+export interface ISelectedElement {
+    elementId: string; // the elementId of the selected element
+    mediaType?: MediaType; // what type of media the selected element is
+}
+
 export enum TimelineElementResizeSide {
     LEFT = 'left',
     RIGHT = 'right',
@@ -72,10 +83,4 @@ export enum TimelineDropArea {
     TIMELINE = 'timeline',
     TRACK = 'track',
     DIVIDER = "divider"
-}
-
-export interface ITimelineElementResizeData {
-    side: TimelineElementResizeSide, // which side of the timeline element is being resized
-    timelineElementId: string; // the unique id of the element that is bein resized
-    nextElBounds: ITimelineNextElementBounds
 }

@@ -622,7 +622,12 @@ export function moveTimelineThumb(e: MouseEvent) {
 // get index of selected timeline element that matches in all tracks
 export function getIndexOfSelectedElementInTracks() {
     const tracks = get(timelineTracks)
-    const selectedElementId = get(selectedElement)
+    const selectedElementId = get(selectedElement).elementId
+
+    if (!selectedElementId) {
+        return;
+    }
+
     for (let i = 0; i < tracks.length; i++) {
         let index = tracks[i].elements.findIndex(el => el.elementId === selectedElementId);
         if (index > -1) {

@@ -32,9 +32,12 @@
 			$timelineTracks
 		);
 		const indeces = getIndexOfSelectedElementInTracks();
+
+		// if we couldn't find the index of the selected element we return directly
 		if (!indeces) {
 			return;
 		}
+
 		console.log('deleteSelectedElement -> indeces found:', indeces);
 		const firstIndex = indeces[0];
 		const secondIndex = indeces[1];
@@ -52,7 +55,7 @@
 		});
 
 		// reset the selected element id so no timeline element is selected after deletion
-		selectedElement.set('');
+		selectedElement.set({ mediaType: undefined, elementId: '' });
 	}
 </script>
 

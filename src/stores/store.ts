@@ -1,6 +1,6 @@
 import { ExportState } from '$lib/interfaces/Ffmpeg';
 import type { IMedia } from '$lib/interfaces/Media';
-import type { ITimelineDraggedElement, ITimelineDraggedElementData, ITimelineDraggedElementPosition, ITimelineElementResizeData, ITimelineTrack, TimelineElementResizeSide } from '$lib/interfaces/Timeline';
+import { type ISelectedElement, type ITimelineDraggedElement, type ITimelineDraggedElementData, type ITimelineDraggedElementPosition, type ITimelineElementResizeData, type ITimelineTrack, type TimelineElementResizeSide } from '$lib/interfaces/Timeline';
 import { writable } from 'svelte/store';
 
 // General
@@ -32,12 +32,12 @@ export const timelineTracks = writable<ITimelineTrack[]>([]) // array that holds
 export const isThumbBeingDragged = writable(false);
 export const isTimelineElementBeingDragged = writable(false); // keep track if a timeline element is being dragged
 export const isTimelineElementBeingResized = writable(false); // keep track if a timeline element is being resized
-export const elementResizeData = writable<undefined | ITimelineElementResizeData>(undefined); // keep track of what side the element is being resized
+export const elementResizeData = writable<ITimelineElementResizeData | undefined>(undefined); // keep track of what side the element is being resized
 // TODO: remove old store variable
 export const draggedElement = writable<ITimelineDraggedElement | null>(null); // contains information about the dragged timeline element
 export const draggedElementPosition = writable<ITimelineDraggedElementPosition | null>(null) // keeps track of the dragged element position
 export const draggedElementData = writable<ITimelineDraggedElementData | null>(null) // holds the dragged element information that will only be set once at the beginngin
-export const selectedElement = writable(""); // keep track which element is currently selected in the timeline
+export const selectedElement = writable<ISelectedElement>({ elementId: '' }); // keep track which element is currently selected in the timeline
 
 // Workbench
 export const availableMedia = writable<IMedia[]>([]);
