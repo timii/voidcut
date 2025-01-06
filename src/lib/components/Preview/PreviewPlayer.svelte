@@ -3,6 +3,7 @@
 	import type { IPlayerElement, IPlayerElementsMap } from '$lib/interfaces/Player';
 	import type { ITimelineElement, ITimelineTrack } from '$lib/interfaces/Timeline';
 	import { CONSTS } from '$lib/utils/consts';
+	import { getCurrentMediaTime, isPlaybackInElement } from '$lib/utils/utils';
 	import {
 		availableMedia,
 		currentPlaybackTime,
@@ -23,16 +24,10 @@
 	// handle playing and pausing elements when the currentPlaybackTime store value changes
 	$: handlePlaybackTimeUpdate($currentPlaybackTime);
 
+	// handles what elements need to be updated while playback is running
 	function handlePlaybackTimeUpdate(playbackTime: number) {
-		// console.log(
-		// 	'currentPlaybackTime change in player -> playbackTime:',
-		// 	playbackTime,
-		// 	'map:',
-		// 	playerElementsMap
-		// );
-
-		const playing = $previewPlaying;
-		if (!playing) {
+		// if the playback time is being updated but the playback isn't running we return here
+		if (!$previewPlaying) {
 			return;
 		}
 
@@ -48,48 +43,36 @@
 			// type the el property to get correct typing
 			const htmlEl = el.el as HTMLMediaElement;
 
-			// check if current element is within the playback time
-			const beforeElStart = playbackTime < el.properties.playbackStartTime;
-			const afterElEnd = playbackTime >= el.properties.playbackStartTime + el.properties.duration;
-
-			// check if the current playback time is after the element started and before it ended
-			const atElTime = !beforeElStart && !afterElEnd;
-
 			const isMediaPlaying = !htmlEl.paused;
 
-			const trimLeft = el.properties.trimFromStart;
-			const elStartTime = el.properties.playbackStartTime - trimLeft;
+			// get the time from where the media element should be played at
+			const currentElTime = getCurrentMediaTime(el.properties);
 
-			// calculate the time where the element should be played
-			// take left trim into consideration to update the current media time when starting to play
-			const curElTime = (playbackTime - elStartTime) / CONSTS.secondsMultiplier;
-
-			// check if the element is out of sync
+			// check if the element is out of sync while the playbakc is running
 			const elTimeOutOfSync =
-				curElTime < htmlEl.currentTime - 0.2 || curElTime > htmlEl.currentTime + 0.2;
+				currentElTime < htmlEl.currentTime - 0.2 || currentElTime > htmlEl.currentTime + 0.2;
 
-			// if media element time and playback time are out of sync
+			// if media element time and playback time are out of sync update the media time
 			if (elTimeOutOfSync) {
-				htmlEl.currentTime = curElTime;
+				htmlEl.currentTime = currentElTime;
 			}
 
 			console.log(
 				'currentPlaybackTime change in player -> elTimeOutOfSync:',
 				elTimeOutOfSync,
 				'atElTime:',
-				atElTime,
+				isPlaybackInElement(el.properties),
 				'isMediaPlaying:',
 				isMediaPlaying,
 				'curElTime:',
-				curElTime,
+				currentElTime,
 				'htmlEl.currentTime:',
-				htmlEl.currentTime,
-				'trimLeft:',
-				trimLeft
+				htmlEl.currentTime
 			);
 
-			// check if the playback time is within the element time on the timeline
-			if (!atElTime) {
+			// check if the playback time is within the element start and end time on the timeline
+			if (!isPlaybackInElement(el.properties)) {
+				// if the playback time is outside element bounds and the media is still playing we pause it
 				if (isMediaPlaying) htmlEl.pause();
 				return;
 			}
@@ -100,7 +83,7 @@
 		});
 	}
 
-	// handles what elements needs to be updated when pausing/resuming playback
+	// handles what elements need to be updated when pausing/resuming playback
 	function handlePlayingElements(playing: boolean) {
 		console.log(
 			'handlePlayingElements -> playing:',
@@ -110,34 +93,25 @@
 			'$currentPlaybackTime:',
 			$currentPlaybackTime
 		);
+
+		// everytime the playback is being started/paused, go through the whole map and check what elements
+		// needs to be played or paused
 		Object.values(playerElementsMap).forEach((el) => {
 			// ignore image elements
 			if (el.properties.type === MediaType.Image) {
 				return;
 			}
-			console.log('in for each map -> el:', el);
-
-			const playbackTime = $currentPlaybackTime;
-
-			// check if current element is within the playback time
-			const beforeElStart = playbackTime < el.properties.playbackStartTime;
-			const afterElEnd = playbackTime >= el.properties.playbackStartTime + el.properties.duration;
-
-			// check if the current playback time is after the element started and before it ended
-			const atElTime = !beforeElStart && !afterElEnd;
 
 			// type the el property to get correct typing
 			const htmlEl = el.el as HTMLMediaElement;
 
-			const elStartTime = el.properties.playbackStartTime - el.properties.trimFromStart;
+			// get the time from where the media element should be played at
+			const currentElTime = getCurrentMediaTime(el.properties);
 
-			// take the element offset in the timeline into consideration
-			const currentElTime = $currentPlaybackTime - elStartTime;
-			console.log('in for each map -> currentElTime:', currentElTime);
-
-			if (currentElTime >= 0 && atElTime) {
+			// check if we are withing bounds of the element
+			if (currentElTime >= 0 && isPlaybackInElement(el.properties)) {
 				// set currentTime of element to current playback time (in seconds)
-				htmlEl.currentTime = currentElTime / CONSTS.secondsMultiplier;
+				htmlEl.currentTime = currentElTime;
 
 				// play/pause the element depending the "previewPlaying" store value
 				playing ? htmlEl.play() : htmlEl.pause();

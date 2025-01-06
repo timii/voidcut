@@ -1,12 +1,35 @@
 import { MediaType, type IMedia, type IFileMetadata } from "$lib/interfaces/Media";
-import { TimelineDropArea, TimelineElementResizeSide, type ITimelineElement, type ITimelineElementBounds, type ITimelineTrack } from "$lib/interfaces/Timeline";
-import { availableMedia, isTimelineElementBeingDragged, isThumbBeingDragged, timelineTracks, currentPlaybackTime, playbackIntervalId, currentTimelineScale, currentThumbPosition, thumbOffset, horizontalScroll, selectedElement, draggedElement, previewPlaying, isTimelineElementBeingResized, elementResizeData } from "../../stores/store";
+import {
+    TimelineDropArea,
+    TimelineElementResizeSide,
+    type ITimelineElement,
+    type ITimelineElementBounds,
+    type ITimelineTrack
+} from "$lib/interfaces/Timeline";
+import {
+    availableMedia,
+    isTimelineElementBeingDragged,
+    isThumbBeingDragged,
+    timelineTracks,
+    currentPlaybackTime,
+    playbackIntervalId,
+    currentTimelineScale,
+    currentThumbPosition,
+    thumbOffset,
+    horizontalScroll,
+    selectedElement,
+    draggedElement,
+    previewPlaying,
+    isTimelineElementBeingResized,
+    elementResizeData
+} from "../../stores/store";
 import { CONSTS } from "./consts";
 import { adjustingInterval } from "./betterInterval";
 import { get } from "svelte/store";
 import resolveConfig from 'tailwindcss/resolveConfig'
 import tailwindConfig from '../../../tailwind.config.js'
 import { generateAudioWaveform } from "./ffmpeg.utils";
+import type { IPlayerElement } from "$lib/interfaces/Player";
 
 let interval: {
     start: () => void;
@@ -357,7 +380,6 @@ export function convertDataUrlToUIntArray(dataUrl: string) {
 }
 
 
-
 // #region playback
 // remove interval that handles the current playback time
 export function pausePlayback() {
@@ -407,6 +429,26 @@ export function resumePlayback() {
 
     // write the interval id into store
     // playbackIntervalId.set(intervalId)
+}
+
+// check if the current playback time is inside given element bounds  
+export function isPlaybackInElement(el: IPlayerElement): boolean {
+    // calculate element bounds using the playback start time and the duration
+    const elBounds: ITimelineElementBounds = { start: el.playbackStartTime, end: el.playbackStartTime + el.duration }
+
+    const playbackTime = get(currentPlaybackTime)
+
+    // return if the current playback time is between the start and end time of the element 
+    return playbackTime >= elBounds.start && playbackTime < elBounds.end
+}
+
+// get the current element time for a given media element 
+export function getCurrentMediaTime(el: IPlayerElement): number {
+    // get the start time of the element considering the playback start time and the left trim
+    const elStartTime = el.playbackStartTime - el.trimFromStart;
+
+    // calculate the time where from where the media element should be played
+    return (get(currentPlaybackTime) - elStartTime) / CONSTS.secondsMultiplier;
 }
 
 // #region general utils
