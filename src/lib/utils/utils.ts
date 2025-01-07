@@ -82,13 +82,14 @@ export async function handleFileUpload(files: FileList) {
                 break;
             case MediaType.Image:
 
-                // TODO: create preview image for media pool element width and height as well
-                // convert uploaded file into dataUrl
-                const fileAsDataUrl = await resizeFilePreview(file)
-                console.log("fileAsDataUrl:", fileAsDataUrl)
+                // convert uploaded file into dataUrl and save it as the source of the image
+                const fileAsDataUrl = await convertFileToDataUrl(file)
                 fileMetadata = { src: fileAsDataUrl }
 
-                filePreviewImage = fileAsDataUrl
+                // also create a resized version for the preview image when dragging the media pool element
+                const resizedFile = await resizeFilePreview(file)
+
+                filePreviewImage = resizedFile
 
                 break;
             case MediaType.Video:
