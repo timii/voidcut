@@ -14,6 +14,7 @@
 		getNextRightElementStartTime,
 		getRelativeMousePosition,
 		getTailwindVariables,
+		isCurrentElementBeingResized,
 		onlyPrimaryButtonClicked
 	} from '$lib/utils/utils';
 	import { onMount } from 'svelte';
@@ -348,6 +349,7 @@
 		// 	...e
 		// } as unknown as MouseEvent);
 	}
+	// #endregion drag stuff
 
 	// #region resize
 	// handle the resizing of element using the left handle
@@ -361,6 +363,11 @@
 		}
 
 		if (!onlyPrimaryButtonClicked(e)) {
+			return;
+		}
+
+		// only resize if the resized element id matches the current element
+		if (!isCurrentElementBeingResized(element)) {
 			return;
 		}
 
@@ -491,6 +498,11 @@
 		}
 
 		if (!onlyPrimaryButtonClicked(e)) {
+			return;
+		}
+
+		// only resize if the resized element id matches the current element
+		if (!isCurrentElementBeingResized(element)) {
 			return;
 		}
 

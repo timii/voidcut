@@ -606,6 +606,19 @@ export function handleElementResizing(e: MouseEvent) {
     }
 }
 
+// check if given element id matches resized element id
+export function isCurrentElementBeingResized(el: ITimelineElement): boolean {
+    const elResizeData = get(elementResizeData)
+
+    // if no resize data is given there is no element being resized right now so we return false
+    if (!elResizeData) {
+        return false
+    }
+
+    // return if the id in the store matches the given id
+    return elResizeData.timelineElementId === el.elementId
+}
+
 // #region timeline utils
 // move the timeline thumb using a given mouse event
 export function moveTimelineThumb(e: MouseEvent) {
