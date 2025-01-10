@@ -623,6 +623,9 @@
 			return;
 		}
 
+		// set current element as selected when starting to resize
+		selectedElement.set({ elementId: element.elementId, mediaType: element.type });
+
 		// get the end time of the next element to the left
 		const leftElEndTime = getNextLeftElementEndTime(rowIndex, elementIndex);
 
