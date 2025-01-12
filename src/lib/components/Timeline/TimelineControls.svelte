@@ -13,9 +13,27 @@
 	import {
 		formatPlaybackTime,
 		getIndexOfSelectedElementInTracks,
-		isAnElementSelected
+		isAnElementSelected,
+		isThumbOverSelectedElement
 	} from '$lib/utils/utils';
 	import { CONSTS } from '$lib/utils/consts';
+
+	// update controls every time the selected element or the thumb position changed changes
+	$: $selectedElement, updateControls();
+	$: $currentPlaybackTime, updateControls();
+
+	let disableDelete = false;
+	let disableSplit = false;
+
+	function updateControls() {
+		console.log('updateControls called');
+
+		// disable the delete button if no element is selected
+		disableDelete = !isAnElementSelected();
+
+		// disable the split button if the thumb is not over the selected element
+		disableSplit = !isThumbOverSelectedElement();
+	}
 
 	function increaseTimelineScale() {
 		currentTimelineScale.update((value) => value * 2);
@@ -77,18 +95,18 @@
 				icon={DeleteIcon}
 				alt={'Delete selected element'}
 				size={CONSTS.timelineControlsSize}
-				disabled={!isAnElementSelected($selectedElement)}
+				disabled={disableDelete}
 			></IconButton>
 			<IconButton
 				onClickCallback={splitSelectedElement}
 				icon={SplitIcon}
 				alt={'Split selected element'}
 				size={CONSTS.timelineControlsSize}
-				disabled={!isAnElementSelected($selectedElement)}
+				disabled={disableSplit}
 			></IconButton>
 		</div>
 	</div>
-	<div class="flex-1 text-center">{formatPlaybackTime($currentPlaybackTime)}</div>
+	<div class="flex-1 text-center font-bold">{formatPlaybackTime($currentPlaybackTime)}</div>
 	<div class="flex-1 text-right">
 		<div class="flex justify-end gap-1 mr-3 text-lg">
 			<IconButton
