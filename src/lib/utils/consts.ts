@@ -37,7 +37,7 @@ export const CONSTS = {
     /**
      * The button size for the timeline controls
      */
-    timelineControlsSize: 18,
+    timelineControlButtonSize: 18,
 
     /**
      * The amount of pixels each timeline row is offset by on the left side
@@ -47,7 +47,7 @@ export const CONSTS = {
     /**
      * The minimum amount to which a timeline element can be resized to (in milliseconds)
      */
-    timelineElementMinWidthMs: 1000,
+    timelineElementMinWidthMs: 500,
 
     /**
      * The string used for identifying the data while dragging a media pool element

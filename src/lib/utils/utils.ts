@@ -682,27 +682,70 @@ export function moveTimelineThumb(e: MouseEvent) {
 }
 
 // get index of selected timeline element that matches in all tracks
-export function getIndexOfSelectedElementInTracks() {
+// if no element selected or no element found return undefined 
+export function getIndexOfSelectedElementInTracks(): number[] | undefined {
     const tracks = get(timelineTracks)
     const selectedElementId = get(selectedElement).elementId
 
+    // if there is no element selected return undefined
     if (!selectedElementId) {
         return;
     }
 
-    for (let i = 0; i < tracks.length; i++) {
-        let index = tracks[i].elements.findIndex(el => el.elementId === selectedElementId);
-        if (index > -1) {
-            return [i, index];
+    for (let rowIndex = 0; rowIndex < tracks.length; rowIndex++) {
+        // search for and get the index of the element inside current track
+        let elIndex = tracks[rowIndex].elements.findIndex(el => el.elementId === selectedElementId);
+
+        // if an element has been found in the current track we return both the row and element index
+        if (elIndex > -1) {
+            return [rowIndex, elIndex];
         }
     }
+
+    return;
 }
 
 // check if an element is currently selected on the timeline
-export function isAnElementSelected(el: ISelectedElement): boolean {
-    const test = !!el.elementId
-    console.log("isAnElementSelected:", test)
-    return test
+export function isAnElementSelected(): boolean {
+    const selectedElementRef = get(selectedElement)
+    return !!selectedElementRef.elementId
+}
+
+// check if the thumb is currently over the selected element and if yes, return the ms where it is over the element
+// return -1 otherwise
+export function thumbOverSelectedElement(): number {
+    // check if an element is even selected, if not the thumb can't be over the selected element
+    if (!isAnElementSelected()) {
+        return -1
+    }
+
+    // get indeces of selected element in timeline
+    const indeces = getIndexOfSelectedElementInTracks()
+
+    if (!indeces) {
+        return -1
+    }
+
+    const tracks = get(timelineTracks)
+    const element = tracks[indeces[0]].elements[indeces[1]]
+
+    // get bounds of selected element
+    const elementBounds: ITimelineElementBounds =
+    {
+        start: element.playbackStartTime,
+        end: element.playbackStartTime + element.duration
+    }
+
+    // get current position of timeline thumb in ms
+    const thumbPosition = get(currentPlaybackTime)
+
+    // check if the thumb is between start and end bounds of selected element including the mind width offset on both ends to not be able to split element to be less than the minimum width
+    const thumbAfterStart = thumbPosition > elementBounds.start + CONSTS.timelineElementMinWidthMs
+    const thumbBeforeEnd = thumbPosition < elementBounds.end - CONSTS.timelineElementMinWidthMs
+    const thumbOverEl = thumbAfterStart && thumbBeforeEnd
+
+    // return the thumb position over the element or -1 if thats not the case
+    return thumbOverEl ? thumbPosition - elementBounds.start : -1
 }
 
 // check if a given element overlaps with any element on a given track

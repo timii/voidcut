@@ -14,11 +14,11 @@
 		formatPlaybackTime,
 		getIndexOfSelectedElementInTracks,
 		isAnElementSelected,
-		isThumbOverSelectedElement
+		thumbOverSelectedElement
 	} from '$lib/utils/utils';
 	import { CONSTS } from '$lib/utils/consts';
 
-	// update controls every time the selected element or the thumb position changed changes
+	// update controls every time the selected element or the thumb position changes
 	$: $selectedElement, updateControls();
 	$: $currentPlaybackTime, updateControls();
 
@@ -30,9 +30,15 @@
 
 		// disable the delete button if no element is selected
 		disableDelete = !isAnElementSelected();
-
 		// disable the split button if the thumb is not over the selected element
-		disableSplit = !isThumbOverSelectedElement();
+		disableSplit = thumbOverSelectedElement() === -1;
+
+		console.log(
+			'updateControls -> is an element selected',
+			isAnElementSelected(),
+			'thumbOverSelectedElement',
+			thumbOverSelectedElement()
+		);
 	}
 
 	function increaseTimelineScale() {
@@ -94,14 +100,14 @@
 				onClickCallback={deleteSelectedElement}
 				icon={DeleteIcon}
 				alt={'Delete selected element'}
-				size={CONSTS.timelineControlsSize}
+				size={CONSTS.timelineControlButtonSize}
 				disabled={disableDelete}
 			></IconButton>
 			<IconButton
 				onClickCallback={splitSelectedElement}
 				icon={SplitIcon}
 				alt={'Split selected element'}
-				size={CONSTS.timelineControlsSize}
+				size={CONSTS.timelineControlButtonSize}
 				disabled={disableSplit}
 			></IconButton>
 		</div>
@@ -113,12 +119,12 @@
 				onClickCallback={increaseTimelineScale}
 				icon={IncreaseIcon}
 				alt={'Increase timeline scale'}
-				size={CONSTS.timelineControlsSize}
+				size={CONSTS.timelineControlButtonSize}
 			></IconButton><IconButton
 				onClickCallback={decreaseTimelineScale}
 				icon={DecreaseIcon}
 				alt={'Decrease timeline scale'}
-				size={CONSTS.timelineControlsSize}
+				size={CONSTS.timelineControlButtonSize}
 			></IconButton>
 		</div>
 	</div>
