@@ -185,7 +185,7 @@
 
 	// handle start of dragging an element
 	function onDragStart(e: CustomEvent<DragEventData>) {
-		console.log('testStart -> e:', e);
+		console.log('onDragStart -> e:', e);
 
 		if ($isTimelineElementBeingResized || $isThumbBeingDragged) {
 			return;
@@ -225,7 +225,7 @@
 		} as ITimelineDraggedElementPosition);
 
 		console.log(
-			'testStart -> elDomRect:',
+			'onDragStart -> elDomRect:',
 			elDomRect,
 			'tracksElBoundRect:',
 			tracksElBoundRect,
@@ -249,7 +249,7 @@
 
 	// handles the event while an element is being dragged
 	function onDrag(e: CustomEvent<DragEventData>) {
-		console.log('test -> e:', e);
+		console.log('onDrag -> e:', e);
 
 		if ($isTimelineElementBeingResized || $isThumbBeingDragged) {
 			return;
@@ -264,7 +264,7 @@
 			} as ITimelineDraggedElementPosition);
 		}
 		console.log(
-			'test -> draggedElementPosition:',
+			'onDrag -> draggedElementPosition:',
 			$draggedElementPosition,
 			'draggedElementData:',
 			$draggedElementData,
@@ -283,7 +283,7 @@
 
 	// handles the end of dragging/dropping the element
 	function onDragEnd(e: CustomEvent<DragEventData>) {
-		console.log('testEnd -> e:', e);
+		console.log('onDragEnd -> e:', e);
 
 		if ($isTimelineElementBeingResized || $isThumbBeingDragged) {
 			return;

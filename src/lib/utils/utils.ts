@@ -1,5 +1,6 @@
 import { MediaType, type IMedia, type IFileMetadata } from "$lib/interfaces/Media";
 import {
+    type ISelectedElement,
     TimelineDropArea,
     TimelineElementResizeSide,
     type ITimelineElement,
@@ -21,7 +22,7 @@ import {
     draggedElement,
     previewPlaying,
     isTimelineElementBeingResized,
-    elementResizeData
+    elementResizeData,
 } from "../../stores/store";
 import { CONSTS } from "./consts";
 import { adjustingInterval } from "./betterInterval";

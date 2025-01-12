@@ -9,7 +9,13 @@
 	import DeleteIcon from '$lib/assets/timeline/delete.png';
 	import IncreaseIcon from '$lib/assets/timeline/increase.png';
 	import DecreaseIcon from '$lib/assets/timeline/decrease.png';
-	import { formatPlaybackTime, getIndexOfSelectedElementInTracks } from '$lib/utils/utils';
+	import SplitIcon from '$lib/assets/timeline/split.png';
+	import {
+		formatPlaybackTime,
+		getIndexOfSelectedElementInTracks,
+		isAnElementSelected
+	} from '$lib/utils/utils';
+	import { CONSTS } from '$lib/utils/consts';
 
 	function increaseTimelineScale() {
 		currentTimelineScale.update((value) => value * 2);
@@ -22,6 +28,10 @@
 			'increaseTimeldecreaseTimelineScaleineScale -> currentTimelineScale:',
 			$currentTimelineScale
 		);
+	}
+
+	function splitSelectedElement() {
+		console.log('splitSelectedElement called');
 	}
 
 	function deleteSelectedElement() {
@@ -59,28 +69,36 @@
 	}
 </script>
 
-<div class="flex flex-row p-1 border timeline-controls">
+<div class="flex flex-row p-1 border timeline-controls items-center">
 	<div class="flex-1">
-		<IconButton
-			onClickCallback={deleteSelectedElement}
-			icon={DeleteIcon}
-			alt={'Delete selected element'}
-			size={20}
-		></IconButton>
+		<div class="flex gap-1 ml-3">
+			<IconButton
+				onClickCallback={deleteSelectedElement}
+				icon={DeleteIcon}
+				alt={'Delete selected element'}
+				size={CONSTS.timelineControlsSize}
+			></IconButton>
+			<IconButton
+				onClickCallback={splitSelectedElement}
+				icon={SplitIcon}
+				alt={'Split selected element'}
+				size={CONSTS.timelineControlsSize}
+			></IconButton>
+		</div>
 	</div>
 	<div class="flex-1 text-center">{formatPlaybackTime($currentPlaybackTime)}</div>
 	<div class="flex-1 text-right">
-		<div class="flex justify-end gap-3 mr-12 text-lg">
+		<div class="flex justify-end gap-1 mr-3 text-lg">
 			<IconButton
 				onClickCallback={increaseTimelineScale}
 				icon={IncreaseIcon}
 				alt={'Increase timeline scale'}
-				size={20}
+				size={CONSTS.timelineControlsSize}
 			></IconButton><IconButton
 				onClickCallback={decreaseTimelineScale}
 				icon={DecreaseIcon}
 				alt={'Decrease timeline scale'}
-				size={20}
+				size={CONSTS.timelineControlsSize}
 			></IconButton>
 		</div>
 	</div>

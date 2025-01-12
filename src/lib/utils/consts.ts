@@ -35,6 +35,11 @@ export const CONSTS = {
     timelineScrollIntervalTimer: 50,
 
     /**
+     * The button size for the timeline controls
+     */
+    timelineControlsSize: 18,
+
+    /**
      * The amount of pixels each timeline row is offset by on the left side
      */
     timelineRowOffset: 20,
