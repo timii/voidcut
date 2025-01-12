@@ -693,6 +693,13 @@ export function getIndexOfSelectedElementInTracks() {
     }
 }
 
+// check if an element is currently selected on the timeline
+export function isAnElementSelected(el: ISelectedElement): boolean {
+    const test = !!el.elementId
+    console.log("isAnElementSelected:", test)
+    return test
+}
+
 // check if a given element overlaps with any element on a given track
 export function isElementOverlapping(elBounds: ITimelineElementBounds, trackEls: ITimelineElement[], ignoreElIndex?: number): boolean {
     return trackEls.some((trackEl, i) => {

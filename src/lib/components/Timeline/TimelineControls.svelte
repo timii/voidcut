@@ -77,12 +77,14 @@
 				icon={DeleteIcon}
 				alt={'Delete selected element'}
 				size={CONSTS.timelineControlsSize}
+				disabled={!isAnElementSelected($selectedElement)}
 			></IconButton>
 			<IconButton
 				onClickCallback={splitSelectedElement}
 				icon={SplitIcon}
 				alt={'Split selected element'}
 				size={CONSTS.timelineControlsSize}
+				disabled={!isAnElementSelected($selectedElement)}
 			></IconButton>
 		</div>
 	</div>
