@@ -638,6 +638,11 @@ export function moveTimelineThumb(e: MouseEvent) {
         return
     }
 
+    // if an element is selected reset it if the thumb is moved
+    if (isAnElementSelected(get(selectedElement))) {
+        selectedElement.set({ elementId: '', mediaType: undefined })
+    }
+
     const thumbBoundingRect = document.getElementById('timeline-thumb')?.getBoundingClientRect()
     if (!thumbBoundingRect) {
         return
