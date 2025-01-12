@@ -128,18 +128,8 @@
 	}
 
 	function getSelectedElement(el: ISelectedElement) {
-		const curELEqualsSelectedEl = el.elementId === element.elementId;
-
-		if (curELEqualsSelectedEl) {
-			// unselect this element if its currently selected and the new id is the same as this element
-			if (isSelected) {
-				selectedElement.set({ elementId: '', mediaType: undefined });
-				return false;
-			} else {
-				return true;
-			}
-		}
-		return false;
+		// return if the element id in the store matches current element id
+		return el.elementId === element.elementId;
 	}
 
 	// #region drag stuff
@@ -200,6 +190,8 @@
 		if ($isTimelineElementBeingResized || $isThumbBeingDragged) {
 			return;
 		}
+
+		isTimelineElementBeingDragged.set(true);
 
 		// update selected element sore value with current element data
 		selectedElement.set({ mediaType: element.type, elementId: element.elementId });
@@ -649,6 +641,7 @@
 			resizeStartWidth = elementWidthInMs;
 		}
 	}
+	// #endregion resize
 </script>
 
 <!-- #region drag element -->
@@ -661,7 +654,10 @@
 	data-element-row-index={rowIndex}
 	data-element-offset={element.playbackStartTime}
 	data-element-id={element.elementId}
-	use:draggable={{ position, handle: '.timeline-row-element-drag-area' }}
+	use:draggable={{
+		position,
+		handle: '.timeline-row-element-drag-area' // the element area that is used for dragging the element
+	}}
 	on:mousedown={getMousePosition}
 	on:mouseenter={() => (isHovering = true)}
 	on:mouseleave={() => (isHovering = false)}
