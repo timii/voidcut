@@ -74,6 +74,11 @@ export interface ISelectedElement {
     mediaType?: MediaType; // what type of media the selected element is
 }
 
+export interface ITimelineElementIndeces {
+    rowIndex: number; // the index of the track/row 
+    elementIndex: number; // the index of the element inside the track/row
+}
+
 export enum TimelineElementResizeSide {
     LEFT = 'left',
     RIGHT = 'right',

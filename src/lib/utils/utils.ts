@@ -5,7 +5,8 @@ import {
     TimelineElementResizeSide,
     type ITimelineElement,
     type ITimelineElementBounds,
-    type ITimelineTrack
+    type ITimelineTrack,
+    type ITimelineElementIndeces
 } from "$lib/interfaces/Timeline";
 import {
     availableMedia,
@@ -683,7 +684,7 @@ export function moveTimelineThumb(e: MouseEvent) {
 
 // get index of selected timeline element that matches in all tracks
 // if no element selected or no element found return undefined 
-export function getIndexOfSelectedElementInTracks(): number[] | undefined {
+export function getIndexOfSelectedElementInTracks(): ITimelineElementIndeces | undefined {
     const tracks = get(timelineTracks)
     const selectedElementId = get(selectedElement).elementId
 
@@ -694,11 +695,11 @@ export function getIndexOfSelectedElementInTracks(): number[] | undefined {
 
     for (let rowIndex = 0; rowIndex < tracks.length; rowIndex++) {
         // search for and get the index of the element inside current track
-        let elIndex = tracks[rowIndex].elements.findIndex(el => el.elementId === selectedElementId);
+        let elementIndex = tracks[rowIndex].elements.findIndex(el => el.elementId === selectedElementId);
 
         // if an element has been found in the current track we return both the row and element index
-        if (elIndex > -1) {
-            return [rowIndex, elIndex];
+        if (elementIndex > -1) {
+            return { rowIndex, elementIndex };
         }
     }
 
@@ -727,7 +728,7 @@ export function thumbOverSelectedElement(): number {
     }
 
     const tracks = get(timelineTracks)
-    const element = tracks[indeces[0]].elements[indeces[1]]
+    const element = tracks[indeces.rowIndex].elements[indeces.elementIndex]
 
     // get bounds of selected element
     const elementBounds: ITimelineElementBounds =

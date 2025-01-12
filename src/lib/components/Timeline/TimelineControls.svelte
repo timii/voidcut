@@ -73,8 +73,8 @@
 		}
 
 		console.log('deleteSelectedElement -> indeces found:', indeces);
-		const firstIndex = indeces[0];
-		const secondIndex = indeces[1];
+		const firstIndex = indeces.rowIndex;
+		const secondIndex = indeces.elementIndex;
 		timelineTracks.update((tracks) => {
 			// if there is only one element on the track, remove the whole track
 			if (tracks[firstIndex].elements.length === 1) {
