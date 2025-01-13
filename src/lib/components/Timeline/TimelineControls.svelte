@@ -11,6 +11,7 @@
 	import DecreaseIcon from '$lib/assets/timeline/decrease.png';
 	import SplitIcon from '$lib/assets/timeline/split.png';
 	import {
+		elementIsAnImage,
 		formatPlaybackTime,
 		generateId,
 		getIndexOfSelectedElementInTracks,
@@ -73,41 +74,48 @@
 			// create a duplicate element but with new element id
 			const newElement: ITimelineElement = { ...element, elementId: generateId() };
 
-			console.log('splitSelectedElement before new element added:', [
-				...tracks[indeces.rowIndex].elements
-			]);
+			// console.log('splitSelectedElement before new element added:', [
+			// 	...tracks[indeces.rowIndex].elements
+			// ]);
 
 			// put duplicate element directly after the old one
 			tracks[indeces.rowIndex].elements.splice(indeces.elementIndex + 1, 0, newElement);
 
-			console.log('splitSelectedElement after element added:', [
-				...tracks[indeces.rowIndex].elements
-			]);
+			// console.log('splitSelectedElement after element added:', [
+			// 	...tracks[indeces.rowIndex].elements
+			// ]);
 
-			// TODO: handle left and right trim differently for images
+			let newTrimFromStart = element.trimFromStart;
+			let newTrimFromEnd = element.trimFromEnd;
+
+			// don't update the trim from start or end for images, since its always 0
+			if (!elementIsAnImage(element)) {
+				newTrimFromStart = element.trimFromStart + timeOverElement;
+				newTrimFromEnd = element.trimFromEnd + (element.duration - timeOverElement);
+			}
 
 			// update the original element
 			tracks[indeces.rowIndex].elements[indeces.elementIndex] = {
 				...element,
 				duration: timeOverElement, // new duration is the point where the element was split
-				trimFromEnd: element.trimFromEnd + (element.duration - timeOverElement) // new trim from end is everything to the right of split position including the previous trim on the right
+				trimFromEnd: newTrimFromEnd // new trim from end is everything to the right of split position including the previous trim on the right
 			};
 
-			console.log('splitSelectedElement after original element updated:', [
-				...tracks[indeces.rowIndex].elements
-			]);
+			// console.log('splitSelectedElement after original element updated:', [
+			// 	...tracks[indeces.rowIndex].elements
+			// ]);
 
 			// update the new element
 			tracks[indeces.rowIndex].elements[indeces.elementIndex + 1] = {
 				...newElement,
 				duration: element.duration - timeOverElement, // duration for new element is everything to the right side of the split position
 				playbackStartTime: element.playbackStartTime + timeOverElement, // playback start time is at the same time as the original element including everythinh up to the split point
-				trimFromStart: element.trimFromStart + timeOverElement // include original leftTrim to new one
+				trimFromStart: newTrimFromStart // include original leftTrim to new one
 			};
 
-			console.log('splitSelectedElement after new element updated:', [
-				...tracks[indeces.rowIndex].elements
-			]);
+			// console.log('splitSelectedElement after new element updated:', [
+			// 	...tracks[indeces.rowIndex].elements
+			// ]);
 
 			return tracks;
 		});
