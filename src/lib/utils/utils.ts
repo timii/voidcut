@@ -467,7 +467,7 @@ export function convertMsToPx(value: number) {
 
 
 // generate a unique id
-function generateId() {
+export function generateId() {
     return crypto.randomUUID() as string
 }
 
