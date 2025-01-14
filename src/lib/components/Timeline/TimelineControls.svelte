@@ -2,6 +2,7 @@
 	import {
 		currentPlaybackTime,
 		currentTimelineScale,
+		previewPlaying,
 		selectedElement,
 		timelineTracks
 	} from '../../../stores/store';
@@ -21,9 +22,10 @@
 	import { CONSTS } from '$lib/utils/consts';
 	import type { ITimelineElement } from '$lib/interfaces/Timeline';
 
-	// update controls every time the selected element or the thumb position changes
+	// update controls every time the selected element or the thumb position changes or the playback is stopped/resumed
 	$: $selectedElement, updateControls();
 	$: $currentPlaybackTime, updateControls();
+	$: $previewPlaying, updateControls();
 
 	let disableDelete = false;
 	let disableSplit = false;
@@ -31,10 +33,11 @@
 	function updateControls() {
 		console.log('updateControls called');
 
-		// disable the delete button if no element is selected
-		disableDelete = !isAnElementSelected();
-		// disable the split button if the thumb is not over the selected element
-		disableSplit = thumbOverSelectedElement() === -1;
+		const playbackRunning = $previewPlaying;
+		// disable the delete button if no element is selected or the playback is running
+		disableDelete = !isAnElementSelected() || playbackRunning;
+		// disable the split button if the thumb is not over the selected element or the playback is running
+		disableSplit = thumbOverSelectedElement() === -1 || playbackRunning;
 
 		console.log(
 			'updateControls -> is an element selected',
