@@ -12,6 +12,7 @@
 	import DecreaseIcon from '$lib/assets/timeline/decrease.png';
 	import SplitIcon from '$lib/assets/timeline/split.png';
 	import {
+		doesElementExistInTimeline,
 		elementIsAnImage,
 		formatPlaybackTime,
 		generateId,
@@ -22,29 +23,35 @@
 	import { CONSTS } from '$lib/utils/consts';
 	import type { ITimelineElement } from '$lib/interfaces/Timeline';
 
-	// update controls every time the selected element or the thumb position changes or the playback is stopped/resumed
+	// update controls when different store values change
 	$: $selectedElement, updateControls();
 	$: $currentPlaybackTime, updateControls();
 	$: $previewPlaying, updateControls();
+	$: $timelineTracks, updateControls();
 
 	let disableDelete = false;
 	let disableSplit = false;
+	let disableRightButtons = false;
 
 	function updateControls() {
-		console.log('updateControls called');
+		// console.log('updateControls called');
 
 		const playbackRunning = $previewPlaying;
-		// disable the delete button if no element is selected or the playback is running
-		disableDelete = !isAnElementSelected() || playbackRunning;
-		// disable the split button if the thumb is not over the selected element or the playback is running
-		disableSplit = thumbOverSelectedElement() === -1 || playbackRunning;
 
-		console.log(
-			'updateControls -> is an element selected',
-			isAnElementSelected(),
-			'thumbOverSelectedElement',
-			thumbOverSelectedElement()
-		);
+		// disable the delete button if no element is selected, the playback is running or no element is in timeline
+		disableDelete = !isAnElementSelected() || playbackRunning || !doesElementExistInTimeline();
+		// disable the split button if the thumb is not over the selected element, the playback is running or no element is in timeline
+		disableSplit =
+			thumbOverSelectedElement() === -1 || playbackRunning || !doesElementExistInTimeline();
+		// disable right buttons if no element exists in timeline
+		disableRightButtons = !doesElementExistInTimeline();
+
+		// console.log(
+		// 	'updateControls -> is an element selected',
+		// 	isAnElementSelected(),
+		// 	'thumbOverSelectedElement',
+		// 	thumbOverSelectedElement()
+		// );
 	}
 
 	function increaseTimelineScale() {
@@ -178,7 +185,13 @@
 			></IconButton>
 		</div>
 	</div>
-	<div class="flex-1 text-center font-bold">{formatPlaybackTime($currentPlaybackTime)}</div>
+	<div class="flex-1 text-center">
+		<div class="flex gap-1 justify-center">
+			<div class="font-bold">
+				{formatPlaybackTime($currentPlaybackTime)}
+			</div>
+		</div>
+	</div>
 	<div class="flex-1 text-right">
 		<div class="flex justify-end gap-1 mr-3 text-lg">
 			<IconButton
@@ -186,11 +199,13 @@
 				icon={IncreaseIcon}
 				alt={'Increase timeline scale'}
 				size={CONSTS.timelineControlButtonSize}
+				disabled={disableRightButtons}
 			></IconButton><IconButton
 				onClickCallback={decreaseTimelineScale}
 				icon={DecreaseIcon}
 				alt={'Decrease timeline scale'}
 				size={CONSTS.timelineControlButtonSize}
+				disabled={disableRightButtons}
 			></IconButton>
 		</div>
 	</div>

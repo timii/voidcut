@@ -4,10 +4,10 @@
 </script>
 
 <div class="preview-container h-full w-full flex flex-col gap-4">
-	<div class="preview-player-container border border-red-600 flex-1">
+	<div class="preview-player-container border flex-1">
 		<PreviewPlayer></PreviewPlayer>
 	</div>
-	<div class="preview-controls-container border border-red-600 h-20">
+	<div class="preview-controls-container h-8">
 		<PreviewControls></PreviewControls>
 	</div>
 </div>

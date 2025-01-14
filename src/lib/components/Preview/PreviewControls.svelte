@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { currentPlaybackTime, previewPlaying } from '../../../stores/store';
+	import { currentPlaybackTime, previewPlaying, timelineTracks } from '../../../stores/store';
 	import IconButton from '$lib/components/shared/IconButton.svelte';
 	import PlayIcon from '$lib/assets/preview/play.png';
 	import PauseIcon from '$lib/assets/preview/pause.png';
@@ -7,7 +7,16 @@
 	import SkipEndIcon from '$lib/assets/preview/skip-end.png';
 	import FrameBeforeIcon from '$lib/assets/preview/frame-before.png';
 	import FrameAfterIcon from '$lib/assets/preview/frame-after.png';
-	import { pausePlayback, resumePlayback } from '$lib/utils/utils';
+	import { doesElementExistInTimeline, pausePlayback, resumePlayback } from '$lib/utils/utils';
+
+	$: $timelineTracks, updateControls();
+
+	let disableButtons = false;
+
+	function updateControls() {
+		// disable controls if no element exists in the timeline
+		disableButtons = !doesElementExistInTimeline();
+	}
 
 	function onSkipStartClick() {
 		console.log('onSkipStartClick clicked!');
@@ -40,16 +49,34 @@
 </script>
 
 <div class="preview-controls flex gap-1 justify-center items-center h-full">
-	<IconButton onClickCallback={onSkipStartClick} icon={SkipStartIcon} alt={'Skip to start'}
+	<IconButton
+		onClickCallback={onSkipStartClick}
+		icon={SkipStartIcon}
+		alt={'Skip to start'}
+		disabled={disableButtons}
 	></IconButton>
-	<IconButton onClickCallback={onFrameBeforeClick} icon={FrameBeforeIcon} alt={'Frame Before'}
+	<IconButton
+		onClickCallback={onFrameBeforeClick}
+		icon={FrameBeforeIcon}
+		alt={'Frame Before'}
+		disabled={disableButtons}
 	></IconButton>
 	<IconButton
 		onClickCallback={onPlayPauseClick}
 		icon={$previewPlaying ? PauseIcon : PlayIcon}
 		alt={$previewPlaying ? 'Pause' : 'Play'}
+		disabled={disableButtons}
 	></IconButton>
-	<IconButton onClickCallback={onFrameAfterClick} icon={FrameAfterIcon} alt={'Frame after'}
+	<IconButton
+		onClickCallback={onFrameAfterClick}
+		icon={FrameAfterIcon}
+		alt={'Frame after'}
+		disabled={disableButtons}
 	></IconButton>
-	<IconButton onClickCallback={onSkipEndClick} icon={SkipEndIcon} alt={'Skip to end'}></IconButton>
+	<IconButton
+		onClickCallback={onSkipEndClick}
+		icon={SkipEndIcon}
+		alt={'Skip to end'}
+		disabled={disableButtons}
+	></IconButton>
 </div>
