@@ -712,6 +712,11 @@ export function isAnElementSelected(): boolean {
     return !!selectedElementRef.elementId
 }
 
+// checks if at least one element exists in the timeline
+export function doesElementExistInTimeline(): boolean {
+    return get(timelineTracks).length > 0
+}
+
 // check if the thumb is currently over the selected element and if yes, return the ms where it is over the element
 // return -1 otherwise
 export function thumbOverSelectedElement(): number {
