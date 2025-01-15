@@ -517,8 +517,9 @@ export function isElementFullyScrolled(el: HTMLElement): boolean {
 }
 
 // #region time formatters
-// format a given time to a string in the format HH:MM:SS
-export function formatPlaybackTime(time: number) {
+// format a given time (in ms) to a string in the format MM:SS.ms
+// if includeHour is true the format is HH:MM:SS.ms
+export function formatPlaybackTime(time: number, includeHour?: boolean) {
     const milliseconds = Math.floor((time % 1000) / 10)
     const seconds = Math.floor((time / 1000) % 60)
     const minutes = Math.floor((time / (1000 * 60)) % 60)
@@ -529,7 +530,11 @@ export function formatPlaybackTime(time: number) {
     const secondsString = (seconds < 10) ? "0" + seconds : seconds;
     const millisecondsString = `${(milliseconds < 10) ? "0" + milliseconds : milliseconds}`;
 
-    return hoursString + ":" + minutesString + ":" + secondsString + "." + millisecondsString;
+    if (includeHour) {
+        return hoursString + ":" + minutesString + ":" + secondsString + "." + millisecondsString;
+    } else {
+        return minutesString + ":" + secondsString + "." + millisecondsString;
+    }
 }
 
 // convert a given value in milliseconds to seconds

@@ -2,6 +2,7 @@
 	import {
 		currentPlaybackTime,
 		currentTimelineScale,
+		maxPlaybackTime,
 		previewPlaying,
 		selectedElement,
 		timelineTracks
@@ -187,8 +188,9 @@
 	</div>
 	<div class="flex-1 text-center">
 		<div class="flex gap-1 justify-center">
-			<div class="font-bold">
-				{formatPlaybackTime($currentPlaybackTime)}
+			<div class="font-bold text-[15px]">
+				{formatPlaybackTime($currentPlaybackTime)} /
+				{formatPlaybackTime($maxPlaybackTime)}
 			</div>
 		</div>
 	</div>
