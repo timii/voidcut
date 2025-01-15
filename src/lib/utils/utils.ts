@@ -671,8 +671,13 @@ export function moveTimelineThumb(e: MouseEvent) {
     // calculate new position using the mouse position on the x axis, the left thumb offset and the amount scrolled horizontally
     const newPos = e.clientX - get(thumbOffset) + get(horizontalScroll);
 
-    // avoid the thumb to be moved further left than the tracks
-    if (newPos < 0) {
+    // convert the new position into ms
+    const playbackTime = convertPxToMs(newPos);
+
+    console.log("moveThumb -> playbackTime <= get(maxPlaybackTime):", playbackTime <= get(maxPlaybackTime), "playbackTime:", playbackTime, "max playback:", get(maxPlaybackTime))
+
+    // avoid the thumb to be moved further left than the tracks and further to the right than the max playback time 
+    if (newPos < 0 || playbackTime > get(maxPlaybackTime)) {
         return
     }
 
