@@ -12,12 +12,15 @@
 	import IncreaseIcon from '$lib/assets/timeline/increase.png';
 	import DecreaseIcon from '$lib/assets/timeline/decrease.png';
 	import SplitIcon from '$lib/assets/timeline/split.png';
+	import DuplicateIcon from '$lib/assets/timeline/duplicate.png';
 	import {
+		addElementToTimeline,
 		doesElementExistInTimeline,
 		elementIsAnImage,
 		formatPlaybackTime,
 		generateId,
 		getIndexOfSelectedElementInTracks,
+		getNextRightElementStartTime,
 		isAnElementSelected,
 		thumbOverSelectedElement
 	} from '$lib/utils/utils';
@@ -32,6 +35,7 @@
 
 	let disableDelete = false;
 	let disableSplit = false;
+	let disableLeftButtons = false;
 	let disableRightButtons = false;
 
 	function updateControls() {
@@ -40,12 +44,13 @@
 		const playbackRunning = $previewPlaying;
 
 		// disable the delete button if no element is selected, the playback is running or no element is in timeline
-		disableDelete = !isAnElementSelected() || playbackRunning || !doesElementExistInTimeline();
+		disableDelete = playbackRunning;
 		// disable the split button if the thumb is not over the selected element, the playback is running or no element is in timeline
-		disableSplit =
-			thumbOverSelectedElement() === -1 || playbackRunning || !doesElementExistInTimeline();
+		disableSplit = thumbOverSelectedElement() === -1 || playbackRunning;
 		// disable right buttons if no element exists in timeline
 		disableRightButtons = !doesElementExistInTimeline();
+		// disable left buttons if no element is selected
+		disableLeftButtons = !isAnElementSelected() || !doesElementExistInTimeline();
 
 		// console.log(
 		// 	'updateControls -> is an element selected',
