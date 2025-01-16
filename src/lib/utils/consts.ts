@@ -37,7 +37,7 @@ export const CONSTS = {
     /**
      * The button size for the timeline controls
      */
-    timelineControlButtonSize: 18,
+    timelineControlButtonSize: 16,
 
     /**
      * The amount of pixels each timeline row is offset by on the left side

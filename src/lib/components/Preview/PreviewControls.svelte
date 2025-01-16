@@ -25,12 +25,6 @@
 		// disable controls if no element exists in the timeline
 		disableButtons = !doesElementExistInTimeline();
 
-		console.log(
-			'updateControls:',
-			$currentPlaybackTime,
-			$maxPlaybackTime,
-			$currentPlaybackTime === $maxPlaybackTime
-		);
 		// disable the "forward" buttons if we are the max play back time
 		disableForwardButtons = $currentPlaybackTime === $maxPlaybackTime;
 

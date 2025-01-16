@@ -132,6 +132,9 @@
 		});
 	}
 
+	function duplicateSelectedElement() {
+	}
+
 	function deleteSelectedElement() {
 		console.log(
 			'deleteSelectedElement clicked -> selectedElement:',
@@ -169,20 +172,27 @@
 
 <div class="flex flex-row p-1 border timeline-controls items-center">
 	<div class="flex-1">
-		<div class="flex gap-1 ml-3">
+		<div class="flex gap-[6px] ml-3">
 			<IconButton
 				onClickCallback={deleteSelectedElement}
 				icon={DeleteIcon}
 				alt={'Delete selected element'}
-				size={CONSTS.timelineControlButtonSize}
-				disabled={disableDelete}
+				size={CONSTS.timelineControlButtonSize + 1}
+				disabled={disableLeftButtons || disableDelete}
 			></IconButton>
 			<IconButton
 				onClickCallback={splitSelectedElement}
 				icon={SplitIcon}
 				alt={'Split selected element'}
 				size={CONSTS.timelineControlButtonSize}
-				disabled={disableSplit}
+				disabled={disableLeftButtons || disableSplit}
+			></IconButton>
+			<IconButton
+				onClickCallback={duplicateSelectedElement}
+				icon={DuplicateIcon}
+				alt={'Duplicate selected element'}
+				size={CONSTS.timelineControlButtonSize}
+				disabled={disableLeftButtons}
 			></IconButton>
 		</div>
 	</div>
@@ -195,7 +205,7 @@
 		</div>
 	</div>
 	<div class="flex-1 text-right">
-		<div class="flex justify-end gap-1 mr-3 text-lg">
+		<div class="flex justify-end gap-[6px] mr-3 text-lg">
 			<IconButton
 				onClickCallback={increaseTimelineScale}
 				icon={IncreaseIcon}
