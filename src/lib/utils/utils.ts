@@ -24,6 +24,7 @@ import {
     previewPlaying,
     isTimelineElementBeingResized,
     elementResizeData,
+    maxPlaybackTime,
 } from "../../stores/store";
 import { CONSTS } from "./consts";
 import { adjustingInterval } from "./betterInterval";
@@ -388,14 +389,15 @@ export function convertDataUrlToUIntArray(dataUrl: string) {
 export function pausePlayback() {
     console.log("pausePlayback")
     previewPlaying.set(false)
-    playbackIntervalId.update((id) => {
-        // use current interval id to clear the interval
-        clearInterval(id)
-        // test.cancel()
-        interval.stop()
-        // set the store value back to zero
-        return 0;
-    })
+    interval.stop()
+    // playbackIntervalId.update((id) => {
+    //     // use current interval id to clear the interval
+    //     clearInterval(id)
+    //     // test.cancel()
+    //     interval.stop()
+    //     // set the store value back to zero
+    //     return 0;
+    // })
 }
 
 // create interval that increases current playback time
@@ -411,8 +413,20 @@ export function resumePlayback() {
     const intervallCallback = () => {
         // var diff = new Date().getTime() - startTime;
         // var drift = diff % 1000;
-        // increase the current playback time in store by timeout amount
-        currentPlaybackTime.update(value => value + CONSTS.playbackIntervalTimer)
+
+        const previousValue = get(currentPlaybackTime)
+        const nextValue = previousValue + CONSTS.playbackIntervalTimer
+
+        // pause playback if its after the max playback time
+        if (nextValue > get(maxPlaybackTime)) {
+            // pausePlayback()
+            interval.stop()
+            previewPlaying.set(false)
+        } else {
+            // increase the current playback time in store by timeout amount
+            currentPlaybackTime.update(value => value + CONSTS.playbackIntervalTimer)
+        }
+
         // console.log("interval drift:", (new Date().valueOf() - startTime) % 1000);
         // console.log("interval drift:", drift, "%");
         // console.timeEnd('Execution time');
@@ -427,6 +441,7 @@ export function resumePlayback() {
     // ticker = AdjustingInterval(intervallCallback, CONSTS.playbackIntervalTimer, doError);
     interval = adjustingInterval(intervallCallback, CONSTS.playbackIntervalTimer, doError);
     interval.start()
+
     // const intervalId = setInterval(intervallCallback, CONSTS.playbackIntervalTimer)
     // test = accurateInterval(() => intervallCallback, CONSTS.playbackIntervalTimer)
 
@@ -644,10 +659,10 @@ export function moveTimelineThumb(e: MouseEvent) {
         return
     }
 
-    // if an element is selected reset it if the thumb is moved
-    if (isAnElementSelected(get(selectedElement))) {
-        selectedElement.set({ elementId: '', mediaType: undefined })
-    }
+    // // if an element is selected reset it if the thumb is moved
+    // if (isAnElementSelected()) {
+    //     selectedElement.set({ elementId: '', mediaType: undefined })
+    // }
 
     const thumbBoundingRect = document.getElementById('timeline-thumb')?.getBoundingClientRect()
     if (!thumbBoundingRect) {
@@ -683,7 +698,6 @@ export function moveTimelineThumb(e: MouseEvent) {
 
     currentThumbPosition.set(newPos);
     // calculate playback time using the the new thumb position and write it into the store
-    const playbackTime = convertPxToMs(get(currentThumbPosition));
     currentPlaybackTime.set(playbackTime);
 
     if (!get(isThumbBeingDragged)) {
