@@ -1,5 +1,10 @@
 <script lang="ts">
-	import { currentPlaybackTime, previewPlaying, timelineTracks } from '../../../stores/store';
+	import {
+		currentPlaybackTime,
+		maxPlaybackTime,
+		previewPlaying,
+		timelineTracks
+	} from '../../../stores/store';
 	import IconButton from '$lib/components/shared/IconButton.svelte';
 	import PlayIcon from '$lib/assets/preview/play.png';
 	import PauseIcon from '$lib/assets/preview/pause.png';
@@ -10,12 +15,23 @@
 	import { doesElementExistInTimeline, pausePlayback, resumePlayback } from '$lib/utils/utils';
 
 	$: $timelineTracks, updateControls();
+	$: $currentPlaybackTime, updateControls();
 
 	let disableButtons = false;
+	let disableForwardButtons = false;
 
 	function updateControls() {
 		// disable controls if no element exists in the timeline
 		disableButtons = !doesElementExistInTimeline();
+
+		console.log(
+			'updateControls:',
+			$currentPlaybackTime,
+			$maxPlaybackTime,
+			$currentPlaybackTime === $maxPlaybackTime
+		);
+		// disable the "forward" buttons if we are the max play back time
+		disableForwardButtons = $currentPlaybackTime === $maxPlaybackTime;
 	}
 
 	function onSkipStartClick() {
@@ -39,6 +55,7 @@
 		});
 	}
 
+	// TODO: implement increase playback by one "frame"
 	function onFrameAfterClick() {
 		console.log('onFrameAfterClick clicked!');
 	}
@@ -65,18 +82,18 @@
 		onClickCallback={onPlayPauseClick}
 		icon={$previewPlaying ? PauseIcon : PlayIcon}
 		alt={$previewPlaying ? 'Pause' : 'Play'}
-		disabled={disableButtons}
+		disabled={disableButtons || disableForwardButtons}
 	></IconButton>
 	<IconButton
 		onClickCallback={onFrameAfterClick}
 		icon={FrameAfterIcon}
 		alt={'Frame after'}
-		disabled={disableButtons}
+		disabled={disableButtons || disableForwardButtons}
 	></IconButton>
 	<IconButton
 		onClickCallback={onSkipEndClick}
 		icon={SkipEndIcon}
 		alt={'Skip to end'}
-		disabled={disableButtons}
+		disabled={disableButtons || disableForwardButtons}
 	></IconButton>
 </div>
