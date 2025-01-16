@@ -19,6 +19,7 @@
 
 	let disableButtons = false;
 	let disableForwardButtons = false;
+	let disableBackwardButtons = false;
 
 	function updateControls() {
 		// disable controls if no element exists in the timeline
@@ -32,6 +33,9 @@
 		);
 		// disable the "forward" buttons if we are the max play back time
 		disableForwardButtons = $currentPlaybackTime === $maxPlaybackTime;
+
+		// disable the "backward buttons if we are the start of the timeline
+		disableBackwardButtons = $currentPlaybackTime === 0;
 	}
 
 	function onSkipStartClick() {
@@ -70,13 +74,13 @@
 		onClickCallback={onSkipStartClick}
 		icon={SkipStartIcon}
 		alt={'Skip to start'}
-		disabled={disableButtons}
+		disabled={disableButtons || disableBackwardButtons}
 	></IconButton>
 	<IconButton
 		onClickCallback={onFrameBeforeClick}
 		icon={FrameBeforeIcon}
 		alt={'Frame Before'}
-		disabled={disableButtons}
+		disabled={disableButtons || disableBackwardButtons}
 	></IconButton>
 	<IconButton
 		onClickCallback={onPlayPauseClick}
