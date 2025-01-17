@@ -138,6 +138,58 @@
 	}
 
 	function duplicateSelectedElement() {
+		// get index of row and element in the tracks
+		const indeces = getIndexOfSelectedElementInTracks();
+
+		if (!indeces) {
+			return;
+		}
+
+		timelineTracks.update((tracks) => {
+			const curRow = tracks[indeces.rowIndex].elements;
+			const element = curRow[indeces.elementIndex];
+			// create a duplicate element but with new element id
+			const newElement: ITimelineElement = { ...element, elementId: generateId() };
+
+			// decide where after the original element the duplicate element fits in the row
+			// go through the row, starting from the original element index
+			for (let i = indeces.elementIndex; i < curRow.length; i++) {
+				// check if an element exists to the right
+				const rightElementStart = getNextRightElementStartTime(indeces.rowIndex, i);
+
+				// get the time where current element ends
+				const curElementEnd = curRow[i].playbackStartTime + curRow[i].duration;
+
+				// no element exists to the right
+				if (rightElementStart === undefined) {
+					// add element directly after current element and update its playback start time accordingly
+					tracks[indeces.rowIndex].elements = addElementToTimeline(
+						curRow,
+						i + 1,
+						newElement,
+						curElementEnd
+					);
+					break;
+				}
+
+				// how big is the gap to the next element
+				const gapToNextElement = rightElementStart - curElementEnd;
+
+				// gap is bigger than the new element duration
+				if (gapToNextElement > newElement.duration) {
+					// add element directly after current element and update its playback start time accordingly
+					tracks[indeces.rowIndex].elements = addElementToTimeline(
+						curRow,
+						i + 1,
+						newElement,
+						curElementEnd
+					);
+					break;
+				}
+			}
+
+			return tracks;
+		});
 	}
 
 	function deleteSelectedElement() {

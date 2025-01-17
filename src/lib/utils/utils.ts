@@ -741,6 +741,23 @@ export function doesElementExistInTimeline(): boolean {
     return get(timelineTracks).length > 0
 }
 
+// add a given element to a given timeline and update its playback start time
+export function addElementToTimeline(trackEls: ITimelineElement[], newIndex: number, newElement: ITimelineElement, newStartTime: number): ITimelineElement[] {
+    // add the new element directly after current element
+    trackEls.splice(newIndex, 0, newElement);
+
+    // update the playback start time of new element
+    trackEls[newIndex] = {
+        ...newElement,
+        playbackStartTime: newStartTime // new playback start time is at the end of the previous element to put it directly after it
+    };
+
+    // automatically select duplicated element
+    selectedElement.set({ elementId: newElement.elementId, mediaType: newElement.type });
+
+    return trackEls;
+}
+
 // check if the thumb is currently over the selected element and if yes, return the ms where it is over the element
 // return -1 otherwise
 export function thumbOverSelectedElement(): number {
