@@ -60,6 +60,10 @@
 
 	function onSkipEndClick() {
 		console.log('onSkipEndClick clicked!');
+		// pause playback to clear current playback interval
+		pausePlayback();
+		// set current playback to max playback time
+		currentPlaybackTime.set($maxPlaybackTime);
 	}
 </script>
 
