@@ -5,7 +5,8 @@
 		thumbOffset,
 		currentPlaybackTime,
 		previewPlaying,
-		isThumbBeingDragged
+		isThumbBeingDragged,
+		currentTimelineScale
 	} from '../../../stores/store';
 	import {
 		convertMsToPx,
@@ -15,7 +16,6 @@
 	} from '$lib/utils/utils';
 	import { CONSTS } from '$lib/utils/consts';
 
-	let thumbPosition = $currentThumbPosition;
 	let thumbOffsetLeft = 0;
 	let thumbElementRef: HTMLElement;
 	let scrollInterval: number | undefined;
@@ -30,6 +30,17 @@
 			timelineScrollContainer = document.getElementById('timeline-scroll-container');
 		}
 	});
+
+	// update thumb position when timeline scale changes
+	$: onScaleChange($currentTimelineScale);
+
+	function onScaleChange(scale: number) {
+		const playbackInS = $currentPlaybackTime / CONSTS.secondsMultiplier;
+
+		// calculate new thumb position using the updated scale
+		const newPosition = playbackInS * scale;
+		currentThumbPosition.set(newPosition);
+	}
 
 	// dynamically calculate thumb position when playback time in store updates
 	$: $currentPlaybackTime,
