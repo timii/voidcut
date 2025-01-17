@@ -13,6 +13,7 @@
 	import FrameBeforeIcon from '$lib/assets/preview/frame-before.png';
 	import FrameAfterIcon from '$lib/assets/preview/frame-after.png';
 	import { doesElementExistInTimeline, pausePlayback, resumePlayback } from '$lib/utils/utils';
+	import { CONSTS } from '$lib/utils/consts';
 
 	$: $timelineTracks, updateControls();
 	$: $currentPlaybackTime, updateControls();
@@ -42,6 +43,10 @@
 
 	function onFrameBeforeClick() {
 		console.log('onFrameBeforeClick clicked!');
+		// pause playback to clear current playback interval
+		pausePlayback();
+		// decrease current playback time by one interval timeout
+		currentPlaybackTime.update((currentTime) => currentTime - CONSTS.playbackIntervalTimer);
 	}
 
 	// play/pause current playback
@@ -53,9 +58,12 @@
 		});
 	}
 
-	// TODO: implement increase playback by one "frame"
 	function onFrameAfterClick() {
 		console.log('onFrameAfterClick clicked!');
+		// pause playback to clear current playback interval
+		pausePlayback();
+		// increase current playback time by one interval timeout
+		currentPlaybackTime.update((currentTime) => currentTime + CONSTS.playbackIntervalTimer);
 	}
 
 	function onSkipEndClick() {
