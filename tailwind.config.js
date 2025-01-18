@@ -3,11 +3,12 @@ export default {
   content: ['./src/**/*.{html,js,svelte,ts}'],
   theme: {
     fontSize: {
+      xxxs: '9px',
       xxs: '10px'
     },
     extend: {
       colors: {
-        "ruler-color": '#42424e',
+        "ruler-color": '#dfdfdf66',
         "background-color-darker": '#111114',
         "background-color": '#151519',
         "background-color-light": '#2c2c2f',
