@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { moveTimelineThumb } from '$lib/utils/utils';
+	import { CONSTS } from '$lib/utils/consts';
+	import { formatTime, moveTimelineThumb } from '$lib/utils/utils';
 	import { currentTimelineScale, windowWidth } from '../../../stores/store';
 
 	export let amountOfTicks = 30;
@@ -25,15 +26,14 @@
 	on:dragenter={onHoverElement}
 	on:dragover={onHoverElement}
 >
-	<!-- {#each { length: amountOfTicks / 1000 } as _, i} -->
 	{#each { length: amountOfTicks } as _, i}
 		<div
 			class="flex flex-col items-start timeline-ruler-block"
 			style="min-width: {$currentTimelineScale}px;"
 		>
 			<div class="timeline-ruler-tick w-px h-[5px] bg-ruler-color"></div>
-			<div class="timeline-ruler-label text-ruler-color text-[11px] translate-x-[-50%]">
-				{i}
+			<div class="timeline-ruler-label text-ruler-color text-xxxs translate-x-[-50%]">
+				{formatTime(i * CONSTS.secondsMultiplier, false)}
 			</div>
 		</div>
 	{/each}

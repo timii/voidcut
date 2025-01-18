@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { IMedia } from '$lib/interfaces/Media';
 	import { CONSTS } from '$lib/utils/consts';
-	import { msToHr } from '$lib/utils/utils';
+	import { formatTime } from '$lib/utils/utils';
 	import DeleteIcon from '$lib/assets/workbench/delete.png';
 	import { fade } from 'svelte/transition';
 	import { availableMedia } from '../../../stores/store';
@@ -58,7 +58,7 @@
 		{#if file.duration}
 			<span
 				class="absolute bottom-2 left-2 font-medium text-xxs bg-background-color pb-[1px] px-1 rounded opacity-80"
-				>{msToHr(file.duration)}</span
+				>{formatTime(file.duration)}</span
 			>
 		{/if}
 

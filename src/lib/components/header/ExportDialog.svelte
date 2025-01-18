@@ -13,7 +13,7 @@
 	} from '../../../stores/store';
 	import { ExportState } from '$lib/interfaces/Ffmpeg';
 	import { downloadOutput, terminateFfmpegExecution } from '$lib/utils/ffmpeg.utils';
-	import { msToHr } from '$lib/utils/utils';
+	import { formatTime } from '$lib/utils/utils';
 
 	export let open = false;
 
@@ -63,7 +63,7 @@
 					<div class="color-accent-color">{$ffmpegProgress}%</div>
 				</div>
 				<!-- TODO: implement an own timer that counts the elapsed time -->
-				<div>Elapsed time: {msToHr($ffmpegProgressElapsedTime)}</div>
+				<div>Elapsed time: {formatTime($ffmpegProgressElapsedTime)}</div>
 				<div class="mt-10">
 					<Button text={'Cancel'} onClickCallback={onCancelClick}></Button>
 				</div>
@@ -78,7 +78,7 @@
 				<!-- TODO: add file infos -->
 				<div class="text-sm text-center text-text-color-darkest">
 					<div>File size: {$processedFileSize} MB</div>
-					<div>Elapsed time: {msToHr($ffmpegProgressElapsedTime)}</div>
+					<div>Elapsed time: {formatTime($ffmpegProgressElapsedTime)}</div>
 				</div>
 				<div class="mt-6">
 					<!-- TODO: add icon -->
