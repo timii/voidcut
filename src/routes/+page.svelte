@@ -34,6 +34,9 @@
 		// need to return a destroy function
 		// see: https://stackoverflow.com/questions/62087073/svelte-3-async-onmount-or-a-valid-alternative#comment120532176_62118425
 		await initializeFfmpeg();
+
+		// get the initial window size
+		onWindowResize(window.innerWidth);
 	});
 
 	//  listen to window changes and update the store variable on change
@@ -49,7 +52,7 @@
 			return;
 		}
 
-		windowWidth.set(widthInMs);
+		windowWidth.set(windowSizeMinusOffset);
 	}
 </script>
 
