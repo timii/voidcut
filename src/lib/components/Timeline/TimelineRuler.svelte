@@ -1,27 +1,21 @@
 <script lang="ts">
-	import { CONSTS } from '$lib/utils/consts';
 	import { moveTimelineThumb } from '$lib/utils/utils';
 	import { currentTimelineScale, windowWidth } from '../../../stores/store';
 
 	export let amountOfTicks = 30;
 
-	// update the amount of ticks everytime the window width store value is updated
-	$: updateAmountOfTicks($windowWidth);
+	// update the amount of ticks everytime the window width or timeline scale is updated
+	$: updateAmountOfTicks($windowWidth, $currentTimelineScale);
 
-	function updateAmountOfTicks(widthInMs: number) {
-		// console.log('updateAmountOfTicks -> width:', widthInMs);
-
-		amountOfTicks = Math.ceil(widthInMs / CONSTS.secondsMultiplier);
+	function updateAmountOfTicks(widthInPx: number, scale: number) {
+		// calculate how many ticks can fit into the current width using the scale as the width of each tick
+		amountOfTicks = Math.ceil(widthInPx / scale);
 	}
 
 	// ignore the hovered element
 	function onHoverElement(e: DragEvent) {
 		e.stopPropagation();
 	}
-
-	// calculate number of seconds of max playback time
-	// let amountOfTicks = $maxPlaybackTime / 1000;
-	// console.log('maxPlaybackTimeVal:', maxPlaybackTimeVal);
 </script>
 
 <div

@@ -419,9 +419,7 @@ export function resumePlayback() {
 
         // pause playback if its after the max playback time
         if (nextValue > get(maxPlaybackTime)) {
-            // pausePlayback()
-            interval.stop()
-            previewPlaying.set(false)
+            pausePlayback()
         } else {
             // increase the current playback time in store by timeout amount
             currentPlaybackTime.update(value => value + CONSTS.playbackIntervalTimer)
