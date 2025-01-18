@@ -25,6 +25,8 @@ import {
     isTimelineElementBeingResized,
     elementResizeData,
     maxPlaybackTime,
+    maxTimelineScale,
+    minTimelineScale,
 } from "../../stores/store";
 import { CONSTS } from "./consts";
 import { adjustingInterval } from "./betterInterval";
@@ -726,6 +728,16 @@ export function getIndexOfSelectedElementInTracks(): ITimelineElementIndeces | u
     }
 
     return;
+}
+
+// check if we are currently at the maximum timeline scale
+export function isAtMaxTimelineScale() {
+    return get(currentTimelineScale) >= get(maxTimelineScale)
+}
+
+// check if we are currently at the minimum timeline scale
+export function isAtMinTimelineScale() {
+    return get(currentTimelineScale) <= get(minTimelineScale)
 }
 
 // check if an element is currently selected on the timeline

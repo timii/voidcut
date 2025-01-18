@@ -3,6 +3,8 @@
 		currentPlaybackTime,
 		currentTimelineScale,
 		maxPlaybackTime,
+		maxTimelineScale,
+		minTimelineScale,
 		previewPlaying,
 		selectedElement,
 		timelineTracks
@@ -22,6 +24,8 @@
 		getIndexOfSelectedElementInTracks,
 		getNextRightElementStartTime,
 		isAnElementSelected,
+		isAtMaxTimelineScale,
+		isAtMinTimelineScale,
 		thumbOverSelectedElement
 	} from '$lib/utils/utils';
 	import { CONSTS } from '$lib/utils/consts';
@@ -32,9 +36,12 @@
 	$: $currentPlaybackTime, updateControls();
 	$: $previewPlaying, updateControls();
 	$: $timelineTracks, updateControls();
+	$: $currentTimelineScale, updateControls();
 
 	let disableDelete = false;
 	let disableSplit = false;
+	let disableScaleIncrease = false;
+	let disableScaleDecrease = false;
 	let disableLeftButtons = false;
 	let disableRightButtons = false;
 
@@ -47,9 +54,13 @@
 		disableDelete = playbackRunning;
 		// disable the split button if the thumb is not over the selected element, the playback is running or no element is in timeline
 		disableSplit = thumbOverSelectedElement() === -1 || playbackRunning;
+		// disable scale increase when we are already at the max timeline scale
+		disableScaleIncrease = isAtMaxTimelineScale();
+		// disable scale decrease when we are already at the min timeline scale
+		disableScaleDecrease = isAtMinTimelineScale();
 		// disable right buttons if no element exists in timeline
 		disableRightButtons = !doesElementExistInTimeline();
-		// disable left buttons if no element is selected
+		// disable left buttons if no element is selected or not elemens exists in timeline
 		disableLeftButtons = !isAnElementSelected() || !doesElementExistInTimeline();
 
 		// console.log(
@@ -62,15 +73,10 @@
 
 	function increaseTimelineScale() {
 		currentTimelineScale.update((value) => value * 2);
-		console.log('increaseTimelineScale -> currentTimelineScale:', $currentTimelineScale);
 	}
 
 	function decreaseTimelineScale() {
 		currentTimelineScale.update((value) => value / 2);
-		console.log(
-			'increaseTimeldecreaseTimelineScaleineScale -> currentTimelineScale:',
-			$currentTimelineScale
-		);
 	}
 
 	function splitSelectedElement() {
@@ -264,17 +270,18 @@
 	<div class="flex-1 text-right">
 		<div class="flex justify-end gap-[6px] mr-3 text-lg">
 			<IconButton
-				onClickCallback={increaseTimelineScale}
-				icon={IncreaseIcon}
-				alt={'Increase timeline scale'}
-				size={CONSTS.timelineControlButtonSize}
-				disabled={disableRightButtons}
-			></IconButton><IconButton
 				onClickCallback={decreaseTimelineScale}
 				icon={DecreaseIcon}
 				alt={'Decrease timeline scale'}
 				size={CONSTS.timelineControlButtonSize}
-				disabled={disableRightButtons}
+				disabled={disableRightButtons || disableScaleDecrease}
+			></IconButton>
+			<IconButton
+				onClickCallback={increaseTimelineScale}
+				icon={IncreaseIcon}
+				alt={'Increase timeline scale'}
+				size={CONSTS.timelineControlButtonSize}
+				disabled={disableRightButtons || disableScaleIncrease}
 			></IconButton>
 		</div>
 	</div>
