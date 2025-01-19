@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { IMedia } from '$lib/interfaces/Media';
 	import {
+		convertMsToPx,
 		handleElementResizing,
 		handleTimelineMediaDrop,
 		hasHorizontalScrollbar,
@@ -14,6 +15,7 @@
 	import TimelineRuler from './TimelineRuler.svelte';
 	import TimelineThumb from './TimelineThumb.svelte';
 	import {
+		currentPlaybackTime,
 		currentThumbPosition,
 		currentTimelineScale,
 		horizontalScroll,
@@ -227,46 +229,50 @@
 			thumbElementRef = document.getElementById('timeline-thumb');
 		}
 
-		if (e.currentTarget) {
-			const target = e.currentTarget as HTMLElement;
-			const horizontalScrollValue = target.scrollLeft;
-			const verticalScrollValue = target.scrollTop;
-			$horizontalScroll = horizontalScrollValue;
-			$verticalScroll = verticalScrollValue;
-
-			const thumbBoundingRect = thumbElementRef?.getBoundingClientRect();
-			if (!thumbBoundingRect) {
-				return;
-			}
-
-			// if the thumbs x position is smaller than 0 it is out of the view and we clamp the thumb to the left side
-			if (thumbBoundingRect.x < 0) {
-				// subtract 16 from the scrol position to have no padding on the left side of the thumb
-				currentThumbPosition.set(horizontalScrollValue - 16);
-			}
-
-			// if the thumbs x position is bigger than the width of the timeline (- the width of the timeline) we clamp it to the right side
-			if (thumbBoundingRect.x > scrollContainerEl.clientWidth - 12) {
-				// new thumb position is the amount scrolled + the width of the timeline (- the width of the thumb + left padding)
-				currentThumbPosition.set(horizontalScrollValue + scrollContainerEl.clientWidth - 28);
-			}
-			console.log(
-				'timeline scrolled -> e:',
-				e,
-				'horizontal:',
-				horizontalScrollValue,
-				'vertical:',
-				verticalScrollValue,
-				'thumbElementRef:',
-				thumbElementRef,
-				'thumbBoundingRect:',
-				thumbBoundingRect,
-				'scrollContainerEl:',
-				scrollContainerEl,
-				'scrollContainerEl.clientWidth:',
-				scrollContainerEl.clientWidth
-			);
+		if (!e.currentTarget) {
+			return;
 		}
+
+		const target = e.currentTarget as HTMLElement;
+		const horizontalScrollValue = target.scrollLeft;
+		const verticalScrollValue = target.scrollTop;
+		$horizontalScroll = horizontalScrollValue;
+		$verticalScroll = verticalScrollValue;
+
+		const thumbBoundingRect = thumbElementRef?.getBoundingClientRect();
+		if (!thumbBoundingRect) {
+			return;
+		}
+
+		// if the thumbs x position is smaller than 0 it is out of the view and we clamp the thumb to the left side
+		// if (thumbBoundingRect.x < 0) {
+		// 	// subtract 16 from the scrol position to have no padding on the left side of the thumb
+		// 	currentThumbPosition.set(horizontalScrollValue - 16);
+		// }
+
+		// // if the thumbs x position is bigger than the width of the timeline (- the width of the timeline) we clamp it to the right side
+		// if (thumbBoundingRect.x > scrollContainerEl.clientWidth - 12) {
+		// 	// new thumb position is the amount scrolled + the width of the timeline (- the width of the thumb + left padding)
+		// 	currentThumbPosition.set(horizontalScrollValue + scrollContainerEl.clientWidth - 28);
+		// }
+
+		// subtract the horizontal scroll of current playback when scrolling to keep the thumb at the same time
+		currentThumbPosition.set(convertMsToPx($currentPlaybackTime) - horizontalScrollValue);
+
+		console.log(
+			'timeline scrolled -> e:',
+			// e,
+			'horizontal:',
+			horizontalScrollValue,
+			'thumbElementRef:',
+			thumbElementRef,
+			'thumbBoundingRect:',
+			thumbBoundingRect,
+			'scrollContainerEl:',
+			scrollContainerEl,
+			'scrollContainerEl.clientWidth:',
+			scrollContainerEl.clientWidth
+		);
 	}
 
 	// handle the pointermove event while over the timeline

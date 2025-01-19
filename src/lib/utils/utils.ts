@@ -675,22 +675,25 @@ export function moveTimelineThumb(e: MouseEvent) {
         timelineScrollContainer = document.getElementById('timeline-scroll-container')
     }
 
+    const hs = get(horizontalScroll)
+
     // calculate new position using the mouse position on the x axis and subtracting the left offset from it
     const newPos = e.clientX - CONSTS.timelineRowOffset;
 
-    // convert the new position into ms
-    const playbackTime = convertPxToMs(newPos);
+    // convert the new position into ms, but include the horizontal scroll (in ms)
+    const playbackTime = convertPxToMs(newPos + hs);
 
     console.log("moveThumb -> playbackTime <= get(maxPlaybackTime):", playbackTime <= get(maxPlaybackTime), "playbackTime:", playbackTime, "max playback:", get(maxPlaybackTime))
 
     // avoid the thumb to be moved further left than the tracks and further to the right than the max playback time 
-    if ((newPos < 0 && get(horizontalScroll) <= CONSTS.timelineRowOffset) || playbackTime > get(maxPlaybackTime)) {
+    if ((newPos < 0 && hs <= CONSTS.timelineRowOffset) || playbackTime > get(maxPlaybackTime)) {
         return
     }
 
     currentThumbPosition.set(newPos);
     // calculate playback time using the the new thumb position and write it into the store
     currentPlaybackTime.set(playbackTime);
+    currentThumbPosition.set(newPos);
 
     if (!get(isThumbBeingDragged)) {
         // console.log('isThumbBeingDragged?:', JSON.parse(JSON.stringify(get(isThumbBeingDragged))));
