@@ -675,18 +675,8 @@ export function moveTimelineThumb(e: MouseEvent) {
         timelineScrollContainer = document.getElementById('timeline-scroll-container')
     }
 
-    // if the thumb is at the left or right edge of the screen (with some buffers) scroll the timeline horizontally
-    // left edge
-    // TODO: implement scrolling to the right
-    if (thumbBoundingRect.x < 16) {
-        requestAnimationFrame(() => {
-            // timelineScrollContainer?.scrollBy(-1, 0)
-        })
-        // timelineScrollContainer?.scrollBy(-1, 0)
-    }
-
-    // calculate new position using the mouse position on the x axis, the left thumb offset and the amount scrolled horizontally
-    const newPos = e.clientX - get(thumbOffset) + get(horizontalScroll);
+    // calculate new position using the mouse position on the x axis and subtracting the left offset from it
+    const newPos = e.clientX - CONSTS.timelineRowOffset;
 
     // convert the new position into ms
     const playbackTime = convertPxToMs(newPos);
@@ -694,7 +684,7 @@ export function moveTimelineThumb(e: MouseEvent) {
     console.log("moveThumb -> playbackTime <= get(maxPlaybackTime):", playbackTime <= get(maxPlaybackTime), "playbackTime:", playbackTime, "max playback:", get(maxPlaybackTime))
 
     // avoid the thumb to be moved further left than the tracks and further to the right than the max playback time 
-    if (newPos < 0 || playbackTime > get(maxPlaybackTime)) {
+    if ((newPos < 0 && get(horizontalScroll) <= CONSTS.timelineRowOffset) || playbackTime > get(maxPlaybackTime)) {
         return
     }
 
