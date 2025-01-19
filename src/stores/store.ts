@@ -1,6 +1,7 @@
 import { ExportState } from '$lib/interfaces/Ffmpeg';
 import type { IMedia } from '$lib/interfaces/Media';
 import { type ISelectedElement, type ITimelineDraggedElement, type ITimelineDraggedElementData, type ITimelineDraggedElementPosition, type ITimelineElementResizeData, type ITimelineTrack, type TimelineElementResizeSide } from '$lib/interfaces/Timeline';
+import { CONSTS } from '$lib/utils/consts';
 import { writable } from 'svelte/store';
 
 // General
@@ -17,8 +18,8 @@ export const processedFile = writable() // track the current state of the export
 export const processedFileSize = writable(0) // track the current state of the export
 
 // Timeline
-export const currentTimelineScale = writable(40); // default timeline scale (40 * 1px = 1 sec)
-export const minTimelineScale = writable(20);
+export const currentTimelineScale = writable(CONSTS.timelineStartingScale); // default timeline scale (40 * 1px = 1 sec)
+export const minTimelineScale = writable(1.25);
 export const maxTimelineScale = writable(320); // max scale (320px = 1s)
 export const currentPlaybackTime = writable(0); // current playback time in ms
 export const currentThumbPosition = writable(0); // current thumb position in px

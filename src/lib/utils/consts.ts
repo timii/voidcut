@@ -35,6 +35,11 @@ export const CONSTS = {
     timelineScrollIntervalTimer: 50,
 
     /**
+     * The starting timeline scale
+     */
+    timelineStartingScale: 40,
+
+    /**
      * The button size for the timeline controls
      */
     timelineControlButtonSize: 16,

@@ -1,12 +1,15 @@
 <script lang="ts">
 	import { CONSTS } from '$lib/utils/consts';
-	import { formatTime, moveTimelineThumb } from '$lib/utils/utils';
+	import { formatTime, getTailwindVariables, moveTimelineThumb } from '$lib/utils/utils';
 	import { currentTimelineScale, windowWidth } from '../../../stores/store';
 
 	export let amountOfTicks = 30;
 
 	// update the amount of ticks everytime the window width or timeline scale is updated
 	$: updateAmountOfTicks($windowWidth, $currentTimelineScale);
+
+	const tailwindVariables = getTailwindVariables();
+	const tailwindColors = tailwindVariables.theme.colors;
 
 	function updateAmountOfTicks(widthInPx: number, scale: number) {
 		// calculate how many ticks can fit into the current width using the scale as the width of each tick
@@ -17,6 +20,39 @@
 	function onHoverElement(e: DragEvent) {
 		e.stopPropagation();
 	}
+
+	// handle when to show a tickby returning either the normal color or the background color to "hide" it
+	function handleTickShow(index: number): string {
+		const customColors = tailwindColors as any;
+		// normale tick color to show a tick
+		const rulerColor = customColors['ruler-color'];
+		// background color to hide a tick
+		const backgroundColor = customColors['background-color'];
+		const currentScale = $currentTimelineScale;
+
+		if (currentScale >= 20) {
+			// show a tick every second
+			return rulerColor;
+		} else {
+			// show a tick for every label and between every label
+			const n = CONSTS.timelineStartingScale / currentScale / 2;
+			return (index % n) / 2 === 0 ? rulerColor : backgroundColor;
+		}
+	}
+
+	// handle when to show tick labels
+	function handleTickLabel(index: number): string {
+		const currentScale = $currentTimelineScale;
+
+		if (currentScale >= CONSTS.timelineStartingScale) {
+			// show a number every tick
+			return formatTime(index * CONSTS.secondsMultiplier, false);
+		} else {
+			// show a number every nth tick where every time the scale halfs we double n
+			const n = CONSTS.timelineStartingScale / currentScale;
+			return index % n === 0 ? formatTime(index * CONSTS.secondsMultiplier, false) : '';
+		}
+	}
 </script>
 
 <div
@@ -26,14 +62,17 @@
 	on:dragenter={onHoverElement}
 	on:dragover={onHoverElement}
 >
-	{#each { length: amountOfTicks } as _, i}
+	{#each { length: amountOfTicks } as _, i (i)}
 		<div
 			class="flex flex-col items-start timeline-ruler-block"
-			style="min-width: {$currentTimelineScale}px;"
+			style="width: {$currentTimelineScale}px;"
 		>
-			<div class="timeline-ruler-tick w-px h-[5px] bg-ruler-color"></div>
+			<div
+				class="timeline-ruler-tick w-px h-[5px] bg-ruler-color"
+				style="background-color: {handleTickShow(i)};"
+			></div>
 			<div class="timeline-ruler-label text-ruler-color text-xxxs translate-x-[-50%]">
-				{formatTime(i * CONSTS.secondsMultiplier, false)}
+				{handleTickLabel(i)}
 			</div>
 		</div>
 	{/each}
