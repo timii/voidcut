@@ -690,8 +690,6 @@ export function moveTimelineThumb(e: MouseEvent) {
         return
     }
 
-    currentThumbPosition.set(newPos);
-    // calculate playback time using the the new thumb position and write it into the store
     currentPlaybackTime.set(playbackTime);
     currentThumbPosition.set(newPos);
 

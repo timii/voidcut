@@ -1,7 +1,12 @@
 <script lang="ts">
 	import { CONSTS } from '$lib/utils/consts';
-	import { formatTime, getTailwindVariables, moveTimelineThumb } from '$lib/utils/utils';
-	import { currentTimelineScale, windowWidth } from '../../../stores/store';
+	import {
+		convertMsToPx,
+		formatTime,
+		getTailwindVariables,
+		moveTimelineThumb
+	} from '$lib/utils/utils';
+	import { currentTimelineScale, maxPlaybackTime, windowWidth } from '../../../stores/store';
 
 	export let amountOfTicks = 30;
 
@@ -12,8 +17,16 @@
 	const tailwindColors = tailwindVariables.theme.colors;
 
 	function updateAmountOfTicks(widthInPx: number, scale: number) {
-		// calculate how many ticks can fit into the current width using the scale as the width of each tick
-		amountOfTicks = Math.ceil(widthInPx / scale);
+		// get the max playback time and convert it ms
+		const maxPlayback = $maxPlaybackTime;
+		const maxPlaybackInPx = convertMsToPx(maxPlayback);
+
+		// check what value is bigger between the window size and the max playback (+ a small buffer)
+		const biggerValue = Math.max(widthInPx + 80, maxPlaybackInPx + 80);
+
+		// calculate how many ticks can fit into the current max width using the scale as the width of each tick
+		amountOfTicks = Math.ceil(biggerValue / scale);
+
 	}
 
 	// ignore the hovered element
