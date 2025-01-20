@@ -175,7 +175,7 @@
 			);
 
 			console.log(
-				'getMousePosition in if -> mouseStartPosition:',
+				'getMousePosition -> mouseStartPosition:',
 				mouseStartPosition,
 				'draggedElementPosition:',
 				$draggedElementPosition

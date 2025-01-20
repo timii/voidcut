@@ -6,7 +6,8 @@
 		currentPlaybackTime,
 		previewPlaying,
 		isThumbBeingDragged,
-		currentTimelineScale
+		currentTimelineScale,
+		horizontalScroll
 	} from '../../../stores/store';
 	import {
 		convertMsToPx,
@@ -43,12 +44,15 @@
 	}
 
 	// dynamically calculate thumb position when playback time in store updates
+	// TODO: refactor this into a separate function instead of having this inline here
 	$: $currentPlaybackTime,
 		(() => {
 			if ($isThumbBeingDragged === true) {
 				return;
 			}
-			$currentThumbPosition = convertMsToPx($currentPlaybackTime);
+
+			// consider horizontal scroll for new thumb position
+			$currentThumbPosition = convertMsToPx($currentPlaybackTime) - $horizontalScroll;
 
 			const thumbBoundingRect = thumbElementRef?.getBoundingClientRect();
 			const scrollContainerBoundingRect = timelineScrollContainer?.getBoundingClientRect();
@@ -92,14 +96,28 @@
 				scrollContainerBoundingRect.width - thumbBoundingRect.x >= 0 &&
 				!timelineFullyScrolled
 			) {
-				timelineScrollContainer.scrollBy(2, 0);
+				timelineScrollContainer.scrollBy({ left: 6, behavior: 'smooth' });
+			}
+
+			// check if thumb is on the left edge
+			if (thumbBoundingRect.x < 42 && thumbBoundingRect.x >= 0) {
+				timelineScrollContainer.scrollBy({ left: -6, behavior: 'smooth' });
 			}
 
 			// if the thumb goes further right than the timeline width stop the playback
 			if (
-				(timelineFullyScrolled || scrollContainerBoundingRect.width - thumbBoundingRect.x < 0) &&
+				timelineFullyScrolled &&
+				scrollContainerBoundingRect.width - thumbBoundingRect.x < 0 &&
 				$previewPlaying === true
 			) {
+				console.warn(
+					'in if -> timelineFullyScrolled:',
+					timelineFullyScrolled,
+					'scrollContainerBoundingRect.width - thumbBoundingRect.x < 0:',
+					scrollContainerBoundingRect.width - thumbBoundingRect.x < 0,
+					'$previewPlaying:',
+					$previewPlaying
+				);
 				pausePlayback();
 			}
 		})();
@@ -216,9 +234,9 @@
 	bind:this={thumbElementRef}
 	style="transform: translate({-6 + $currentThumbPosition}px, -28px)"
 	on:mousemove={moveTimelineThumb}
-	on:mousedown={scrollTimeline}
-	on:mouseup={stopScrolling}
 >
+	<!-- on:mousedown={scrollTimeline} -->
+	<!-- on:mouseup={stopScrolling} -->
 	<div class="relative flex flex-col items-center w-full h-full thumb-container">
 		<div
 			class="thumb-header w-full h-[25px] bg-green-600 rounded-b-[50px] rounded-t-[20px] sticky top-0"

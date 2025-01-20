@@ -96,7 +96,12 @@
 				scrollContainerBoundingRect.width - thumbBoundingRect.x >= 0 &&
 				!timelineFullyScrolled
 			) {
-				timelineScrollContainer.scrollBy(2, 0);
+				timelineScrollContainer.scrollBy({ left: 6, behavior: 'smooth' });
+			}
+
+			// check if thumb is on the left edge
+			if (thumbBoundingRect.x < 42 && thumbBoundingRect.x >= 0) {
+				timelineScrollContainer.scrollBy({ left: -6, behavior: 'smooth' });
 			}
 
 			// if the thumb goes further right than the timeline width stop the playback

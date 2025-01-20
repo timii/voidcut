@@ -6,11 +6,16 @@
 		getTailwindVariables,
 		moveTimelineThumb
 	} from '$lib/utils/utils';
-	import { currentTimelineScale, maxPlaybackTime, windowWidth } from '../../../stores/store';
+	import {
+		currentTimelineScale,
+		isTimelineElementBeingResized,
+		maxPlaybackTime,
+		windowWidth
+	} from '../../../stores/store';
 
 	export let amountOfTicks = 30;
 
-	// update the amount of ticks everytime the window width, timeline scale or max playback time is changed
+	// update the amount of ticks
 	$: updateAmountOfTicks($windowWidth, $currentTimelineScale);
 	$: $maxPlaybackTime, updateAmountOfTicks($windowWidth, $currentTimelineScale);
 
