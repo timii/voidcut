@@ -10,8 +10,9 @@
 
 	export let amountOfTicks = 30;
 
-	// update the amount of ticks everytime the window width or timeline scale is updated
+	// update the amount of ticks everytime the window width, timeline scale or max playback time is changed
 	$: updateAmountOfTicks($windowWidth, $currentTimelineScale);
+	$: $maxPlaybackTime, updateAmountOfTicks($windowWidth, $currentTimelineScale);
 
 	const tailwindVariables = getTailwindVariables();
 	const tailwindColors = tailwindVariables.theme.colors;
