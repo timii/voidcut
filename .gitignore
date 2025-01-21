@@ -4,7 +4,6 @@ node_modules
 /.svelte-kit
 /.vscode
 /package
-/sketches
 /examples
 .env
 .env.*
