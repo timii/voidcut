@@ -77,6 +77,26 @@
 
 	function decreaseTimelineScale() {
 		currentTimelineScale.update((value) => value / 2);
+
+	function fitScaleToScreen() {
+		const maxPlayback = $maxPlaybackTime;
+		const width = $windowWidth;
+
+		// convert the max playback time (+ plus a small buffer to have some space on the right edge) from milliseconds into seconds
+		const maxPlaybackInS = msToS(maxPlayback + 500);
+
+		// calculate the new scale by checking how often the max playback (in seconds) can fit into the current window width
+		const newScale = Math.ceil(width / maxPlaybackInS);
+		console.log(
+			'fitScaleToScreen called -> max playback',
+			maxPlayback,
+			'window width:',
+			width,
+			'new scale:',
+			newScale
+		);
+		currentTimelineScale.set(newScale);
+		scaleFitToScreen.set(true);
 	}
 
 	function splitSelectedElement() {
@@ -254,7 +274,7 @@
 				onClickCallback={duplicateSelectedElement}
 				icon={DuplicateIcon}
 				alt={'Duplicate selected element'}
-				size={CONSTS.timelineControlButtonSize}
+				size={CONSTS.timelineControlButtonSize - 1}
 				disabled={disableLeftButtons}
 			></IconButton>
 		</div>
@@ -282,6 +302,13 @@
 				alt={'Increase timeline scale'}
 				size={CONSTS.timelineControlButtonSize}
 				disabled={disableRightButtons || disableScaleIncrease}
+			></IconButton>
+			<IconButton
+				onClickCallback={fitScaleToScreen}
+				icon={FitToScaleIcon}
+				alt={'Fit scale to screen'}
+				size={CONSTS.timelineControlButtonSize + 4}
+				disabled={disableRightButtons}
 			></IconButton>
 		</div>
 	</div>
