@@ -69,7 +69,7 @@
 			<Preview></Preview>
 		</div>
 	</div>
-	<div class="timeline border-2 pt-4 flex-1 basis-1/3 h-[33%]">
+	<div class="timeline border-2 flex-1 basis-1/3 h-[33%]">
 		<Timeline></Timeline>
 	</div>
 </main>

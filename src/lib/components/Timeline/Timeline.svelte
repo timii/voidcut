@@ -294,7 +294,7 @@
 	}
 </script>
 
-<div class="flex flex-col h-full gap-2 timeline-container">
+<div class="flex flex-col h-full timeline-container">
 	<!-- Timeline Controls -->
 	<TimelineControls></TimelineControls>
 

@@ -233,7 +233,7 @@
 	}
 </script>
 
-<div class="flex flex-row p-1 border timeline-controls items-center">
+<div class="flex flex-row px-1 py-[6px] timeline-controls items-center">
 	<div class="flex-1">
 		<div class="flex gap-[6px] ml-3">
 			<IconButton
