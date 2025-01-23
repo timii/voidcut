@@ -33,6 +33,18 @@
 		// calculate how many ticks can fit into the current max width using the scale as the width of each tick
 		amountOfTicks = Math.ceil(biggerValue / scale);
 
+		console.log(
+			'updateAmountOfTicks -> scale:',
+			scale,
+			'width in px:',
+			widthInPx,
+			'max playback:',
+			maxPlaybackInPx,
+			'amount of ticks:',
+			amountOfTicks,
+			'element being resized:',
+			$isTimelineElementBeingResized
+		);
 	}
 
 	// ignore the hovered element
@@ -54,7 +66,7 @@
 			return rulerColor;
 		} else {
 			// show a tick for every label and between every label
-			const n = CONSTS.timelineStartingScale / currentScale / 2;
+			const n = Math.ceil(CONSTS.timelineStartingScale / currentScale / 2);
 			return (index % n) / 2 === 0 ? rulerColor : backgroundColor;
 		}
 	}
@@ -68,7 +80,7 @@
 			return formatTime(index * CONSTS.secondsMultiplier, false);
 		} else {
 			// show a number every nth tick where every time the scale halfs we double n
-			const n = CONSTS.timelineStartingScale / currentScale;
+			const n = Math.ceil(CONSTS.timelineStartingScale / currentScale);
 			return index % n === 0 ? formatTime(index * CONSTS.secondsMultiplier, false) : '';
 		}
 	}

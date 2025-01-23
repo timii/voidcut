@@ -112,13 +112,13 @@
 		const width = $windowWidth;
 
 		// convert the max playback time (+ plus a small buffer to have some space on the right edge) from milliseconds into seconds
-		const maxPlaybackInS = msToS(maxPlayback) + 1;
+		const maxPlaybackInS = Math.ceil(msToS(maxPlayback + 500));
 
 		// calculate the new scale by checking how often the max playback (in seconds) can fit into the current window width
-		const newScale = Math.ceil(width / maxPlaybackInS);
+		const newScale = Math.floor(width / maxPlaybackInS);
 		console.log(
 			'fitScaleToScreen called -> max playback',
-			maxPlayback,
+			maxPlaybackInS,
 			'window width:',
 			width,
 			'new scale:',
