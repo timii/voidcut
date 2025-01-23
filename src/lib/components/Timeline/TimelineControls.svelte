@@ -3,16 +3,17 @@
 		currentPlaybackTime,
 		currentTimelineScale,
 		maxPlaybackTime,
-		maxTimelineScale,
-		minTimelineScale,
 		previewPlaying,
+		scaleFitToScreen,
 		selectedElement,
-		timelineTracks
+		timelineTracks,
+		windowWidth
 	} from '../../../stores/store';
 	import IconButton from '../shared/IconButton.svelte';
 	import DeleteIcon from '$lib/assets/timeline/delete.png';
 	import IncreaseIcon from '$lib/assets/timeline/increase.png';
 	import DecreaseIcon from '$lib/assets/timeline/decrease.png';
+	import FitToScaleIcon from '$lib/assets/timeline/fit.png';
 	import SplitIcon from '$lib/assets/timeline/split.png';
 	import DuplicateIcon from '$lib/assets/timeline/duplicate.png';
 	import {
@@ -22,10 +23,13 @@
 		formatPlaybackTime,
 		generateId,
 		getIndexOfSelectedElementInTracks,
+		getNextHigherScale,
+		getNextLowerScale,
 		getNextRightElementStartTime,
 		isAnElementSelected,
 		isAtMaxTimelineScale,
 		isAtMinTimelineScale,
+		msToS,
 		thumbOverSelectedElement
 	} from '$lib/utils/utils';
 	import { CONSTS } from '$lib/utils/consts';
@@ -72,18 +76,43 @@
 	}
 
 	function increaseTimelineScale() {
-		currentTimelineScale.update((value) => value * 2);
+		if ($scaleFitToScreen) {
+			// get the next "normal" scale value higher than the current custom value
+			currentTimelineScale.set(getNextHigherScale());
+			scaleFitToScreen.set(false);
+		} else {
+			currentTimelineScale.update((value) => value * 2);
+		}
+		console.log(
+			'fit increse new scale:',
+			$currentTimelineScale,
+			'scaleFitToScreen:',
+			$scaleFitToScreen
+		);
 	}
 
 	function decreaseTimelineScale() {
-		currentTimelineScale.update((value) => value / 2);
+		if ($scaleFitToScreen) {
+			// get the next "normal" scale value lower than the current custom value
+			currentTimelineScale.set(getNextLowerScale());
+			scaleFitToScreen.set(false);
+		} else {
+			currentTimelineScale.update((value) => value / 2);
+		}
+		console.log(
+			'fit decrease new scale:',
+			$currentTimelineScale,
+			'scaleFitToScreen:',
+			$scaleFitToScreen
+		);
+	}
 
 	function fitScaleToScreen() {
 		const maxPlayback = $maxPlaybackTime;
 		const width = $windowWidth;
 
 		// convert the max playback time (+ plus a small buffer to have some space on the right edge) from milliseconds into seconds
-		const maxPlaybackInS = msToS(maxPlayback + 500);
+		const maxPlaybackInS = msToS(maxPlayback) + 1;
 
 		// calculate the new scale by checking how often the max playback (in seconds) can fit into the current window width
 		const newScale = Math.ceil(width / maxPlaybackInS);

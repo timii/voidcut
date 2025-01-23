@@ -25,6 +25,7 @@ import {
     maxPlaybackTime,
     maxTimelineScale,
     minTimelineScale,
+    possibleScaleValues,
 } from "../../stores/store";
 import { CONSTS } from "./consts";
 import { adjustingInterval } from "./betterInterval";
@@ -683,7 +684,8 @@ export function moveTimelineThumb(e: MouseEvent) {
     // convert the new position into ms, but include the horizontal scroll (in ms)
     const playbackTime = convertPxToMs(newPos + hs);
 
-    console.log("moveThumb -> playbackTime <= get(maxPlaybackTime):", playbackTime <= get(maxPlaybackTime), "playbackTime:", playbackTime, "max playback:", get(maxPlaybackTime))
+    console.log("moveThumb -> e:", e);
+    console.log("moveThumb -> newPos:", newPos, "offset:", CONSTS.timelineRowOffset, "horizontalScroll:", hs, "playbackTime:", playbackTime)
 
     // avoid the thumb to be moved further left than the tracks and further to the right than the max playback time 
     if ((newPos < 0 && hs <= CONSTS.timelineRowOffset) || playbackTime > get(maxPlaybackTime)) {
@@ -742,6 +744,40 @@ export function isAnElementSelected(): boolean {
 // checks if at least one element exists in the timeline
 export function doesElementExistInTimeline(): boolean {
     return get(timelineTracks).length > 0
+}
+
+// get the next lower scale value compared to the current one
+export function getNextLowerScale() {
+    const possibleScales = get(possibleScaleValues)
+    const currentScale = get(currentTimelineScale)
+
+    // get the next lower value by going through all possible values in the reverse order and returning the first value that is lower than the current scale
+    // we can do it this way since we know that the possible values are sorted in ascending order
+    for (let i = possibleScales.length - 1; i > 0; i--) {
+        if (possibleScales[i] < currentScale) {
+            return possibleScales[i]
+        }
+    }
+
+    // if we weren't able to find a value we return the lowest scale value
+    return possibleScales[0]
+}
+
+// get the next higher scale value compared to the current one
+export function getNextHigherScale() {
+    const possibleScales = get(possibleScaleValues)
+    const currentScale = get(currentTimelineScale)
+
+    // get the next higher value by going through all possible values and returning the first value that is higher than the current scale
+    // we can do it this way since we know that the possible values are sorted in ascending order
+    for (let i = 0; i < possibleScales.length; i++) {
+        if (possibleScales[i] > currentScale) {
+            return possibleScales[i]
+        }
+    }
+
+    // if we weren't able to find a value we return the highest scale value
+    return possibleScales[possibleScales.length - 1]
 }
 
 // add a given element to a given timeline and update its playback start time

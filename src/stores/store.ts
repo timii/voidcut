@@ -21,6 +21,7 @@ export const processedFileSize = writable(0) // track the current state of the e
 export const currentTimelineScale = writable(CONSTS.timelineStartingScale); // default timeline scale (40 * 1px = 1 sec)
 export const minTimelineScale = writable(1.25); // min timeline scale (1.5px = 1s)
 export const maxTimelineScale = writable(320); // max timeline scale (320px = 1s)
+export const possibleScaleValues = writable<number[]>([]); // list of possible scale values
 export const scaleFitToScreen = writable(false); // keep track if scale has been fit to the screen width
 export const currentPlaybackTime = writable(0); // current playback time in ms
 export const currentThumbPosition = writable(0); // current thumb position in px
