@@ -22,6 +22,9 @@
 		isThumbBeingDragged,
 		isTimelineElementBeingResized,
 		maxPlaybackTime,
+		maxTimelineScale,
+		minTimelineScale,
+		possibleScaleValues,
 		startAmountOfTicks,
 		thumbOffset,
 		timelineTracks,
@@ -52,6 +55,18 @@
 				}, CONSTS.resetDelay);
 			});
 		});
+
+		// calculate the range of possible scale values we can have and write it into the store
+		const min = $minTimelineScale;
+		const max = $maxTimelineScale;
+		let values: number[] = [];
+		let i = min;
+		while (i <= max) {
+			values.push(i);
+			i = i * 2;
+		}
+		possibleScaleValues.set(values);
+		console.log('fit on mount -> values:', values);
 
 		// TODO: change that so check both scrollbars everytime something in the timeline changes and/or screen sitze changes
 		isOverflowingY = hasVerticalScrollbar(scrollContainerEl);
