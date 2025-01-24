@@ -2,20 +2,12 @@
 	import Timeline from '$lib/components/timeline/Timeline.svelte';
 	import MediaPool from '$lib/components/workbench/MediaPool.svelte';
 	import Preview from '$lib/components/preview/Preview.svelte';
-	import {
-		currentTimelineScale,
-		exportOverlayOpen,
-		maxPlaybackTime,
-		thumbOffset,
-		windowWidth
-	} from '../stores/store';
-	import { CONSTS } from '$lib/utils/consts';
+	import { exportOverlayOpen, thumbOffset, windowWidth } from '../stores/store';
 	import Header from '$lib/components/header/Header.svelte';
 	import { onMount } from 'svelte';
 	import { initializeFfmpeg } from '$lib/utils/ffmpeg.utils';
 	import Overlay from '$lib/components/shared/Overlay.svelte';
 	import ExportDialog from '$lib/components/header/ExportDialog.svelte';
-	import { convertPxToMs } from '$lib/utils/utils';
 
 	const baseImgPath = 'src/lib/assets/';
 	const imageUrls = [
@@ -43,14 +35,6 @@
 	function onWindowResize(width: number) {
 		// subtract the offset from the window width
 		const windowSizeMinusOffset = width - $thumbOffset;
-
-		// convert the width into milliseconds to comapre it to the playbacktime that is also in milliseconds
-		const widthInMs = convertPxToMs(windowSizeMinusOffset);
-
-		// we only update the store variable if the window width is bigger than the most right end of any element (+ a smaller buffer)
-		if (widthInMs <= $maxPlaybackTime + 1000) {
-			return;
-		}
 
 		windowWidth.set(windowSizeMinusOffset);
 	}
