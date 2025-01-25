@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { ITooltipCoords } from '$lib/interfaces/Tooltip';
-	import { computeTooltipPosition } from '$lib/utils/tooltip.utils';
+	import { getTooltipPosition } from '$lib/utils/tooltip.utils';
 
 	export let text = '';
 
@@ -16,7 +16,7 @@
 	let timer: number | null = null;
 
 	function mouseOver() {
-		coords = computeTooltipPosition(containerRef, tooltipRef, coords);
+		coords = getTooltipPosition(containerRef, tooltipRef, coords);
 		console.log('coords:', coords);
 
 		// only show tooltip after a delay

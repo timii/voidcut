@@ -284,26 +284,29 @@
 
 <div class="flex flex-row px-1 py-[6px] timeline-controls items-center">
 	<div class="flex-1">
-		<div class="flex gap-[6px] ml-3">
+		<div class="flex gap-[6px] ml-3 items-center">
 			<IconButton
 				onClickCallback={deleteSelectedElement}
 				icon={DeleteIcon}
-				alt={'Delete selected element'}
-				size={CONSTS.timelineControlButtonSize + 1}
+				alt={'Delete'}
+				tooltipText={'Delete'}
+				size={CONSTS.timelineControlButtonSize}
 				disabled={disableLeftButtons || disableDelete}
 			></IconButton>
 			<IconButton
 				onClickCallback={splitSelectedElement}
 				icon={SplitIcon}
-				alt={'Split selected element'}
+				alt={'Split'}
+				tooltipText={'Split'}
 				size={CONSTS.timelineControlButtonSize}
 				disabled={disableLeftButtons || disableSplit}
 			></IconButton>
 			<IconButton
 				onClickCallback={duplicateSelectedElement}
 				icon={DuplicateIcon}
-				alt={'Duplicate selected element'}
-				size={CONSTS.timelineControlButtonSize - 1}
+				alt={'Duplicate'}
+				tooltipText={'Duplicate'}
+				size={CONSTS.timelineControlButtonSize}
 				disabled={disableLeftButtons}
 			></IconButton>
 		</div>
@@ -317,26 +320,29 @@
 		</div>
 	</div>
 	<div class="flex-1 text-right">
-		<div class="flex justify-end gap-[6px] mr-3 text-lg">
+		<div class="flex justify-end gap-[6px] mr-3 text-lg items-center">
 			<IconButton
 				onClickCallback={decreaseTimelineScale}
 				icon={DecreaseIcon}
-				alt={'Decrease timeline scale'}
+				alt={'Zoom Out'}
+				tooltipText={'Zoom Out'}
 				size={CONSTS.timelineControlButtonSize}
 				disabled={disableRightButtons || disableScaleDecrease}
 			></IconButton>
 			<IconButton
 				onClickCallback={increaseTimelineScale}
 				icon={IncreaseIcon}
-				alt={'Increase timeline scale'}
+				alt={'Zoom In'}
+				tooltipText={'Zoom In'}
 				size={CONSTS.timelineControlButtonSize}
 				disabled={disableRightButtons || disableScaleIncrease}
 			></IconButton>
 			<IconButton
 				onClickCallback={fitScaleToScreen}
 				icon={FitToScaleIcon}
-				alt={'Fit scale to screen'}
-				size={CONSTS.timelineControlButtonSize + 4}
+				alt={'Fit To Screen'}
+				tooltipText={'Fit To Screen'}
+				size={CONSTS.timelineControlButtonSize}
 				disabled={disableRightButtons}
 			></IconButton>
 		</div>
