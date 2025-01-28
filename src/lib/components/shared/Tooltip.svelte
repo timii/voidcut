@@ -18,7 +18,6 @@
 
 	function mouseOver() {
 		coords = getTooltipPosition(containerRef, tooltipRef, coords);
-		console.log('coords:', coords);
 
 		// only show tooltip after a delay
 		timer = setTimeout(() => (isVisible = true), 500);

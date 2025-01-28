@@ -27,7 +27,6 @@ export const getTooltipPosition = (
         // update the width cutoff property to use it to offset the arrow position
         coords.widthCutoff = widthOutsideWindow
     }
-    console.log("window width:", window.innerWidth, "coords.left:", coords.left, "tooltipRect.width:", tooltipRect.width, "widthOutsideWindow:", widthOutsideWindow, "containerRect.width:", containerRect.width);
 
     return coords;
 }

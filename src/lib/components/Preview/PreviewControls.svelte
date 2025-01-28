@@ -79,31 +79,36 @@
 	<IconButton
 		onClickCallback={onSkipStartClick}
 		icon={SkipStartIcon}
-		alt={'Skip to start'}
+		alt={'Skip To Start'}
+		tooltipText={'Skip To Start'}
 		disabled={disableButtons || disableBackwardButtons}
 	></IconButton>
 	<IconButton
 		onClickCallback={onFrameBeforeClick}
 		icon={FrameBeforeIcon}
 		alt={'Frame Before'}
+		tooltipText={'Frame Before'}
 		disabled={disableButtons || disableBackwardButtons}
 	></IconButton>
 	<IconButton
 		onClickCallback={onPlayPauseClick}
 		icon={$previewPlaying ? PauseIcon : PlayIcon}
 		alt={$previewPlaying ? 'Pause' : 'Play'}
+		tooltipText={$previewPlaying ? 'Pause' : 'Play'}
 		disabled={disableButtons || disableForwardButtons}
 	></IconButton>
 	<IconButton
 		onClickCallback={onFrameAfterClick}
 		icon={FrameAfterIcon}
-		alt={'Frame after'}
+		alt={'Frame After'}
+		tooltipText={'Frame After'}
 		disabled={disableButtons || disableForwardButtons}
 	></IconButton>
 	<IconButton
 		onClickCallback={onSkipEndClick}
 		icon={SkipEndIcon}
-		alt={'Skip to end'}
+		alt={'Skip To End'}
+		tooltipText={'Skip To End'}
 		disabled={disableButtons || disableForwardButtons}
 	></IconButton>
 </div>
