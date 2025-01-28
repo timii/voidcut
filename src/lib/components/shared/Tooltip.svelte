@@ -74,6 +74,10 @@
 		visibility: hidden;
 		white-space: nowrap;
 		z-index: 100;
+		left: 50%;
+		top: 0;
+		/* the hardcoded "6px" is the y distance between container and tooltip */
+		transform: translate(-50%, calc(-100% - 6px));
 	}
 
 	.tooltip.show {
@@ -86,16 +90,6 @@
 		border: 6px solid theme(colors.background-color-lighter);
 		content: ' ';
 		position: absolute;
-	}
-
-	.tooltip {
-		left: 50%;
-		top: 0;
-		/* the hardcoded "6px" is the y distance between container and tooltip */
-		transform: translate(-50%, calc(-100% - 6px));
-	}
-
-	.tooltip:after {
 		border-color: theme(colors.background-color-lighter) transparent transparent transparent;
 		bottom: 0;
 		/* add the pixel amount the tooltip is cut off at the window edge to reposition the arrow accordingly */
