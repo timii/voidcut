@@ -52,22 +52,17 @@
 		e.stopPropagation();
 	}
 
-	// handle when to show a tickby returning either the normal color or the background color to "hide" it
+	// handle when to show a tick
 	function handleTickShow(index: number): string {
-		const customColors = tailwindColors as any;
-		// normale tick color to show a tick
-		const rulerColor = customColors['ruler-color'];
-		// background color to hide a tick
-		const backgroundColor = customColors['background-color'];
 		const currentScale = $currentTimelineScale;
 
 		if (currentScale >= 20) {
 			// show a tick every second
-			return rulerColor;
+			return 'unset';
 		} else {
 			// show a tick for every label and between every label
 			const n = Math.ceil(CONSTS.timelineStartingScale / currentScale / 2);
-			return (index % n) / 2 === 0 ? rulerColor : backgroundColor;
+			return (index % n) / 2 === 0 ? 'unset' : 'hidden';
 		}
 	}
 
@@ -100,7 +95,7 @@
 		>
 			<div
 				class="timeline-ruler-tick w-px h-[5px] bg-ruler-color"
-				style="background-color: {handleTickShow(i)};"
+				style="visibility: {handleTickShow(i)};"
 			></div>
 			<div class="timeline-ruler-label text-ruler-color text-xxxs translate-x-[-50%]">
 				{handleTickLabel(i)}
