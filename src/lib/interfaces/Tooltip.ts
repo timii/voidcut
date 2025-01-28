@@ -3,4 +3,5 @@ export interface ITooltipCoords {
     top: number;
     right: number;
     left: number;
+    widthCutoff: number; // amount of pixels the tooltip cuts of at the window edge
 }

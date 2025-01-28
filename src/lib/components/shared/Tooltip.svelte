@@ -9,7 +9,8 @@
 		bottom: 0,
 		top: 0,
 		right: 0,
-		left: 0
+		left: 0,
+		widthCutoff: 0
 	};
 	let containerRef: HTMLSpanElement | null = null;
 	let tooltipRef: HTMLDivElement | null = null;
@@ -45,7 +46,13 @@
 	bind:this={tooltipRef}
 	class="tooltip"
 	class:show={isVisible}
-	style="bottom: auto; right: auto; left: {coords.left}px; top: {coords.top}px;"
+	style="
+		--widthCutoff: {coords.widthCutoff}px; 
+		bottom: auto; 
+		right: auto; 
+		left: {coords.left}px; 
+		top: {coords.top}px;
+	"
 >
 	{text}
 </div>
@@ -84,13 +91,15 @@
 	.tooltip {
 		left: 50%;
 		top: 0;
+		/* the hardcoded "6px" is the y distance between container and tooltip */
 		transform: translate(-50%, calc(-100% - 6px));
 	}
 
 	.tooltip:after {
 		border-color: theme(colors.background-color-lighter) transparent transparent transparent;
 		bottom: 0;
-		left: 50%;
+		/* add the pixel amount the tooltip is cut off at the window edge to reposition the arrow accordingly */
+		left: calc(50% + var(--widthCutoff));
 		transform: translate(-50%, 99%);
 	}
 </style>

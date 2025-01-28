@@ -37,6 +37,7 @@
 		const windowSizeMinusOffset = width - $thumbOffset;
 
 		windowWidth.set(windowSizeMinusOffset);
+		console.log('fitTo window resize:', windowSizeMinusOffset);
 	}
 </script>
 
@@ -46,14 +47,14 @@
 		<Header></Header>
 	</div>
 	<div class="flex flex-1 basis-2/3 shrink-0">
-		<div class="flex-1 p-4 border-2 workbench basis-1/3">
+		<div class="flex-1 p-4 workbench basis-1/3">
 			<MediaPool></MediaPool>
 		</div>
-		<div class="flex-1 p-4 border-2 preview basis-2/3">
+		<div class="flex-1 p-4 preview basis-2/3">
 			<Preview></Preview>
 		</div>
 	</div>
-	<div class="timeline border-2 flex-1 basis-1/3 h-[33%]">
+	<div class="timeline border flex-1 basis-1/3 h-[33%]">
 		<Timeline></Timeline>
 	</div>
 </main>

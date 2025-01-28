@@ -23,6 +23,9 @@ export const getTooltipPosition = (
     if (widthOutsideWindow > 0) {
         // calculate how much the toolbox needs to be adjusted by, to not be cut off at the screen edge
         coords.left = coords.left - widthOutsideWindow
+
+        // update the width cutoff property to use it to offset the arrow position
+        coords.widthCutoff = widthOutsideWindow
     }
     console.log("window width:", window.innerWidth, "coords.left:", coords.left, "tooltipRect.width:", tooltipRect.width, "widthOutsideWindow:", widthOutsideWindow, "containerRect.width:", containerRect.width);
 
