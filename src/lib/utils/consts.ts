@@ -42,7 +42,12 @@ export const CONSTS = {
     /**
      * The button size for the timeline controls
      */
-    timelineControlButtonSize: 16,
+    timelineControlButtonSize: 24,
+
+    /**
+     * The button size for the preview controls
+     */
+    previewControlButtonSize: 32,
 
     /**
      * The amount of pixels each timeline row is offset by on the left side

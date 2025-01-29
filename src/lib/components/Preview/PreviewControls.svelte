@@ -81,6 +81,7 @@
 		icon={SkipStartIcon}
 		alt={'Skip To Start'}
 		tooltipText={'Skip To Start'}
+		size={CONSTS.previewControlButtonSize}
 		disabled={disableButtons || disableBackwardButtons}
 	></IconButton>
 	<IconButton
@@ -88,6 +89,7 @@
 		icon={FrameBeforeIcon}
 		alt={'Frame Before'}
 		tooltipText={'Frame Before'}
+		size={CONSTS.previewControlButtonSize}
 		disabled={disableButtons || disableBackwardButtons}
 	></IconButton>
 	<IconButton
@@ -95,6 +97,7 @@
 		icon={$previewPlaying ? PauseIcon : PlayIcon}
 		alt={$previewPlaying ? 'Pause' : 'Play'}
 		tooltipText={$previewPlaying ? 'Pause' : 'Play'}
+		size={CONSTS.previewControlButtonSize}
 		disabled={disableButtons || disableForwardButtons}
 	></IconButton>
 	<IconButton
@@ -102,6 +105,7 @@
 		icon={FrameAfterIcon}
 		alt={'Frame After'}
 		tooltipText={'Frame After'}
+		size={CONSTS.previewControlButtonSize}
 		disabled={disableButtons || disableForwardButtons}
 	></IconButton>
 	<IconButton
@@ -109,6 +113,7 @@
 		icon={SkipEndIcon}
 		alt={'Skip To End'}
 		tooltipText={'Skip To End'}
+		size={CONSTS.previewControlButtonSize}
 		disabled={disableButtons || disableForwardButtons}
 	></IconButton>
 </div>
