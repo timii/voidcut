@@ -60,6 +60,11 @@ export const CONSTS = {
     timelineElementMinWidthMs: 500,
 
     /**
+     * The amount of pixels after which the timeline element is dragged
+     */
+    timelineElementThreshold: 100,
+
+    /**
      * The string used for identifying the data while dragging a media pool element
      */
     mediaPoolTransferKey: 'media-data',

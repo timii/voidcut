@@ -22,6 +22,7 @@
 		currentTimelineScale,
 		draggedElementData,
 		draggedElementPosition,
+		draggedOverThreshold,
 		elementResizeData,
 		isThumbBeingDragged,
 		isTimelineElementBeingDragged,
@@ -218,11 +219,17 @@
 			prevElementIndex: elementIndex
 		});
 
-		draggedElementPosition.set(null);
-		draggedElementPosition.set({
-			left: elStartPosition.left,
-			top: elStartPosition.top
-		} as ITimelineDraggedElementPosition);
+		// draggedElementPosition.set(null);
+		draggedElementPosition.update(
+			(value) =>
+				({
+					...value,
+					left: elStartPosition!.left,
+					top: elStartPosition!.top,
+					startX: e.detail.offsetX,
+					startY: e.detail.offsetY
+				}) as ITimelineDraggedElementPosition
+		);
 
 		console.log(
 			'onDragStart -> elDomRect:',
@@ -255,14 +262,17 @@
 			return;
 		}
 
-		if (elStartPosition && mouseStartPositioninTimeline) {
-			draggedElementPosition.set({
-				left: e.detail.offsetX + CONSTS.timelineRowOffset,
-				top: e.detail.offsetY + CONSTS.timelineRowOffset,
-				clickedX: mouseStartPositioninTimeline!.mouseXInTimeline + e.detail.offsetX,
-				clickedY: mouseStartPositioninTimeline!.mouseYInTimeline + e.detail.offsetY
-			} as ITimelineDraggedElementPosition);
-		}
+
+		draggedElementPosition.update(
+			(value) =>
+				({
+					...value,
+					left: e.detail.offsetX + CONSTS.timelineRowOffset,
+					top: e.detail.offsetY + CONSTS.timelineRowOffset,
+					clickedX: mouseStartPositioninTimeline!.mouseXInTimeline + e.detail.offsetX,
+					clickedY: mouseStartPositioninTimeline!.mouseYInTimeline + e.detail.offsetY
+				}) as ITimelineDraggedElementPosition
+		);
 		console.log(
 			'onDrag -> draggedElementPosition:',
 			$draggedElementPosition,

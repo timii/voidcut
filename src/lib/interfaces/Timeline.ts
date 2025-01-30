@@ -40,6 +40,8 @@ export interface ITimelineDraggedElementPosition {
     top: number;  // amount of pixels from the top inside the parent container
     clickedX: number;  // where in the element the mouse clicked
     clickedY: number;  // where in the element the mouse clicked
+    startX: number;  // starting x position when starting to drag
+    startY: number;  // starting y position when starting to drag
     // absoluteLeft: number;  // amount of pixels from the left inside the viewport
     // absoluteTop: number;  // amount of pixels from the top inside the viewport
 }
