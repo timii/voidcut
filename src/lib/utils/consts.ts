@@ -62,7 +62,7 @@ export const CONSTS = {
     /**
      * The amount of pixels after which the timeline element is dragged
      */
-    timelineElementThreshold: 5,
+    timelineElementThreshold: 3,
 
     /**
      * The string used for identifying the data while dragging a media pool element

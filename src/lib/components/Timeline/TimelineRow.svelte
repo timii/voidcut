@@ -10,6 +10,7 @@
 		currentTimelineScale,
 		draggedElementData,
 		draggedElementPosition,
+		draggedOverThreshold,
 		isTimelineElementBeingDragged,
 		thumbOffset,
 		timelineTracks
@@ -78,6 +79,9 @@
 				'elBoundsInMs:',
 				elBoundsInMs
 			);
+
+			// reset value on drop
+			elementHoveredOverRow = false;
 
 			// update the current tracks in the store with the newly moved element
 			timelineTracks.update((tracks) => {
@@ -173,7 +177,7 @@
 	// TODO: refactor to be a util function (including the function in the divider)
 	// check if element is currently hovered over row
 	function isElementHovered(draggedEl: ITimelineDraggedElementPosition | null) {
-		if (!draggedEl || !$draggedElementData || !rowRef) return;
+		if (!draggedEl || !$draggedElementData || !rowRef || !$draggedOverThreshold) return;
 
 		const boundRect = rowRef.getBoundingClientRect();
 		const offsetInParent = {
@@ -278,11 +282,6 @@
 			return;
 		}
 
-		// timelineTracks.update((tracks) => {
-		// 	tracks[index].elements.push;
-
-		// 	return tracks;
-		// });
 		console.log('drop element -> left:', dropZonePositionLeft, dropZonePositionLeft - $thumbOffset);
 
 		// get the left offset where the element was dropped
@@ -327,7 +326,7 @@
 		style="width: {elementWidth}px; display: {elementHoveredOverRow &&
 		$isTimelineElementBeingDragged
 			? 'unset'
-			: 'none'}; background-color: green; left: {dropZonePositionLeft}px;"
+			: 'none'}; background-color: blue; left: {dropZonePositionLeft}px;"
 	></div>
 	<!-- use the elementId of each element as the unqiue key to use when the data changes -->
 	{#each track.elements as element, elementIndex (element.elementId)}
