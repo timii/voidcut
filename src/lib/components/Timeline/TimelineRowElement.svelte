@@ -262,6 +262,32 @@
 			return;
 		}
 
+		if (!elStartPosition || !mouseStartPositioninTimeline || !$draggedElementPosition) {
+			return;
+		}
+
+		// check if we already dragged more than the threshold, if not calculate if we now dragged more than the threshold
+		if (!$draggedOverThreshold) {
+			// get the new x and y offset from the dragged element
+			const newOffsetX = e.detail.offsetX;
+			const newOffsetY = e.detail.offsetY;
+
+			// calculate the difference between the new offset and the starting offset
+			const diffX = Math.abs(newOffsetX - $draggedElementPosition.startX);
+			const diffY = Math.abs(newOffsetY - $draggedElementPosition.startY);
+
+			// check if element is dragged more than the threshold along either the y or x axis
+			const overThreshold =
+				diffX >= CONSTS.timelineElementThreshold || diffY >= CONSTS.timelineElementThreshold;
+
+			// if dragged over the threshold we update the store value
+			if (overThreshold) {
+				draggedOverThreshold.set(overThreshold);
+				isTimelineElementBeingDragged.set(true);
+			} else {
+				return;
+			}
+		}
 
 		draggedElementPosition.update(
 			(value) =>
@@ -273,22 +299,6 @@
 					clickedY: mouseStartPositioninTimeline!.mouseYInTimeline + e.detail.offsetY
 				}) as ITimelineDraggedElementPosition
 		);
-		console.log(
-			'onDrag -> draggedElementPosition:',
-			$draggedElementPosition,
-			'draggedElementData:',
-			$draggedElementData,
-			'$thumbOffset:',
-			$thumbOffset
-		);
-
-		// const detail = e.detail as any;
-		// onElementDrag({
-		// 	clientX: detail.offsetX,
-		// 	clientY: detail.offsetY,
-		// 	buttons: 1,
-		// 	...e
-		// } as unknown as MouseEvent);
 	}
 
 	// handles the end of dragging/dropping the element
@@ -304,6 +314,7 @@
 		isTimelineElementBeingDragged.set(false);
 		mouseStartPosition = undefined;
 		elStartPosition = undefined;
+		draggedOverThreshold.set(false);
 
 		// reset position so the timeline element gets placed inside a track again
 		// setTimeout(() => {
