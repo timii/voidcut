@@ -307,6 +307,13 @@
 			handleElementResizing(e);
 		}
 	}
+
+	function handleMouseDown(e: MouseEvent) {
+		// stop event from bubbling up
+		e.stopPropagation();
+
+		moveTimelineThumb(e);
+	}
 </script>
 
 <div class="flex flex-col h-full timeline-container">
@@ -322,7 +329,7 @@
 		on:dragenter={onHoverElement}
 		on:dragover={onHoverElement}
 		on:pointermove={handleTimelinePointerMove}
-		on:mousedown={moveTimelineThumb}
+		on:mousedown={handleMouseDown}
 		on:scroll={onTimelineScroll}
 		style="background-color: {hoverElement ? '#2e2e35' : ''};"
 		bind:this={scrollContainerEl}

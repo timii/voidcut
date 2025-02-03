@@ -226,6 +226,13 @@
 			clearInterval(scrollInterval);
 		}
 	}
+
+	function onThumbMove(e: MouseEvent) {
+		// stop event from bubbling up to timeline
+		e.stopPropagation();
+
+		moveTimelineThumb(e, true);
+	}
 </script>
 
 <div
@@ -233,7 +240,9 @@
 	id="timeline-thumb"
 	bind:this={thumbElementRef}
 	style="transform: translate({-6 + $currentThumbPosition}px, -28px)"
-	on:mousemove={moveTimelineThumb}
+	on:mousemove={onThumbMove}
+	on:mousedown={onThumbMove}
+	on:pointermove={onThumbMove}
 >
 	<!-- on:mousedown={scrollTimeline} -->
 	<!-- on:mouseup={stopScrolling} -->

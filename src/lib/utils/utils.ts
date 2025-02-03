@@ -646,7 +646,7 @@ export function isCurrentElementBeingResized(el: ITimelineElement): boolean {
 
 // #region timeline utils
 // move the timeline thumb using a given mouse event
-export function moveTimelineThumb(e: MouseEvent) {
+export function moveTimelineThumb(e: MouseEvent, keepSelectedElement = false) {
     e.preventDefault();
 
     // check if the original click is over a timeline element
@@ -662,10 +662,10 @@ export function moveTimelineThumb(e: MouseEvent) {
         return
     }
 
-    // // if an element is selected reset it if the thumb is moved
-    // if (isAnElementSelected()) {
-    //     selectedElement.set({ elementId: '', mediaType: undefined })
-    // }
+    // if an element is selected reset it if the thumb is moved and we don't want to keep the selected element
+    if (isAnElementSelected() && !keepSelectedElement) {
+        selectedElement.set({ elementId: '', mediaType: undefined })
+    }
 
     const thumbBoundingRect = document.getElementById('timeline-thumb')?.getBoundingClientRect()
     if (!thumbBoundingRect) {
