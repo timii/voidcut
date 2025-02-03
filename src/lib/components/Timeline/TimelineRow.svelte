@@ -201,13 +201,14 @@
 		);
 		// if element is hovered over row show drop zone element
 		if (elementHoveredOverRow) {
-			// TODO: move the hardcoded value into a const
-			// limit the drop zone offset to the left so it doesnt' further left than the track
+			// limit the drop zone offset to the left so it doesn't go further left than the track
 			dropZonePositionLeft = Math.max(draggedEl.left, CONSTS.timelineRowOffset);
 
-			if (elementWidth === 0) {
-				// calculate element width using the dragged element width
-				elementWidth = $draggedElementData.width;
+			const draggelElWidth = $draggedElementData.width;
+			// if the current element width is different to the dragged element width, update it
+			if (elementWidth !== draggelElWidth) {
+				// set drop zone width to be the same as the dragged element width
+				elementWidth = draggelElWidth;
 			}
 			console.log(
 				'isElementHovered -> in if dropZoneLeft:',
