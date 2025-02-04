@@ -34,6 +34,7 @@
 	import TimelineControls from './TimelineControls.svelte';
 	import { CONSTS } from '$lib/utils/consts';
 	import TimelineRowDivider from './TimelineRowDivider.svelte';
+	import TimelineEmpty from './TimelineEmpty.svelte';
 
 	let hoverElement = false;
 	let scrollContainerEl: HTMLDivElement;
@@ -334,77 +335,46 @@
 		style="background-color: {hoverElement ? '#2e2e35' : ''};"
 		bind:this={scrollContainerEl}
 	>
-		<!-- Timeline Content -->
-		<!-- calculate width dynamically and fix width if element overflows -->
-		<!-- if container doesn't overflow -> set width of element to be 100% in px -->
-		<!-- and pass the calcualted width to the ruler to use it in there on the container element -->
-		<div
-			class="relative h-auto min-w-full w-max timeline-content"
-			style="height: {isOverflowingY ? 'auto' : '100%'};"
-		>
-			<!-- Timeline Ruler -->
-			<TimelineRuler amountOfTicks={amountOfTicksRounded}></TimelineRuler>
+		{#if $timelineTracks.length === 0}
+			<!-- show an empty state if nothing has been added to the timline -->
+			<TimelineEmpty></TimelineEmpty>
+		{:else}
+			<!-- Timeline Content -->
+			<!-- calculate width dynamically and fix width if element overflows -->
+			<!-- if container doesn't overflow -> set width of element to be 100% in px -->
+			<!-- and pass the calcualted width to the ruler to use it in there on the container element -->
+			<div
+				class="relative h-auto min-w-full w-max timeline-content"
+				style="height: {isOverflowingY ? 'auto' : '100%'};"
+			>
+				<!-- Timeline Ruler -->
+				<TimelineRuler amountOfTicks={amountOfTicksRounded}></TimelineRuler>
 
-			<!-- Timeline Thumb-->
-			<TimelineThumb></TimelineThumb>
+				<!-- Timeline Thumb-->
+				<TimelineThumb></TimelineThumb>
 
-			<!-- Timeline Tracks -->
-			<div class="relative flex flex-col pl-5 mb-20 timeline-tracks">
-				{#each $timelineTracks as track, i (track.trackId)}
-					<!-- the dropzone is highlighted automatically if something is hovered over it -->
-					{#if i === 0}
-						<TimelineRowDivider index={i}></TimelineRowDivider>
-						<!-- <div
-							class="track-divider w-full bg-slate-500 h-[4px] mt-1 rounded-sm"
-							on:drop={(e) => {
-								onDropOverDivider(e, i);
-							}}
-							on:dragleave={(e) => {
-								onDropOverDivider(e, i);
-							}}
-							on:dragenter={onHoverOverDivider}
-							on:dragover={onHoverOverDivider}
-							></div> -->
-						<TimelineRow {track} index={i}></TimelineRow>
-						<TimelineRowDivider index={i + 1}></TimelineRowDivider>
-					{:else}
-						<TimelineRow {track} index={i}></TimelineRow>
-						<TimelineRowDivider index={i + 1}></TimelineRowDivider>
-					{/if}
-
-					<!-- <div
-						class="track-divider w-full bg-slate-500 h-[4px] rounded-sm"
-						on:drop={(e) => {
-							onDropOverDivider(e, i + 1);
-						}}
-						on:dragleave={(e) => {
-							onDropOverDivider(e, i + 1);
-						}}
-						on:dragenter={onHoverOverDivider}
-						on:dragover={onHoverOverDivider}
-					></div> -->
-				{/each}
-
-				<!-- <div class="bg-red-700 h-[50px] w-[2200px] mr-5"></div>
-				<div class="bg-red-700 h-[50px] w-[800px]"></div>
-				<div class="bg-red-700 h-[50px] w-[600px] translate-x-[300px]"></div>
-				<div class="bg-red-700 h-[50px] w-[200px] translate-x-[50px]"></div>
-				<div class="bg-red-700 h-[50px] w-[300px]"></div>
-				<div class="bg-red-700 h-[50px] w-[300px]"></div>
-				<div class="bg-red-700 h-[50px] w-[300px]"></div>
-				<div class="bg-red-700 h-[50px] w-[300px]"></div>
-				<div class="bg-red-700 h-[50px] w-[300px]"></div>
-				<div class="bg-red-700 h-[50px] w-[300px]"></div>
-				<div class="bg-red-700 h-[50px] w-[300px]"></div>
-				<div class="bg-red-700 h-[50px] w-[300px]"></div>
-				<div class="bg-red-700 h-[50px] w-[300px]"></div> -->
+				<!-- Timeline Tracks -->
+				<div class="relative flex flex-col pl-5 mb-20 timeline-tracks">
+					{#each $timelineTracks as track, i (track.trackId)}
+						<!-- the dropzone is highlighted automatically if something is hovered over it -->
+						{#if i === 0}
+							<TimelineRowDivider index={i}></TimelineRowDivider>
+							<TimelineRow {track} index={i}></TimelineRow>
+							<TimelineRowDivider index={i + 1}></TimelineRowDivider>
+						{:else}
+							<TimelineRow {track} index={i}></TimelineRow>
+							<TimelineRowDivider index={i + 1}></TimelineRowDivider>
+						{/if}
+					{/each}
+				</div>
 			</div>
-		</div>
+		{/if}
 	</div>
 </div>
 
 <style lang="postcss">
 	/* needs to have :global prefix because class gets added dynamically */
+	/* TODO: if not needed anymore */
 	:global(.drag-over) {
 		background-color: red;
 	}
