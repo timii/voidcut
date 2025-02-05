@@ -35,7 +35,7 @@
 	/>
 	<label
 		for="media-upload"
-		class="media-upload-button p-3 rounded-lg bg-[#212127] hover:bg-[#2c2c35] hover:cursor-pointer"
+		class="media-upload-button p-3 rounded-lg bg-button-background hover:bg-button-background-hover hover:cursor-pointer"
 		>Upload Media</label
 	>
 </div>

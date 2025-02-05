@@ -282,9 +282,9 @@
 	}
 </script>
 
-<div class="flex flex-row px-1 py-[6px] timeline-controls items-center">
+<div class="flex flex-row px-2 py-[6px] timeline-controls items-center">
 	<div class="flex-1">
-		<div class="flex gap-[6px] ml-3 items-center">
+		<div class="flex gap-[6px] items-center">
 			<IconButton
 				onClickCallback={deleteSelectedElement}
 				icon={DeleteIcon}

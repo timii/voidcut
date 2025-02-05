@@ -41,20 +41,20 @@
 	}
 </script>
 
-<main class="flex flex-col w-screen h-screen max-h-screen gap-1 overflow-hidden max-w-screen">
+<main class="flex flex-col w-screen h-screen max-h-screen overflow-hidden max-w-screen">
 	<!-- TODO: check weird scrolling behavior-->
 	<div class="flex-1 header">
 		<Header></Header>
 	</div>
 	<div class="flex flex-1 basis-2/3 shrink-0">
-		<div class="flex-1 p-4 workbench basis-1/3">
+		<div class="flex-1 py-4 pr-4 workbench basis-1/3">
 			<MediaPool></MediaPool>
 		</div>
-		<div class="flex-1 p-4 preview basis-2/3">
+		<div class="flex-1 py-4 preview basis-2/3">
 			<Preview></Preview>
 		</div>
 	</div>
-	<div class="timeline border flex-1 basis-1/3 h-[33%]">
+	<div class="timeline flex-1 basis-1/3 h-[33%]">
 		<Timeline></Timeline>
 	</div>
 </main>

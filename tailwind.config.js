@@ -25,6 +25,8 @@ export default {
         "accent-color": '#0284c7',
         "accent-color-lighter": '#0ea5e9',
         "accent-color-lightest": '#38bdf8',
+        "button-background": "#212127",
+        "button-background-hover": "#2c2c35",
       }
     },
   },

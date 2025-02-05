@@ -7,7 +7,7 @@
 <button
 	on:click={onClickCallback}
 	{disabled}
-	class="px-4 py-2 font-medium leading-5 rounded cursor-pointer bg-background-color-lighter hover:bg-background-color-lightest"
+	class="px-4 py-2 font-medium leading-5 rounded-lg cursor-pointer bg-background-color-light hover:bg-button-background-hover"
 >
 	{text}
 </button>

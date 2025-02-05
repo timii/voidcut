@@ -191,10 +191,7 @@
 </script>
 
 <div
-	class="track-divider w-ful h-[4px] rounded-sm"
-	style="background-color: {(elementOverDivider && $isTimelineElementBeingDragged) || hoverElement
-		? 'red'
-		: colors.slate[500]}"
+	class="track-divider w-full h-[6px]"
 	data-divider-index={index}
 	on:drop={onDropElement}
 	on:dragleave={onDropElement}
@@ -202,4 +199,11 @@
 	on:dragover={onHoverElement}
 	on:wheel={onScroll}
 	bind:this={dividerRef}
-></div>
+>
+	<div
+		class="track-divider-highlight h-[4px] my-[1px] rounded"
+		style="background-color: {(elementOverDivider && $isTimelineElementBeingDragged) || hoverElement
+			? '#0369a1'
+			: ''}"
+	></div>
+</div>

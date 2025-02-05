@@ -296,8 +296,8 @@
 </script>
 
 <div
-	class="timeline-row bg-ruler-color h-[50px] w-full mr-5 rounded flex"
-	style="background-color: {hoverElement ? 'red' : '#42424e'}"
+	class="timeline-row h-[50px] w-full mr-5 rounded flex"
+	style="background-color: {hoverElement ? '' : '#2c2c35'}"
 	data-row-index={index}
 	on:drop={onDropElement}
 	on:dragleave={onDropElement}
