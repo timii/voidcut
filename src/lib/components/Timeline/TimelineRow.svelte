@@ -296,8 +296,7 @@
 </script>
 
 <div
-	class="timeline-row h-[50px] w-full mr-5 rounded flex"
-	style="background-color: {hoverElement ? '' : '#2c2c35'}"
+	class="timeline-row h-[50px] w-full mr-5 rounded flex bg-background-timeline-row"
 	data-row-index={index}
 	on:drop={onDropElement}
 	on:dragleave={onDropElement}
@@ -305,29 +304,21 @@
 	on:dragover={onHoverElement}
 	bind:this={rowRef}
 >
-	<!-- <div
-		class="clone-drop-zone h-[50px] mr-5 rounded outline-dashed z-10"
-		style="width: {elementWidth}px; display: {elementHoveredOverRow &&
-		$isTimelineElementBeingDragged
-			? 'unset'
-			: 'none'}; background-color: green; transform: translate3d({dropZonePositionLeft}px, 0, 0);"
-	></div> -->
-
 	<!-- element that is shown when a media pool element is being dragged -->
 	<div
-		class="clone-drop-zone h-[50px] mr-5 rounded outline-dashed z-10 absolute"
+		class="clone-drop-zone h-[50px] mr-5 rounded outline-dashed z-10 absolute bg-background-timeline-row-element-hover"
 		style="width: {dropZoneWidth}px; display: {hoverElement
 			? 'unset'
-			: 'none'}; background-color: green; left: {dropZonePositionLeft}px;"
+			: 'none'}; left: {dropZonePositionLeft}px;"
 	></div>
 
 	<!-- element that is shown when an timeline element is being dragged -->
 	<div
-		class="clone-drop-zone h-[50px] mr-5 rounded outline-dashed z-10 absolute"
+		class="clone-drop-zone h-[50px] mr-5 rounded outline-dashed z-10 absolute bg-background-timeline-row-element-hover"
 		style="width: {elementWidth}px; display: {elementHoveredOverRow &&
 		$isTimelineElementBeingDragged
 			? 'unset'
-			: 'none'}; background-color: blue; left: {dropZonePositionLeft}px;"
+			: 'none'}; left: {dropZonePositionLeft}px;"
 	></div>
 	<!-- use the elementId of each element as the unqiue key to use when the data changes -->
 	{#each track.elements as element, elementIndex (element.elementId)}

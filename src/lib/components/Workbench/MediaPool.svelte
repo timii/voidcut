@@ -36,7 +36,7 @@
 </script>
 
 <div
-	class="h-full mediapool-container bg-button-background rounded-r-xl p-4"
+	class="h-full mediapool-container bg-background-highlight rounded-r-xl p-4"
 	on:drop={onDropFile}
 	on:dragleave={onDropFile}
 	on:dragenter={onHoverFile}

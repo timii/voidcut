@@ -21,7 +21,7 @@
 	<img src={MediaUploadImage} class="media-upload-image" alt="Media Upload" />
 	<div class="flex flex-col w-1/2 text-center media-upload-info">
 		<span>You have no media files added to this project. Upload media files to get started.</span>
-		<span class="text-sm italic text-text-color-darkest"
+		<span class="text-sm italic text-text-info"
 			>(Hint: You can also just drag the files into this window)</span
 		>
 	</div>

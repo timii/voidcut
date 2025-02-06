@@ -39,7 +39,7 @@
 
 <div class="flex flex-col items-center element-container">
 	<div
-		class="media relative rounded-lg p-[1px] bg-background-color-light border-accent-color border cursor-pointer"
+		class="media relative rounded-lg p-[1px] bg-background-media-pool-element border-accent-color border cursor-pointer"
 		style="width: {CONSTS.mediaPoolElementWidth}px; height: {CONSTS.mediaPoolElementHeight}px;"
 		draggable="true"
 		on:dragstart={onDragElement}
@@ -57,7 +57,7 @@
 		<!-- if the file has a duration show it in the element -->
 		{#if file.duration}
 			<span
-				class="absolute bottom-2 left-2 font-medium text-xxs bg-background-color pb-[1px] px-1 rounded opacity-80"
+				class="absolute bottom-2 left-2 font-medium text-xxs bg-background-media-pool-time pb-[1px] px-1 rounded opacity-80"
 				>{formatTime(file.duration)}</span
 			>
 		{/if}
@@ -67,13 +67,13 @@
 			<button
 				transition:fade={{ duration: 100 }}
 				on:click={deleteElement}
-				class="cursor-pointer rounded hover:opacity-100 absolute top-2 right-2 bg-background-color p-1 opacity-80"
+				class="cursor-pointer rounded hover:opacity-100 absolute top-2 right-2 bg-background-media-pool-time p-1 opacity-80"
 			>
 				<img src={DeleteIcon} alt="delete media" width="14" />
 			</button>
 		{/if}
 	</div>
-	<span class="h-auto mt-1 text-xxs font-medium text-text-color-darker truncate w-[128px]"
+	<span class="h-auto mt-1 text-xxs font-medium text-text-media-pool-time truncate w-[128px]"
 		>{file.name}</span
 	>
 </div>

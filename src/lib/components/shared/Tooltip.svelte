@@ -58,7 +58,7 @@
 
 <style lang="postcss">
 	.tooltip {
-		background-color: theme(colors.background-color-lighter);
+		background-color: theme(colors.background-tooltip);
 		border-radius: 12px;
 		color: theme(colors.text-color-lighter);
 		opacity: 0;
@@ -86,10 +86,10 @@
 	}
 
 	.tooltip:after {
-		border: 6px solid theme(colors.background-color-lighter);
+		border: 6px solid theme(colors.background-tooltip);
 		content: ' ';
 		position: absolute;
-		border-color: theme(colors.background-color-lighter) transparent transparent transparent;
+		border-color: theme(colors.background-tooltip) transparent transparent transparent;
 		bottom: 0;
 		/* add the pixel amount the tooltip is cut off at the window edge to reposition the arrow accordingly */
 		left: calc(50% + var(--widthCutoff));

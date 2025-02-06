@@ -666,6 +666,7 @@
 </script>
 
 <!-- #region drag element -->
+<!-- TODO: replace just color in element with something better -->
 <div
 	class="timeline-row-element h-[50px] mr-5 rounded cursor-grab absolute"
 	style="width: {elementWidth}px; background-color: {isSelected
@@ -692,22 +693,16 @@
 	<div class="timeline-row-element-drag-area w-[calc(100%-16px)] h-full absolute left-2"></div>
 
 	<!-- element name shown -->
-	<div
-		class="timeline-row-element-name text-[12px] text-background-color-light ml-3 truncate select-none"
-	>
+	<div class="timeline-row-element-name text-[12px] text-text-button ml-3 truncate select-none">
 		{element.mediaName}
 	</div>
 
 	<!-- TODO: JUST FOR DEBUGGING. REMOVE AFTER TESTING -->
-	<div
-		class="timeline-row-element-name text-[10px] text-background-color-light ml-3 truncate select-none"
-	>
+	<div class="timeline-row-element-name text-[10px] text-text-button ml-3 truncate select-none">
 		{element.playbackStartTime / CONSTS.secondsMultiplier}s / {element.duration /
 			CONSTS.secondsMultiplier}s
 	</div>
-	<div
-		class="timeline-row-element-name text-[10px] text-background-color-light ml-3 truncate select-none"
-	>
+	<div class="timeline-row-element-name text-[10px] text-text-button ml-3 truncate select-none">
 		elIndex:{elementIndex}/row:{rowIndex}
 	</div>
 

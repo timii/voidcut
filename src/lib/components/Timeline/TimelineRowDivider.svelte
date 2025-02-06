@@ -201,9 +201,9 @@
 	bind:this={dividerRef}
 >
 	<div
-		class="track-divider-highlight h-[4px] my-[1px] rounded"
-		style="background-color: {(elementOverDivider && $isTimelineElementBeingDragged) || hoverElement
-			? '#0369a1'
-			: ''}"
+		class="track-divider-highlight h-[4px] my-[1px] rounded bg-background-timeline-row-element-hover"
+		style="display: {(elementOverDivider && $isTimelineElementBeingDragged) || hoverElement
+			? 'block'
+			: 'none'};"
 	></div>
 </div>

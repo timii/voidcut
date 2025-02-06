@@ -15,7 +15,7 @@
 		<button
 			on:click={onClickCallback}
 			{disabled}
-			class="cursor-pointer rounded p-[4px] hover:bg-background-color-lighter disabled:opacity-50 disabled:pointer-events-none"
+			class="cursor-pointer rounded p-[4px] hover:bg-background-icon-button disabled:opacity-50 disabled:pointer-events-none"
 			style="width: {size}px;"
 		>
 			<img src={icon} {alt} width="100%" class="object-cover" />
@@ -25,7 +25,7 @@
 	<button
 		on:click={onClickCallback}
 		{disabled}
-		class="cursor-pointer rounded p-[4px] hover:bg-background-color-lighter disabled:opacity-50 disabled:pointer-events-none"
+		class="cursor-pointer rounded p-[4px] hover:bg-background-icon-button disabled:opacity-50 disabled:pointer-events-none"
 	>
 		<img src={icon} {alt} width={size} />
 	</button>
