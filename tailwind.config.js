@@ -14,7 +14,7 @@ export default {
         "background-highlight": '#212127',
         "background-progress": '#111114',
         "background-button": '#E6E6E6',
-        "background-button-hover": '#F2F2F2',
+        "background-button-hover": '#e6e6e6cc',
         "background-icon-button": "#434346",
         "background-tooltip": "#434346",
         "background-timeline-row": "#2c2c35",
