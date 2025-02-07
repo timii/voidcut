@@ -317,7 +317,7 @@
 	}
 </script>
 
-<div class="flex flex-col h-full timeline-container bg-button-background rounded-t-xl">
+<div class="flex flex-col h-full timeline-container bg-background-highlight rounded-t-xl">
 	<!-- Timeline Controls -->
 	<TimelineControls></TimelineControls>
 

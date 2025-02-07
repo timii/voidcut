@@ -47,7 +47,7 @@
 		on:click={onClickBackdrop}
 	>
 		<div
-			class="fixed -translate-x-1/2 -translate-y-1/2 export-dialog bg-background-highlight text-text-color-lightest top-1/2 left-1/2 h-[400px] w-[700px] rounded-2xl p-8 gap-3 flex flex-col items-center justify-center"
+			class="fixed -translate-x-1/2 -translate-y-1/2 export-dialog bg-background-highlight text-text-highlight top-1/2 left-1/2 h-[400px] w-[700px] rounded-2xl p-8 gap-3 flex flex-col items-center justify-center"
 		>
 			<!-- during processing -->
 			{#if $exportState === ExportState.PROCESSING}
@@ -74,7 +74,7 @@
 				<img class="mb-4" src={SuccessIcon} alt="complete" />
 				<div class="text-xl">Exporting complete</div>
 				<!-- TODO: add file infos -->
-				<div class="text-sm text-center text-text-color-darkest">
+				<div class="text-sm text-center text-text-info">
 					<div>File size: {$processedFileSize} MB</div>
 					<div>Elapsed time: {formatTime($ffmpegProgressElapsedTime)}</div>
 				</div>

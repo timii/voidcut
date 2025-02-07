@@ -1,6 +1,9 @@
 <script lang="ts">
 	import { handleFileUpload, saveFilesToStore } from '$lib/utils/utils';
 	import MediaUploadImage from '$lib/assets/workbench/media-upload.png';
+	import Button from '../shared/Button.svelte';
+
+	let inputElementRef: HTMLInputElement;
 
 	// handle file(s) when media is uploaded
 	async function onMediaUpload(e: Event) {
@@ -14,6 +17,11 @@
 				await handleFileUpload(files);
 			}
 		}
+	}
+
+	// open media upload on click
+	function onButtonClick() {
+		inputElementRef.click();
 	}
 </script>
 
@@ -32,10 +40,7 @@
 		multiple
 		accept="image/*,video/*,audio/*"
 		on:change={onMediaUpload}
+		bind:this={inputElementRef}
 	/>
-	<label
-		for="media-upload"
-		class="media-upload-button p-3 rounded-lg bg-button-background hover:bg-button-background-hover hover:cursor-pointer"
-		>Upload Media</label
-	>
+	<Button text="Upload Media" onClickCallback={onButtonClick}></Button>
 </div>

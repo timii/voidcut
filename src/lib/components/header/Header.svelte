@@ -10,7 +10,9 @@
 	}
 </script>
 
-<div class="flex items-center justify-between px-4 py-3 header bg-button-background rounded-b-xl">
+<div
+	class="flex items-center justify-between px-4 py-3 header bg-background-highlight rounded-b-xl"
+>
 	<div class="flex items-center gap-1">
 		<div class="bg-accent-color p-1 rounded">
 			<img src={AppIcon} alt="logo" width="24" />

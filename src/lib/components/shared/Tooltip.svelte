@@ -60,7 +60,7 @@
 	.tooltip {
 		background-color: theme(colors.background-tooltip);
 		border-radius: 12px;
-		color: theme(colors.text-color-lighter);
+		color: theme(colors.text-tooltip);
 		opacity: 0;
 		font-family: 'Noto Sans';
 		font-size: 11px;

@@ -9,8 +9,7 @@ export default {
     },
     extend: {
       colors: {
-        "ruler-color": '#dfdfdf66',
-
+        // background colors
         "background-color": '#151519',
         "background-highlight": '#212127',
         "background-progress": '#111114',
@@ -24,40 +23,23 @@ export default {
         "background-media-pool-element": "#2c2c2f",
         "background-media-pool-time": "#151519",
 
+        // accent colors
         "accent-color": '#0284c7',
 
+        // text colors
         "text-color": '#c2c2c2',
+        "text-highlight": '#dfdfdf',
         "text-info": '#6b7280',
         "text-button": '#151519',
         "text-button-hover": '#0E0E11',
         "text-media-pool-time": "#aeaeae",
+        "text-tooltip": "#d6d6d6",
 
+        // misc colors
+        "ruler-color": '#dfdfdf66',
         "backdrop-color": "#111114",
 
-
-
-        // "background-color-darker": '#111114',
-        // "background-color-light": '#2c2c2f',
-        // "background-color-lighter": '#434346',
-        // "background-color-lightest": '#5b5b5e',
-
-        "text-color-dark": '#b8b8b8',
-        "text-color-darker": '#aeaeae',
-        "text-color-darkest": '#6b7280',
-        "text-color-light": '#cccccc',
-        "text-color-lighter": '#d6d6d6',
-        "text-color-lightest": '#dfdfdf',
-
-        "accent-color-darker": '#0369a1',
-        "accent-color-lighter": '#0ea5e9',
-        "accent-color-lightest": '#38bdf8',
-
-        "button-background": "#212127",
-        "button-background2": "#E6E6E6",
-        "button-background-hover": "#2c2c35",
-
-        // palettes
-
+        // color palettes
         "text": {
           50: "#FAFAFA",
           100: "#F2F2F2",
