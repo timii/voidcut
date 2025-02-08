@@ -202,8 +202,8 @@
 >
 	<div
 		class="track-divider-highlight h-[4px] my-[1px] rounded bg-background-timeline-row-element-hover"
-		style="display: {(elementOverDivider && $isTimelineElementBeingDragged) || hoverElement
-			? 'block'
-			: 'none'};"
+		style="opacity: {(elementOverDivider && $isTimelineElementBeingDragged) || hoverElement
+			? '1'
+			: '0'};"
 	></div>
 </div>

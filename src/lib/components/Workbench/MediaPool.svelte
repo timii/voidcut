@@ -25,6 +25,13 @@
 		}
 	}
 
+	function onHoverLeave(e: DragEvent) {
+		e.preventDefault();
+		e.stopPropagation();
+
+		hoverFile = false;
+	}
+
 	function onHoverFile(e: DragEvent) {
 		// console.log('hover media:', e);
 
@@ -38,7 +45,7 @@
 <div
 	class="h-full mediapool-container bg-background-highlight rounded-r-xl p-4"
 	on:drop={onDropFile}
-	on:dragleave={onDropFile}
+	on:dragleave={onHoverLeave}
 	on:dragenter={onHoverFile}
 	on:dragover={onHoverFile}
 	style="background-color: {hoverFile ? '#2e2e35' : ''};"
