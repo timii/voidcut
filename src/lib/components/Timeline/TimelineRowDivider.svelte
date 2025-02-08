@@ -191,7 +191,7 @@
 </script>
 
 <div
-	class="track-divider w-full h-[6px]"
+	class="track-divider w-full h-[12px] flex flex-col justify-center"
 	data-divider-index={index}
 	on:drop={onDropElement}
 	on:dragleave={onDropElement}
@@ -201,7 +201,7 @@
 	bind:this={dividerRef}
 >
 	<div
-		class="track-divider-highlight h-[4px] my-[1px] rounded bg-background-timeline-row-element-hover"
+		class="track-divider-highlight h-[4px] rounded bg-background-timeline-row-element-hover"
 		style="opacity: {(elementOverDivider && $isTimelineElementBeingDragged) || hoverElement
 			? '1'
 			: '0'};"
