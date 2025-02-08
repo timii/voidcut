@@ -27,7 +27,7 @@
 		</div>
 	</div>
 	<div
-		class=" absolute rounded outline-dashed outline-hover-outline bg-hover-stipes inset-4"
+		class="absolute rounded outline-dashed outline-hover-outline bg-hover-stipes inset-4"
 		style="opacity: {hoverFile ? '1' : '0'};"
 	></div>
 </div>

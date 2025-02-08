@@ -26,7 +26,7 @@
 	}
 </script>
 
-<div class="flex flex-col items-center justify-center h-full gap-8 media-upload">
+<div class="flex flex-col items-center justify-center h-full gap-8 media-upload z-10 relative">
 	<img src={MediaUploadImage} class="media-upload-image" alt="Media Upload" />
 	<div class="flex flex-col w-1/2 text-center media-upload-info">
 		<span>You have no media files added to this project. Upload media files to get started.</span>

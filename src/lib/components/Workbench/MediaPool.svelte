@@ -7,9 +7,6 @@
 	let hoverFile = false;
 
 	async function onDropFile(e: DragEvent) {
-		// console.log('media dropped:', e, 'dataTransfer:', e.dataTransfer);
-
-		// prevent default behavior
 		e.preventDefault();
 		e.stopPropagation();
 
@@ -33,9 +30,6 @@
 	}
 
 	function onHoverFile(e: DragEvent) {
-		// console.log('hover media:', e);
-
-		// prevent default behavior
 		e.preventDefault();
 		e.stopPropagation();
 		hoverFile = true;
@@ -43,15 +37,19 @@
 </script>
 
 <div
-	class="h-full mediapool-container bg-background-highlight rounded-r-xl p-4"
+	class="h-full mediapool-container bg-background-highlight rounded-r-xl p-4 relative"
 	on:drop={onDropFile}
 	on:dragleave={onHoverLeave}
 	on:dragenter={onHoverFile}
 	on:dragover={onHoverFile}
-	style="background-color: {hoverFile ? '#2e2e35' : ''};"
 >
+	<div
+		class="absolute rounded outline-dashed outline-hover-outline bg-hover-stipes inset-4"
+		style="opacity: {hoverFile ? '1' : '0'};"
+	></div>
+
 	{#if $availableMedia && $availableMedia.length !== 0}
-		<div class="flex flex-row flex-wrap content-start h-full gap-4 overflow-y-auto mediapool">
+		<div class="flex flex-row flex-wrap content-start h-full gap-4 overflow-y-auto mediapool z-10">
 			{#each $availableMedia as media, i (media.mediaId)}
 				<MediaPoolElement file={media} index={i}></MediaPoolElement>
 			{/each}
