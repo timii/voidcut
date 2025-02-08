@@ -4,6 +4,8 @@
 	import CloseIcon from '$lib/assets/header/close.png';
 	import SuccessIcon from '$lib/assets/header/complete.png';
 	import ErrorIcon from '$lib/assets/header/error.png';
+	import DownloadIcon from '$lib/assets/header/download.png';
+	import CancelIcon from '$lib/assets/header/cancel.png';
 	import {
 		exportOverlayOpen,
 		exportState,
@@ -60,10 +62,9 @@
 					</div>
 					<div class="color-accent-color">{$ffmpegProgress}%</div>
 				</div>
-				<!-- TODO: implement an own timer that counts the elapsed time -->
 				<div>Elapsed time: {formatTime($ffmpegProgressElapsedTime)}</div>
 				<div class="mt-10">
-					<Button text={'Cancel'} onClickCallback={onCancelClick}></Button>
+					<Button text={'Cancel'} onClickCallback={onCancelClick} icon={CancelIcon}></Button>
 				</div>
 
 				<!-- after processing complete -->
@@ -80,7 +81,7 @@
 				</div>
 				<div class="mt-6">
 					<!-- TODO: add icon -->
-					<Button onClickCallback={onSaveClick} text={'Download'}></Button>
+					<Button onClickCallback={onSaveClick} text={'Download'} icon={DownloadIcon}></Button>
 				</div>
 
 				<!-- if an error occured -->
@@ -90,9 +91,6 @@
 				</div>
 				<img class="mb-4" src={ErrorIcon} alt="error" />
 				<div class="text-xl">There was an error during processing!</div>
-				<div class="mt-6">
-					<Button onClickCallback={onCloseClick} text={'Close'}></Button>
-				</div>
 			{/if}
 		</div>
 	</div>

@@ -3,6 +3,7 @@
 	import { exportOverlayOpen } from '../../../stores/store';
 	import Button from '../shared/Button.svelte';
 	import AppIcon from '$lib/assets/general/icon-white-50.png';
+	import ExportIcon from '$lib/assets/header/export.png';
 
 	async function onExportButtonClick(e: Event) {
 		exportOverlayOpen.set(true);
@@ -17,9 +18,7 @@
 		<div class="bg-accent-color p-1 rounded">
 			<img src={AppIcon} alt="logo" width="24" />
 		</div>
-		<!-- TODO: use some cool font for the text here -->
-		<!-- <div>voidcut</div> -->
 	</div>
 
-	<Button text={'Export'} onClickCallback={onExportButtonClick}></Button>
+	<Button text={'Export'} onClickCallback={onExportButtonClick} icon={ExportIcon}></Button>
 </div>

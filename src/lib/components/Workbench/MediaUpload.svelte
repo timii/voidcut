@@ -2,6 +2,7 @@
 	import { handleFileUpload, saveFilesToStore } from '$lib/utils/utils';
 	import MediaUploadImage from '$lib/assets/workbench/media-upload.png';
 	import Button from '../shared/Button.svelte';
+	import UploadIcon from '$lib/assets/workbench/upload.png';
 
 	let inputElementRef: HTMLInputElement;
 
@@ -42,5 +43,5 @@
 		on:change={onMediaUpload}
 		bind:this={inputElementRef}
 	/>
-	<Button text="Upload Media" onClickCallback={onButtonClick}></Button>
+	<Button text="Upload Media" onClickCallback={onButtonClick} icon={UploadIcon}></Button>
 </div>

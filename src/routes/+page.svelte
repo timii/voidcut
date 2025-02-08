@@ -9,13 +9,18 @@
 	import Overlay from '$lib/components/shared/Overlay.svelte';
 	import ExportDialog from '$lib/components/header/ExportDialog.svelte';
 
+	// list of images that are being preloaded
 	const baseImgPath = 'src/lib/assets/';
 	const imageUrls = [
 		'header/close.png',
 		'header/complete.png',
 		'header/error.png',
+		'header/export.png',
+		'header/download.png',
+		'header/cancel.png',
 		'preview/pause.png',
-		'workbench/delete.png'
+		'workbench/delete.png',
+		'workbench/upload.png'
 	];
 	$: preloadImageUrls = imageUrls.map((url) => baseImgPath + url);
 
