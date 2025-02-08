@@ -227,6 +227,8 @@ export function handleTimelineMediaDrop(media: IMedia, dropArea: TimelineDropAre
     }
 }
 
+//#endregion
+
 // #region file helpers
 // creates a preview image using a given file
 function getVideoPreviewImage(file: File): Promise<string> {
@@ -385,6 +387,8 @@ export function convertDataUrlToUIntArray(dataUrl: string) {
     return array;
 }
 
+//#endregion
+
 
 // #region playback
 // remove interval that handles the current playback time
@@ -469,6 +473,8 @@ export function getCurrentMediaTime(el: IPlayerElement): number {
     return (get(currentPlaybackTime) - elStartTime) / CONSTS.secondsMultiplier;
 }
 
+//#endregion
+
 // #region general utils
 // convert a given pixel value into a milliseconds value using the current timeline scale
 export function convertPxToMs(value: number) {
@@ -515,6 +521,17 @@ export function elementIsAnImage(el: ITimelineElement | IMedia) {
     return el.type === MediaType.Image
 }
 
+// check if dragged element is a media pool element
+export function isDraggedElementFromMediaPool(dataTransfer: DataTransfer | null): boolean {
+    if (!dataTransfer) {
+        return false
+    }
+
+    // if the dataTransfer object contains an item with the media pool transfer key we know the dragged element is a media pool element
+    return dataTransfer.getData(CONSTS.mediaPoolTransferKey) === '' ? false : true
+}
+//#endregion
+
 // #region scrolling utils
 // calculate if a given html element has a horizontal scrollbar
 export function hasHorizontalScrollbar(el: HTMLElement) {
@@ -530,6 +547,8 @@ export function hasVerticalScrollbar(el: HTMLElement) {
 export function isElementFullyScrolled(el: HTMLElement): boolean {
     return el.scrollWidth - el.scrollLeft === el.clientWidth
 }
+
+//#endregion
 
 // #region time formatters
 // for a given time in ms, calculate and return hours, minutes, seconds and milliseconds
@@ -587,7 +606,7 @@ export function msToS(value: number) {
 export function sToMS(value: number) {
     return value * CONSTS.secondsMultiplier
 }
-
+//#endregion
 
 // #region resizing utils
 // checks whether to resize on the left or right side of the element  
@@ -643,6 +662,7 @@ export function isCurrentElementBeingResized(el: ITimelineElement): boolean {
     // return if the id in the store matches the given id
     return elResizeData.timelineElementId === el.elementId
 }
+//#endregion
 
 // #region timeline utils
 // move the timeline thumb using a given mouse event
@@ -1153,3 +1173,4 @@ export function moveElementsOnTrack(elBounds: ITimelineElementBounds, trackEls: 
     );
     return tracks
 }
+//#endregion

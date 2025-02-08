@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { handleFileUpload } from '$lib/utils/utils';
+	import { handleFileUpload, isDraggedElementFromMediaPool } from '$lib/utils/utils';
 	import { availableMedia } from '../../../stores/store';
 	import MediaPoolElement from './MediaPoolElement.svelte';
 	import MediaUpload from './MediaUpload.svelte';
@@ -32,6 +32,12 @@
 	function onHoverFile(e: DragEvent) {
 		e.preventDefault();
 		e.stopPropagation();
+
+		// don't highlight media pool if element from media pool is hovered
+		if (isDraggedElementFromMediaPool(e.dataTransfer)) {
+			return;
+		}
+
 		hoverFile = true;
 	}
 </script>
