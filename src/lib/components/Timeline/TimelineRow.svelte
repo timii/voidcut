@@ -306,7 +306,7 @@
 >
 	<!-- element that is shown when a media pool element is being dragged -->
 	<div
-		class="clone-drop-zone h-[50px] mr-5 rounded outline-dashed z-10 absolute bg-background-timeline-row-element-hover"
+		class="clone-drop-zone h-[50px] mr-5 rounded outline-dashed outline-hover-outline z-10 absolute bg-hover-stipes"
 		style="width: {dropZoneWidth}px; display: {hoverElement
 			? 'unset'
 			: 'none'}; left: {dropZonePositionLeft}px;"
@@ -314,7 +314,7 @@
 
 	<!-- element that is shown when an timeline element is being dragged -->
 	<div
-		class="clone-drop-zone h-[50px] mr-5 rounded outline-dashed z-10 absolute bg-background-timeline-row-element-hover"
+		class="clone-drop-zone h-[50px] mr-5 rounded outline-dashed outline-hover-outline z-10 absolute bg-hover-stipes"
 		style="width: {elementWidth}px; display: {elementHoveredOverRow &&
 		$isTimelineElementBeingDragged
 			? 'unset'
