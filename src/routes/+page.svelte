@@ -34,6 +34,18 @@
 
 		// get the initial window size
 		onWindowResize(window.innerWidth);
+
+		// block dropping files other than the media pool so the local file isn't opened in the tab
+		const eventsToBlock = ['drop', 'dragover'];
+		eventsToBlock.forEach((event) => {
+			document.addEventListener(
+				event,
+				(e) => {
+					e.preventDefault();
+				},
+				false
+			);
+		});
 	});
 
 	//  listen to window changes and update the store variable on change
