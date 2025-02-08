@@ -8,6 +8,10 @@ export default {
       xxs: '10px'
     },
     extend: {
+      backgroundImage: {
+        // custom background stripes
+        "hover-stipes": "repeating-linear-gradient(45deg,#0284c733,#0284c733 10px,#01517933 10px,#01517933 20px)",
+      },
       colors: {
         // background colors
         "background-color": '#151519',
@@ -22,6 +26,8 @@ export default {
         "background-timeline-divider": "#0369a1", // dark accent color
         "background-media-pool-element": "#2c2c2f",
         "background-media-pool-time": "#151519",
+        "background-stripe1": "#0284c733", // accent color (opacity 0.2)
+        "background-stripe2": "#01517933", // darker accent color (opacity 0.2)
 
         // accent colors
         "accent-color": '#0284c7',
@@ -38,6 +44,7 @@ export default {
         // misc colors
         "ruler-color": '#dfdfdf66',
         "backdrop-color": "#111114",
+        "hover-outline": "#0369a1", // dark accent color
 
         // color palettes
         "text": {

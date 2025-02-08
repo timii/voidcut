@@ -4,7 +4,7 @@
 @tailwind utilities;
 
 * {
-    transition: background-color 100ms;
+    transition: background-color 100ms, opacity 100ms;
 }
 
 body {
