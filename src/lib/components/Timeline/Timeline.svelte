@@ -206,39 +206,6 @@
 		// );
 	}
 
-	// function onHoverOverDivider(e: DragEvent) {
-	// 	// prevent default behavior
-	// 	e.preventDefault();
-	// 	e.stopPropagation();
-	// 	(e.target as HTMLDivElement).classList.add('drag-over');
-	// }
-
-	// function onDropOverDivider(e: DragEvent, index: number) {
-	// 	// prevent default behavior
-	// 	e.preventDefault();
-	// 	e.stopPropagation();
-	// 	(e.target as HTMLDivElement).classList.remove('drag-over');
-
-	// 	// handleAddElementToTimeline(e, index);
-	// }
-
-	// TODO: add comment
-	// function handleAddElementToTimeline(e: DragEvent) {
-	// 	// get data from dropped element
-	// 	let mediaDataString = e.dataTransfer?.getData(CONSTS.mediaPoolTransferKey);
-	// 	if (!mediaDataString) {
-	// 		return;
-	// 	}
-
-	// 	// parse it back to be an object again
-	// 	const mediaData: IMedia = JSON.parse(mediaDataString);
-
-	// 	// only handle files when actually dropped
-	// 	if (mediaData && e.type !== 'dragleave') {
-	// 		handleTimelineMediaDrop(mediaData, index);
-	// 	}
-	// }
-
 	// listen to scrolling in the timeline
 	function onTimelineScroll(e: Event) {
 		if (thumbElementRef === null) {

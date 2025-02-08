@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { isDraggedElementAFile } from '$lib/utils/utils';
+
 	let hoverFile = false;
 
 	function onHoverLeave(e: DragEvent) {
@@ -10,6 +12,12 @@
 	function onHoverFile(e: DragEvent) {
 		e.preventDefault();
 		e.stopPropagation();
+
+		// don't highlight the timeline if a file is hovered over
+		if (isDraggedElementAFile(e.dataTransfer?.items)) {
+			return;
+		}
+
 		hoverFile = true;
 	}
 </script>

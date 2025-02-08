@@ -530,6 +530,24 @@ export function isDraggedElementFromMediaPool(dataTransfer: DataTransfer | null)
     // if the dataTransfer object contains an item with the media pool transfer key we know the dragged element is a media pool element
     return dataTransfer.getData(CONSTS.mediaPoolTransferKey) === '' ? false : true
 }
+
+// check if dragged element is a media pool element
+export function isDraggedElementAFile(list: DataTransferItemList | undefined): boolean {
+    if (!list || list.length === 0) {
+        return false
+    }
+
+    // if the data transfer items list contains an item with the kind "file" we know the dragged element is a file
+    let containsFile = false
+    for (const item of list) {
+        if (item.kind === 'file') {
+            containsFile = true;
+            break;
+        }
+    }
+
+    return containsFile
+}
 //#endregion
 
 // #region scrolling utils
