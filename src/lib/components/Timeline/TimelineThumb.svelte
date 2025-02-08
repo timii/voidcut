@@ -67,29 +67,6 @@
 
 			const timelineFullyScrolled = isElementFullyScrolled(timelineScrollContainer);
 
-			// console.log(
-			// 	'currentPlaybacktime Changed in thumb timelineScrollContainer:',
-			// 	timelineScrollContainer,
-			// 	'scrollContainerBoundingRect:',
-			// 	scrollContainerBoundingRect,
-			// 	'scrollLeft:',
-			// 	timelineScrollContainer.scrollLeft,
-			// 	'scrollWidth:',
-			// 	timelineScrollContainer.scrollWidth,
-			// 	'clientWidth:',
-			// 	timelineScrollContainer.clientWidth,
-			// 	'scrollWidth - scrollLeft:',
-			// 	timelineScrollContainer.scrollWidth - timelineScrollContainer.scrollLeft,
-			// 	'timelineFullyScrolled:',
-			// 	timelineFullyScrolled,
-			// 	'scrollContainerBoundingRect.width:',
-			// 	scrollContainerBoundingRect.width,
-			// 	'thumbBoundingRect.x:',
-			// 	thumbBoundingRect.x,
-			// 	'scrollContainerBoundingRect.width - thumbBoundingRect.x:',
-			// 	scrollContainerBoundingRect.width - thumbBoundingRect.x
-			// );
-
 			// check if thumb is on the right edge
 			if (
 				scrollContainerBoundingRect.width - thumbBoundingRect.x < 42 &&
@@ -122,6 +99,7 @@
 			}
 		})();
 
+	// TODO: remove if not used
 	function scrollTimeline(e: MouseEvent) {
 		e.preventDefault();
 
@@ -248,8 +226,8 @@
 	<!-- on:mouseup={stopScrolling} -->
 	<div class="relative flex flex-col items-center w-full h-full thumb-container">
 		<div
-			class="thumb-header w-full h-[25px] bg-green-600 rounded-b-[50px] rounded-t-[20px] sticky top-0"
+			class="thumb-header w-full h-[25px] bg-background-ruler rounded-b-[50px] rounded-t-[20px] sticky top-0"
 		></div>
-		<div class="thumb-stick bg-blue-600 w-[2px] h-full"></div>
+		<div class="thumb-stick bg-background-ruler w-[2px] h-full"></div>
 	</div>
 </div>

@@ -28,6 +28,7 @@ export default {
         "background-media-pool-time": "#151519",
         "background-stripe1": "#0284c733", // accent color (opacity 0.2)
         "background-stripe2": "#01517933", // darker accent color (opacity 0.2)
+        "background-ruler": "#c2c2c2",
 
         // accent colors
         "accent-color": '#0284c7',
