@@ -669,9 +669,11 @@
 <!-- TODO: replace just color in element with something better -->
 <div
 	class="timeline-row-element h-[50px] mr-5 rounded cursor-grab absolute"
-	style="width: {elementWidth}px; background-color: {isSelected
-		? tailwindColors.orange[500]
-		: tailwindColors.red[500]}; z-index: {dragging ? '50' : 'auto'}"
+	style="
+		width: {elementWidth}px;
+		background-color: {isSelected ? tailwindColors.orange[500] : tailwindColors.red[500]};
+		z-index: {dragging ? '50' : 'auto'}
+		"
 	data-element-el-index={elementIndex}
 	data-element-row-index={rowIndex}
 	data-element-offset={element.playbackStartTime}
@@ -688,6 +690,11 @@
 	on:neodrag:end={onDragEnd}
 	bind:this={elementRef}
 >
+	<div
+		class=" absolute rounded outline outline-2 outline-hover-outline inset-[1px]"
+		style="opacity: {isSelected ? '1' : '0'};"
+	></div>
+
 	<!-- only clicking and dragging on this element will allow the parent to drag, anywhere else on the parent won’t work -->
 	<!-- width of the "drag-area" will be the full element - the handle sizes -->
 	<div class="timeline-row-element-drag-area w-[calc(100%-16px)] h-full absolute left-2"></div>
@@ -714,7 +721,7 @@
 	></div> -->
 
 	<!-- element handles to resize an element -->
-	{#if isSelected || isHovering}
+	{#if (isSelected || isHovering) && !$isTimelineElementBeingDragged}
 		<div
 			class="timeline-row-element-handle absolute top-0 left-0 h-full bg-blue-400 w-2 cursor-ew-resize rounded-l"
 			on:mousemove={onResizeLeft}
