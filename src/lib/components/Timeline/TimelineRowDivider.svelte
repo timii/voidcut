@@ -4,15 +4,17 @@
 	import {
 		draggedElementData,
 		draggedElementPosition,
+		draggedOverFirstDivider,
+		draggedUnderLastDivider,
 		isTimelineElementBeingDragged,
 		timelineTracks
 	} from '../../../stores/store';
-	import colors from 'tailwindcss/colors';
 	import { CONSTS } from '$lib/utils/consts';
 	import {
 		cleanUpEmptyTracks,
 		createTrackWithElement,
-		handleTimelineMediaDrop
+		handleTimelineMediaDrop,
+		resetOverUnderDividers
 	} from '$lib/utils/utils';
 	import type { IMedia } from '$lib/interfaces/Media';
 
@@ -21,12 +23,16 @@
 	// call function everytime the store variable changes
 	$: isElementHovered($draggedElementPosition);
 
+	// check if divider needs to be highlighted if one of those two store values changes
+	$: isDraggedElementOverOrUnder($draggedOverFirstDivider, $draggedUnderLastDivider);
+
 	let dividerRef: HTMLElement;
 	let tracksElBoundRect: DOMRect;
 	let dividerElBoundRect: DOMRect;
 	let offsetInParent: { left: number; top: number };
 	let elementOverDivider = false;
 	let hoverElement = false;
+	let hoverElementOverUnder = false;
 
 	onMount(() => {
 		const tracksEl = document.getElementsByClassName('timeline-tracks')[0];
@@ -159,6 +165,7 @@
 		e.preventDefault();
 		e.stopPropagation();
 		hoverElement = true;
+		resetOverUnderDividers();
 	}
 
 	// handle media element dropped on divider and not timeline element
@@ -188,6 +195,35 @@
 	function onScroll(e: Event) {
 		e.preventDefault;
 	}
+
+	function isDraggedElementOverOrUnder(over: boolean, under: boolean) {
+		console.log(
+			'on hover isDraggedElementOverOrUnder -> over/under',
+			over,
+			'/',
+			under,
+			'index:',
+			index,
+			'$timelineTracks.length:',
+			$timelineTracks.length
+		);
+
+		// if current divider is the first one and the dragged element is over the first
+		const overCurrent = over && index === 0;
+		// if current divider is the last one and the dragged element is under the last
+		const underCurrent = under && index === $timelineTracks.length;
+		// if the dragged element is neither over nor under the first/last divider
+		const notOverAndUnder = !over && !under;
+
+		// highlight current divider if dragged element is either over current or under current element
+		hoverElementOverUnder = !notOverAndUnder && (overCurrent || underCurrent);
+
+		console.log(
+			'on hover isDraggedElementOverOrUnder -> hoverElementOverUnder:',
+			hoverElementOverUnder
+		);
+		console.log('-------------------');
+	}
 </script>
 
 <div
@@ -202,7 +238,9 @@
 >
 	<div
 		class="track-divider-highlight h-[4px] rounded bg-background-timeline-row-element-hover"
-		style="opacity: {(elementOverDivider && $isTimelineElementBeingDragged) || hoverElement
+		style="
+		opacity: 
+		{(elementOverDivider && $isTimelineElementBeingDragged) || hoverElement || hoverElementOverUnder
 			? '1'
 			: '0'};"
 	></div>

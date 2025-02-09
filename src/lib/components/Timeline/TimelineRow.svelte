@@ -23,7 +23,8 @@
 		convertPxToMs,
 		handleElementIndeces,
 		handleOverlapping,
-		handleTimelineMediaDrop
+		handleTimelineMediaDrop,
+		resetOverUnderDividers
 	} from '$lib/utils/utils';
 	import type { IMedia } from '$lib/interfaces/Media';
 
@@ -227,6 +228,8 @@
 		e.preventDefault();
 		e.stopPropagation();
 		hoverElement = true;
+
+		resetOverUnderDividers();
 
 		// subtract the media pool element width so drop zone starts at the left of the element
 		dropZonePositionLeft = Math.max(

@@ -8,7 +8,8 @@
 		hasVerticalScrollbar,
 		moveTimelineThumb,
 		onlyPrimaryButtonClicked,
-		resetAllBeingDragged
+		resetAllBeingDragged,
+		resetOverUnderDividers
 	} from '$lib/utils/utils';
 	import { onMount } from 'svelte';
 	import TimelineRow from './TimelineRow.svelte';
@@ -18,8 +19,11 @@
 		currentPlaybackTime,
 		currentThumbPosition,
 		currentTimelineScale,
+		draggedOverFirstDivider,
+		draggedUnderLastDivider,
 		horizontalScroll,
 		isThumbBeingDragged,
+		isTimelineElementBeingDragged,
 		isTimelineElementBeingResized,
 		maxPlaybackTime,
 		maxTimelineScale,
@@ -43,6 +47,8 @@
 	let amountOfTicks = 0;
 	let amountOfTicksRounded = 0;
 	let thumbElementRef: HTMLElement | null = null;
+	let firstDivider: Element | null = null;
+	let lastDivider: Element | null = null;
 
 	onMount(() => {
 		// listen to selected events in the window
@@ -108,6 +114,8 @@
 	// get the max playback time everytime the timelineTracks store changes
 	$: getMaxPlaybackTime($timelineTracks);
 
+	$: resetStoreValues($isTimelineElementBeingDragged);
+
 	function getMaxPlaybackTime(tracks: ITimelineTrack[]) {
 		console.log(
 			'Timeline -> timelineTracks changed:',
@@ -158,12 +166,25 @@
 		}
 	}
 
+	// reset store values if isTimelineElementBeingDragged changed to false
+	function resetStoreValues(elementBeingDragged: boolean) {
+		if (!elementBeingDragged) {
+			draggedOverFirstDivider.set(false);
+			draggedUnderLastDivider.set(false);
+		}
+	}
+
 	function onDropElement(e: DragEvent) {
 		// TODO: refactor most of this logic into a util function since we mostly do the same for both dropping media element here, divider and the timelineRow
 		// prevent default behavior
 		e.preventDefault();
 		e.stopPropagation();
 		hoverElement = false;
+
+		// reset all the variables used when checking if dragged element is over or under dividers
+		resetOverUnderDividers();
+		firstDivider = null;
+		lastDivider = null;
 
 		// get data from dropped element
 		let mediaDataString = e.dataTransfer?.getData(CONSTS.mediaPoolTransferKey);
@@ -179,7 +200,10 @@
 			return;
 		}
 
-		handleTimelineMediaDrop(mediaData, TimelineDropArea.TIMELINE);
+		// check if the element was dropped over the first or under the last divider
+		const rowIndex = $draggedOverFirstDivider ? 0 : $timelineTracks.length;
+
+		handleTimelineMediaDrop(mediaData, TimelineDropArea.DIVIDER, rowIndex);
 	}
 
 	function onHoverElement(e: DragEvent) {
@@ -188,6 +212,35 @@
 		e.stopPropagation();
 		hoverElement = true;
 
+		let dividers;
+		if (!firstDivider || !lastDivider) {
+			// get all divider elements using their class
+			dividers = document.getElementsByClassName('track-divider');
+
+			// if we found less than two dividers something went wrong
+			if (dividers.length < 2) {
+				return;
+			}
+
+			// get the first and last one from list of dividers
+			firstDivider = dividers[0];
+			lastDivider = dividers[dividers.length - 1];
+		}
+		// get their y coordinates
+		const firstRect = firstDivider.getBoundingClientRect();
+		const lastRect = lastDivider.getBoundingClientRect();
+
+		// check if we're higher than the first or lower than the last divider
+		const higher = e.clientY < firstRect.y;
+		const lower = e.clientY > lastRect.y + lastRect.height;
+
+		// only update store values if they changed compared to the current state
+		if (higher !== $draggedOverFirstDivider) {
+			draggedOverFirstDivider.set(higher);
+		}
+		if (lower !== $draggedUnderLastDivider) {
+			draggedUnderLastDivider.set(lower);
+		}
 		// const elemBelow = document.elementFromPoint(e.clientX, e.clientY);
 		// const elemsBelow = document.elementsFromPoint(e.clientX, e.clientY);
 		// console.log(

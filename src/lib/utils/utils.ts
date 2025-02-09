@@ -26,6 +26,8 @@ import {
     maxTimelineScale,
     minTimelineScale,
     possibleScaleValues,
+    draggedOverFirstDivider,
+    draggedUnderLastDivider,
 } from "../../stores/store";
 import { CONSTS } from "./consts";
 import { adjustingInterval } from "./betterInterval";
@@ -498,6 +500,17 @@ export function resetAllBeingDragged() {
     isTimelineElementBeingDragged.set(false)
     isTimelineElementBeingResized.set(false)
     draggedElement.set(null)
+}
+
+// reset all over/under dividers helper store values
+export function resetOverUnderDividers() {
+    if (get(draggedOverFirstDivider)) {
+        draggedOverFirstDivider.set(false)
+    }
+
+    if (get(draggedUnderLastDivider)) {
+        draggedUnderLastDivider.set(false)
+    }
 }
 
 // get all tailwind variables to use in components

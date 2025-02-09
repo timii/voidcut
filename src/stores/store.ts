@@ -40,6 +40,8 @@ export const elementResizeData = writable<ITimelineElementResizeData | undefined
 export const draggedElement = writable<ITimelineDraggedElement | null>(null); // contains information about the dragged timeline element
 export const draggedElementPosition = writable<ITimelineDraggedElementPosition | null>(null) // keeps track of the dragged element position
 export const draggedOverThreshold = writable<boolean>(false) // keeps track if the element has been dragged more than the threshold
+export const draggedOverFirstDivider = writable<boolean>(false) // keeps track if the dragged element is under the last element
+export const draggedUnderLastDivider = writable<boolean>(false) // keeps track if the dragged element is under the last element
 export const draggedElementData = writable<ITimelineDraggedElementData | null>(null) // holds the dragged element information that will only be set once at the beginngin
 export const selectedElement = writable<ISelectedElement>({ elementId: '' }); // keep track which element is currently selected in the timeline
 
