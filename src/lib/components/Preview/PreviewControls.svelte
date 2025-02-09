@@ -35,12 +35,17 @@
 		}, 0);
 	}
 
+	// small wrapper to set the playback time in store after a short delay
+	function setPlaybackTimeAfterShortDelay(value: number) {
+		setTimeout(() => currentPlaybackTime.set(value), 0);
+	}
+
 	function onSkipStartClick() {
 		console.log('onSkipStartClick clicked!');
 		// pause playback to clear current playback interval
 		pausePlayback();
-		// reset current playback to 0
-		currentPlaybackTime.set(0);
+		// reset current playback to 0 after a short delay
+		setPlaybackTimeAfterShortDelay(0);
 	}
 
 	function onFrameBeforeClick() {
@@ -72,8 +77,8 @@
 		console.log('onSkipEndClick clicked!');
 		// pause playback to clear current playback interval
 		pausePlayback();
-		// set current playback to max playback time
-		currentPlaybackTime.set($maxPlaybackTime);
+		// set current playback to max playback time after a short delay
+		setPlaybackTimeAfterShortDelay($maxPlaybackTime);
 	}
 </script>
 
