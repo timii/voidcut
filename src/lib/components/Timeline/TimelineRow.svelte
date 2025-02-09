@@ -176,7 +176,7 @@
 	});
 
 	// TODO: refactor to be a util function (including the function in the divider)
-	// check if element is currently hovered over row
+	// check if timeline element is currently hovered over row
 	function isElementHovered(draggedEl: ITimelineDraggedElementPosition | null) {
 		if (!draggedEl || !$draggedElementData || !rowRef || !$draggedOverThreshold) return;
 

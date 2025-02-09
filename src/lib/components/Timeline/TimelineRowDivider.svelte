@@ -137,7 +137,7 @@
 		});
 	});
 
-	// check if an element is hovered over the divider
+	// check if a timeline element is hovered over the divider
 	function isElementHovered(draggedEl: ITimelineDraggedElementPosition | null) {
 		if (!draggedEl || !offsetInParent) return;
 

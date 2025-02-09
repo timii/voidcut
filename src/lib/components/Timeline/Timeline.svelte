@@ -19,7 +19,10 @@
 		currentPlaybackTime,
 		currentThumbPosition,
 		currentTimelineScale,
+		draggedElementData,
+		draggedElementPosition,
 		draggedOverFirstDivider,
+		draggedOverThreshold,
 		draggedUnderLastDivider,
 		horizontalScroll,
 		isThumbBeingDragged,
@@ -34,13 +37,16 @@
 		timelineTracks,
 		verticalScroll
 	} from '../../../stores/store';
-	import { TimelineDropArea, type ITimelineTrack } from '$lib/interfaces/Timeline';
+	import {
+		TimelineDropArea,
+		type ITimelineDraggedElementPosition,
+		type ITimelineTrack
+	} from '$lib/interfaces/Timeline';
 	import TimelineControls from './TimelineControls.svelte';
 	import { CONSTS } from '$lib/utils/consts';
 	import TimelineRowDivider from './TimelineRowDivider.svelte';
 	import TimelineEmpty from './TimelineEmpty.svelte';
 
-	let hoverElement = false;
 	let scrollContainerEl: HTMLDivElement;
 	let isOverflowingX = false;
 	let isOverflowingY = false;
@@ -116,6 +122,32 @@
 
 	$: resetStoreValues($isTimelineElementBeingDragged);
 
+	// check if the dragged element is hovered over the timeline
+	$: isElementHovered($draggedElementPosition);
+
+	// TODO: refactor to be a util function (including the function in the divider)
+	// check if timeline element is currently hovered over row
+	function isElementHovered(draggedEl: ITimelineDraggedElementPosition | null) {
+		if (
+			!draggedEl ||
+			!$draggedElementData ||
+			!$draggedOverThreshold ||
+			!$isTimelineElementBeingDragged
+		)
+			return;
+
+		const parentTopOffset = scrollContainerEl.getBoundingClientRect();
+
+		// current dragged position on the y axis (including the parent top offset and ruler height)
+		const curYPos = draggedEl.clickedY + parentTopOffset.top + 26;
+
+		// update local variables if they're null
+		updateFirstAndLastDividerIfNull();
+
+		// check if given y coordinate is lower or higher than first/last divider and update store
+		isYHigherOrLowerThanDividers(curYPos);
+	}
+
 	function getMaxPlaybackTime(tracks: ITimelineTrack[]) {
 		console.log(
 			'Timeline -> timelineTracks changed:',
@@ -179,7 +211,6 @@
 		// prevent default behavior
 		e.preventDefault();
 		e.stopPropagation();
-		hoverElement = false;
 
 		// reset all the variables used when checking if dragged element is over or under dividers
 		resetOverUnderDividers();
@@ -206,12 +237,8 @@
 		handleTimelineMediaDrop(mediaData, TimelineDropArea.DIVIDER, rowIndex);
 	}
 
-	function onHoverElement(e: DragEvent) {
-		// prevent default behavior
-		e.preventDefault();
-		e.stopPropagation();
-		hoverElement = true;
-
+	// update local variables if they're null
+	function updateFirstAndLastDividerIfNull() {
 		let dividers;
 		if (!firstDivider || !lastDivider) {
 			// get all divider elements using their class
@@ -226,13 +253,21 @@
 			firstDivider = dividers[0];
 			lastDivider = dividers[dividers.length - 1];
 		}
+	}
+
+	// check if given y coordinate is lower or higher than first/last divider and update store
+	function isYHigherOrLowerThanDividers(y: number) {
+		if (!firstDivider || !lastDivider) {
+			return;
+		}
+
 		// get their y coordinates
 		const firstRect = firstDivider.getBoundingClientRect();
 		const lastRect = lastDivider.getBoundingClientRect();
 
 		// check if we're higher than the first or lower than the last divider
-		const higher = e.clientY < firstRect.y;
-		const lower = e.clientY > lastRect.y + lastRect.height;
+		const higher = y < firstRect.y;
+		const lower = y > lastRect.y + lastRect.height;
 
 		// only update store values if they changed compared to the current state
 		if (higher !== $draggedOverFirstDivider) {
@@ -241,22 +276,31 @@
 		if (lower !== $draggedUnderLastDivider) {
 			draggedUnderLastDivider.set(lower);
 		}
-		// const elemBelow = document.elementFromPoint(e.clientX, e.clientY);
-		// const elemsBelow = document.elementsFromPoint(e.clientX, e.clientY);
-		// console.log(
-		// 	'onHoverElement -> e:',
-		// 	e,
-		// 	'e.clientX/e.clientY',
-		// 	e.clientX,
-		// 	'/',
-		// 	e.clientY,
-		// 	'elements:',
-		// 	elemsBelow,
-		// 	'elementFromPoint',
-		// 	elemBelow,
-		// 	'closest element:',
-		// 	elemBelow?.closest('div')
-		// );
+
+		console.log(
+			'on hover isYHigherOrLowerThanDividers -> firstRect/lastRect:',
+			firstRect,
+			'/',
+			lastRect,
+			'y:',
+			y,
+			'higher/lower:',
+			higher,
+			'/',
+			lower
+		);
+	}
+
+	function onHoverElement(e: DragEvent) {
+		// prevent default behavior
+		e.preventDefault();
+		e.stopPropagation();
+
+		// update local variables if they're null
+		updateFirstAndLastDividerIfNull();
+
+		// check if given y coordinate is lower or higher than first/last divider and update store
+		isYHigherOrLowerThanDividers(e.clientY);
 	}
 
 	// listen to scrolling in the timeline
