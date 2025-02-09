@@ -71,7 +71,7 @@
 			<Preview></Preview>
 		</div>
 	</div>
-	<div class="timeline flex-1 basis-1/3 h-[33%]">
+	<div class="timeline flex-1 basis-1/3 h-[33%] max-h-[28%]">
 		<Timeline></Timeline>
 	</div>
 </main>

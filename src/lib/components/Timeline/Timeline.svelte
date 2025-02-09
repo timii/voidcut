@@ -352,7 +352,6 @@
 		on:pointermove={handleTimelinePointerMove}
 		on:mousedown={handleMouseDown}
 		on:scroll={onTimelineScroll}
-		style="background-color: {hoverElement ? '#2e2e35' : ''};"
 		bind:this={scrollContainerEl}
 	>
 		{#if $timelineTracks.length === 0}
@@ -363,10 +362,7 @@
 			<!-- calculate width dynamically and fix width if element overflows -->
 			<!-- if container doesn't overflow -> set width of element to be 100% in px -->
 			<!-- and pass the calcualted width to the ruler to use it in there on the container element -->
-			<div
-				class="relative h-auto min-w-full w-max timeline-content"
-				style="height: {isOverflowingY ? 'auto' : '100%'};"
-			>
+			<div class="relative min-w-full w-max timeline-content">
 				<!-- Timeline Ruler -->
 				<TimelineRuler amountOfTicks={amountOfTicksRounded}></TimelineRuler>
 
@@ -374,7 +370,7 @@
 				<TimelineThumb></TimelineThumb>
 
 				<!-- Timeline Tracks -->
-				<div class="relative flex flex-col pl-5 mb-20 timeline-tracks">
+				<div class="relative flex flex-col pl-5 pb-6 timeline-tracks">
 					{#each $timelineTracks as track, i (track.trackId)}
 						<!-- the dropzone is highlighted automatically if something is hovered over it -->
 						{#if i === 0}
