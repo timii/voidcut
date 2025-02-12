@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { IMedia } from '$lib/interfaces/Media';
 	import {
+		allBoundingRectValuesZero,
 		convertMsToPx,
 		handleElementResizing,
 		handleTimelineMediaDrop,
@@ -240,7 +241,14 @@
 	// update local variables if they're null
 	function updateFirstAndLastDividerIfNull() {
 		let dividers;
+
 		if (!firstDivider || !lastDivider) {
+		if (
+			!firstDivider ||
+			allBoundingRectValuesZero(firstDivider) ||
+			!lastDivider ||
+			allBoundingRectValuesZero(lastDivider)
+		) {
 			// get all divider elements using their class
 			dividers = document.getElementsByClassName('track-divider');
 

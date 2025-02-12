@@ -91,8 +91,6 @@
 					return tracks;
 				}
 
-				const dividerAdjacentToTrack = index === trackIndex || index === trackIndex + 1;
-
 				console.log(
 					'element dropped on divider -> track index:',
 					trackIndex,

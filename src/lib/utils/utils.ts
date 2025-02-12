@@ -561,6 +561,14 @@ export function isDraggedElementAFile(list: DataTransferItemList | undefined): b
 
     return containsFile
 }
+
+// checks if a given bounding rect
+export function allBoundingRectValuesZero(element: Element) {
+    const boundingRect = element.getBoundingClientRect()
+    const values = Object.values(boundingRect)
+    return values.every(value => !value || value === 0)
+}
+
 //#endregion
 
 // #region scrolling utils
