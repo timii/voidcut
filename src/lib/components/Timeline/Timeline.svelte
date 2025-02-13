@@ -47,6 +47,7 @@
 	import { CONSTS } from '$lib/utils/consts';
 	import TimelineRowDivider from './TimelineRowDivider.svelte';
 	import TimelineEmpty from './TimelineEmpty.svelte';
+	import { dropTimelineElementHandler } from '$lib/utils/drop-timeline-element-handler.utils';
 
 	let scrollContainerEl: HTMLDivElement;
 	let isOverflowingX = false;
@@ -115,6 +116,11 @@
 			isOverflowingY,
 			'overflowX?:',
 			isOverflowingX
+		);
+
+		// listen to event when a timeline element is dropped
+		window.addEventListener(CONSTS.customEventNameDropTimelineElement, (e) =>
+			dropTimelineElementHandler(e as CustomEvent)
 		);
 	});
 
