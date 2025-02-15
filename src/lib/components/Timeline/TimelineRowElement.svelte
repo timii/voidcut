@@ -668,12 +668,13 @@
 <!-- #region drag element -->
 <!-- TODO: replace just color in element with something better -->
 <div
-	class="timeline-row-element h-[50px] mr-5 rounded cursor-grab absolute"
+	class="timeline-row-element mr-5 rounded cursor-grab absolute"
 	style="
+		height: {CONSTS.timelineRowElementHeight}px;
 		width: {elementWidth}px;
 		background-color: {isSelected ? tailwindColors.orange[500] : tailwindColors.red[500]};
 		z-index: {dragging ? '50' : 'auto'}
-		"
+	"
 	data-element-el-index={elementIndex}
 	data-element-row-index={rowIndex}
 	data-element-offset={element.playbackStartTime}

@@ -30,6 +30,16 @@ export const CONSTS = {
     mediaPoolElementHeight: 84,
 
     /**
+     * The height of each timeline row element in pixel
+     */
+    timelineRowElementHeight: 50,
+
+    /**
+     * The height of each timeline divider element in pixel
+     */
+    timelineDividerElementHeight: 12,
+
+    /**
      * The amount of time between each interval when the timeline scrolls
      */
     timelineScrollIntervalTimer: 50,

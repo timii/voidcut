@@ -225,7 +225,10 @@
 </script>
 
 <div
-	class="track-divider w-full h-[12px] flex flex-col justify-center"
+	class="track-divider w-full flex flex-col justify-center"
+	style="
+		height: {CONSTS.timelineDividerElementHeight}px;
+	"
 	data-divider-index={index}
 	on:drop={onDropElement}
 	on:dragleave={onDropElement}
