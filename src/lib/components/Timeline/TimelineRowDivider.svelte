@@ -1,8 +1,12 @@
 <script lang="ts">
-	import { TimelineDropArea, type ITimelineDraggedElementPosition } from '$lib/interfaces/Timeline';
+	import {
+		type ITimelineDraggedElementHover,
+		TimelineDropArea,
+		type ITimelineDraggedElementPosition
+	} from '$lib/interfaces/Timeline';
 	import { onMount } from 'svelte';
 	import {
-		draggedElementPosition,
+		draggedElementHover,
 		draggedOverFirstDivider,
 		draggedUnderLastDivider,
 		isTimelineElementBeingDragged,
@@ -14,8 +18,8 @@
 
 	export let index: number;
 
-	// call function everytime the store variable changes
-	$: isElementHovered($draggedElementPosition);
+	// check if timeline element is hovered over current divider
+	$: isTimelineElementHovered($draggedElementHover);
 
 	// check if divider needs to be highlighted if one of those two store values changes
 	$: isDraggedElementOverOrUnder($draggedOverFirstDivider, $draggedUnderLastDivider);
@@ -40,29 +44,15 @@
 	});
 
 	// check if a timeline element is hovered over the divider
-	function isElementHovered(draggedEl: ITimelineDraggedElementPosition | null) {
-		if (!draggedEl || !offsetInParent || $draggedOverFirstDivider || $draggedUnderLastDivider)
-			return;
+	function isTimelineElementHovered(hover: ITimelineDraggedElementHover | null) {
+		console.log('isElementHoveredNew -> hover:', hover);
 
-		// current mouse position on the y axis
-		// TODO: refactor into util function
-		const curYPos = draggedEl.clickedY;
-		elementOverDivider =
-			curYPos >= offsetInParent.top && curYPos <= offsetInParent.top + dividerElBoundRect.height;
-		console.log(
-			'isElementHovered -> draggedEl',
-			draggedEl,
-			'dividerBounds:',
-			dividerElBoundRect,
-			'offsetInParent:',
-			offsetInParent,
-			'curYPos:',
-			curYPos,
-			'elementOverDivider:',
-			elementOverDivider,
-			'divider index:',
-			index
-		);
+		// only show divider if hover is over divider and the same index
+		if (hover && hover.dropArea === TimelineDropArea.DIVIDER && hover.index === index) {
+			elementOverDivider = true;
+		} else {
+			elementOverDivider = false;
+		}
 	}
 
 	function onHoverElement(e: DragEvent) {
