@@ -1,3 +1,4 @@
+import type { DragEventData } from "@neodrag/svelte";
 import type { MediaType } from "./Media";
 
 export interface ITimelineElement {
@@ -51,6 +52,7 @@ export interface ITimelineDraggedElementData {
     height: number; // height of the dragged timeline element
     elementId: string; // timline element id
     data: ITimelineElement;  // all the information about the dragged element
+    eventDetail: DragEventData;  // all the information from the drag event detail
     prevTrackIndex: number; // the previous track index of the dragged element  
     prevElementIndex: number; // the element index inside the previous track of the dragged element  
 }

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import {
 		type ISelectedElement,
+		type ITimelineDraggedElementData,
 		type ITimelineDraggedElementPosition,
 		type ITimelineElement,
 		TimelineElementResizeSide
@@ -28,7 +29,6 @@
 		isTimelineElementBeingDragged,
 		isTimelineElementBeingResized,
 		selectedElement,
-		thumbOffset,
 		timelineTracks
 	} from '../../../stores/store';
 	import { draggable } from '@neodrag/svelte';
@@ -91,6 +91,7 @@
 
 	// #region onMount
 	onMount(() => {
+		// TODO: refactor these event listeners out into timeline component, so we don't keep adding new event listeners when a new element is created
 		window.addEventListener('dragover', (e: DragEvent) => {
 			if ($isTimelineElementBeingDragged) {
 				e.preventDefault();
@@ -215,6 +216,7 @@
 			width: elDomRect.width,
 			elementId: element.elementId,
 			data: element,
+			eventDetail: e.detail,
 			prevTrackIndex: rowIndex,
 			prevElementIndex: elementIndex
 		});
@@ -347,9 +349,23 @@
 		// 	);
 		// }, 0);
 
+		const curEl = e.detail.currentNode;
+		const elDomRect = curEl.getBoundingClientRect();
+
+		// create data object that will be used in the event
+		const data: ITimelineDraggedElementData = {
+			height: elDomRect.height,
+			width: elDomRect.width,
+			elementId: element.elementId,
+			data: element,
+			eventDetail: e.detail,
+			prevTrackIndex: rowIndex,
+			prevElementIndex: elementIndex
+		};
+
 		// TODO: add element data to custom event so we can directly access it in the event listeners
-		// create and dispatch custom event
-		const event = new CustomEvent(CONSTS.customEventNameDropTimelineElement);
+		// create and dispatch custom event with drag data in event detail
+		const event = new CustomEvent(CONSTS.customEventNameDropTimelineElement, { detail: data });
 		window.dispatchEvent(event);
 
 		// TODO: if at the point of mouse release the dragged element is neither over a timeline row or a divider we should check where to drop the element
