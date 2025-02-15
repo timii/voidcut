@@ -45,9 +45,7 @@
 
 	// check if a timeline element is hovered over the divider
 	function isTimelineElementHovered(hover: ITimelineDraggedElementHover | null) {
-		console.log('isElementHoveredNew -> hover:', hover);
-
-		// only show divider if hover is over divider and the same index
+		// only show divider if hover is over current divider and has the same index
 		if (hover && hover.dropArea === TimelineDropArea.DIVIDER && hover.index === index) {
 			elementOverDivider = true;
 		} else {
@@ -55,6 +53,7 @@
 		}
 	}
 
+	// check if a media element is hovered over current divider
 	function onHoverElement(e: DragEvent) {
 		// prevent default behavior
 		e.preventDefault();

@@ -12,7 +12,11 @@ export const hoverTimelineElementHandler = (position: ITimelineDraggedElementPos
     const draggedData = get(draggedElementData)
     // const timelineScrollContainer = document.getElementById('timeline-scroll-container')
 
-    if (!position || !timelineScrollContainer || !get(draggedOverThreshold) || !get(isTimelineElementBeingDragged)) {
+    if (!position ||
+        !timelineScrollContainer ||
+        !get(draggedOverThreshold) ||
+        !get(isTimelineElementBeingDragged) ||
+        !draggedData) {
         return
     }
 
@@ -93,6 +97,7 @@ export const hoverTimelineElementHandler = (position: ITimelineDraggedElementPos
             // new index will be the same index as either the first divider or the last one, depending on if it is hovered above or below the timeline elements
             const newIndex = hoverAboveElements ? 0 : tracks.length
 
+            // set the store value with updated values
             draggedElementHover.set({ dropArea: TimelineDropArea.DIVIDER, index: newIndex })
 
             break;
@@ -100,6 +105,7 @@ export const hoverTimelineElementHandler = (position: ITimelineDraggedElementPos
         // element hovered over a timeline divider
         case TimelineDropArea.DIVIDER:
 
+            // set the store value with updated values
             draggedElementHover.set({ dropArea: TimelineDropArea.DIVIDER, index: hoverDividerIndex })
 
             break;
@@ -107,7 +113,17 @@ export const hoverTimelineElementHandler = (position: ITimelineDraggedElementPos
         // element hover over a timeline track
         case TimelineDropArea.TRACK:
 
-            draggedElementHover.set({ dropArea: TimelineDropArea.TRACK, index: hoverRowIndex })
+            // limit the drop zone offset to the left so it doesn't go further left than the track
+            const leftOffset = Math.max(position.left, CONSTS.timelineRowOffset)
+
+            // set the store value with updated values
+            draggedElementHover.set(
+                {
+                    dropArea: TimelineDropArea.TRACK,
+                    index: hoverRowIndex,
+                    width: draggedData.width,
+                    leftOffset
+                })
 
             break;
 

@@ -1,15 +1,13 @@
 <script lang="ts">
 	import {
+		type ITimelineDraggedElementHover,
 		TimelineDropArea,
-		type ITimelineDraggedElementPosition,
 		type ITimelineTrack
 	} from '$lib/interfaces/Timeline';
 	import { onMount } from 'svelte';
 	import {
 		currentTimelineScale,
-		draggedElementData,
-		draggedElementPosition,
-		draggedOverThreshold,
+		draggedElementHover,
 		isTimelineElementBeingDragged,
 		thumbOffset
 	} from '../../../stores/store';
@@ -23,7 +21,7 @@
 	console.log('TimelineRow -> track:', track);
 
 	// check if the dragged element is hovered over current row
-	$: isElementHovered($draggedElementPosition);
+	$: isTimelineElementHovered($draggedElementHover);
 
 	let rowRef: HTMLElement;
 
@@ -39,53 +37,27 @@
 		tracksElBoundRect = tracksEl.getBoundingClientRect();
 	});
 
-	// TODO: refactor to be a util function (including the function in the divider)
-	// check if timeline element is currently hovered over row
-	function isElementHovered(draggedEl: ITimelineDraggedElementPosition | null) {
-		if (!draggedEl || !$draggedElementData || !rowRef || !$draggedOverThreshold) return;
+	// check if a timeline element is hovered over current row
+	function isTimelineElementHovered(hover: ITimelineDraggedElementHover | null) {
+		console.log('isTimelineElementHovered -> hover:', hover);
 
-		const boundRect = rowRef.getBoundingClientRect();
-		const offsetInParent = {
-			left: boundRect.left - tracksElBoundRect.left,
-			top: boundRect.top - tracksElBoundRect.top
-		};
+		// only show drop zone if hover is over current row and has the same index
+		if (hover && hover.dropArea === TimelineDropArea.TRACK && hover.index === index) {
+			elementHoveredOverRow = true;
+			dropZonePositionLeft = hover.leftOffset ?? 0;
 
-		// current mouse position on the y axis
-		const curYPos = draggedEl.clickedY;
-		elementHoveredOverRow =
-			curYPos >= offsetInParent.top && curYPos <= offsetInParent.top + boundRect.height;
-		console.log(
-			'isElementHovered -> elementHoveredOverRow:',
-			elementHoveredOverRow,
-			'isTimelineElementBeingDragged',
-			$isTimelineElementBeingDragged,
-			'draggedEl:',
-			draggedEl,
-			'offsetInParent:',
-			offsetInParent
-		);
-		// if element is hovered over row show drop zone element
-		if (elementHoveredOverRow) {
-			// limit the drop zone offset to the left so it doesn't go further left than the track
-			dropZonePositionLeft = Math.max(draggedEl.left, CONSTS.timelineRowOffset);
-
-			const draggelElWidth = $draggedElementData.width;
+			const draggelElWidth = hover.width ?? 0;
 			// if the current element width is different to the dragged element width, update it
 			if (elementWidth !== draggelElWidth) {
 				// set drop zone width to be the same as the dragged element width
 				elementWidth = draggelElWidth;
 			}
-			console.log(
-				'isElementHovered -> in if dropZoneLeft:',
-				dropZonePositionLeft,
-				'elementWidth:',
-				elementWidth
-			);
 		} else {
-			elementWidth = 0;
+			elementHoveredOverRow = false;
 		}
 	}
 
+	// check if a media element is hovered over current row
 	function onHoverElement(e: DragEvent) {
 		console.log('hover media element over row -> e:', e);
 		// prevent default behavior
@@ -179,7 +151,7 @@
 			: 'none'}; left: {dropZonePositionLeft}px;"
 	></div>
 
-	<!-- element that is shown when an timeline element is being dragged -->
+	<!-- element that is shown when a timeline element is being dragged -->
 	<div
 		class="clone-drop-zone h-[50px] mr-5 rounded outline-dashed outline-hover-outline z-10 absolute bg-hover-stipes"
 		style="width: {elementWidth}px; display: {elementHoveredOverRow &&

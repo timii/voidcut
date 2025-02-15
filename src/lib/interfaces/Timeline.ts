@@ -60,6 +60,8 @@ export interface ITimelineDraggedElementData {
 export interface ITimelineDraggedElementHover {
     dropArea: TimelineDropArea; // over what kind of element it is currently hovered over
     index: number; // index of the element the element is hovered over
+    leftOffset?: number; // left offset of dragged element (only used when hovered over track row)
+    width?: number; // width of the dragged element (only used when hovered over track row)
 }
 
 export interface ITimelineElementBounds {
