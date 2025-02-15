@@ -23,8 +23,8 @@ export const dropTimelineElementHandler = (e: CustomEvent<ITimelineDraggedElemen
     }
 
     const elementPositionY = elementPosition.clickedY
-    // get the timeline tracks before the dragged element is removed
 
+    // get the timeline tracks before the dragged element is removed
     const tracks = get(timelineTracks)
 
     // get amount of dividers and tracks

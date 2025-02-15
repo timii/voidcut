@@ -1,9 +1,7 @@
-
 import { TimelineDropArea, type ITimelineDraggedElementPosition } from "$lib/interfaces/Timeline";
 import { get } from "svelte/store";
 import { draggedElementData, draggedElementHover, draggedOverThreshold, isTimelineElementBeingDragged, timelineTracks } from "../../stores/store";
 import { CONSTS } from "./consts";
-import { convertPxToMs, handleOverlapping, handleElementIndeces, cleanUpEmptyTracks } from "./utils";
 
 /**
  * this function is called everytime the `draggedElementPosition` value changes in store
@@ -19,12 +17,6 @@ export const hoverTimelineElementHandler = (position: ITimelineDraggedElementPos
         !draggedData) {
         return
     }
-
-    const scrollContainerBoundingRect = timelineScrollContainer.getBoundingClientRect()
-    const parentTopOffset = scrollContainerBoundingRect.top;
-
-    // current dragged position on the y axis (including the parent top offset and ruler height)
-    const curYPos = position.clickedY + parentTopOffset + 26;
 
     const elementPositionY = position.clickedY
 
@@ -78,15 +70,13 @@ export const hoverTimelineElementHandler = (position: ITimelineDraggedElementPos
                 hoverRowIndex += 1
             }
 
-            console.log("hoverTimelineElementHandler while -> tempY:", tempY, "hoverDividerIndex:", hoverDividerIndex, "hoverRowIndex:", hoverRowIndex);
+            // console.log("hoverTimelineElementHandler while -> tempY:", tempY, "hoverDividerIndex:", hoverDividerIndex, "hoverRowIndex:", hoverRowIndex);
         }
     } else {
         hoverArea = TimelineDropArea.TIMELINE
     }
 
-    // console.log("hoverTimelineElementHandler -> position:", position, "draggedData:", draggedData, "timelineScrollContainer:", timelineScrollContainer, "parentTopOffset:", parentTopOffset, "curYPos:", curYPos);
-
-    console.log("hoverTimelineElementHandler called -> position:", position, "amountOfDividers/amountOfTracks:", amountOfDividers, "/", amountOfTracks, "totalHeight:", totalHeight, "hoverArea:", hoverArea, "hoverIndex:", hoverArea === TimelineDropArea.DIVIDER ? hoverDividerIndex : hoverRowIndex, "hoverAboveElements:", hoverAboveElements);
+    // console.log("hoverTimelineElementHandler called -> position:", position, "amountOfDividers/amountOfTracks:", amountOfDividers, "/", amountOfTracks, "totalHeight:", totalHeight, "hoverArea:", hoverArea, "hoverIndex:", hoverArea === TimelineDropArea.DIVIDER ? hoverDividerIndex : hoverRowIndex, "hoverAboveElements:", hoverAboveElements);
 
     // handle the element drop differently depending on where the element was is hovered (timeline, divider or track)
     switch (hoverArea) {

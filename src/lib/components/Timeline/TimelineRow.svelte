@@ -39,8 +39,6 @@
 
 	// check if a timeline element is hovered over current row
 	function isTimelineElementHovered(hover: ITimelineDraggedElementHover | null) {
-		console.log('isTimelineElementHovered -> hover:', hover);
-
 		// only show drop zone if hover is over current row and has the same index
 		if (hover && hover.dropArea === TimelineDropArea.TRACK && hover.index === index) {
 			elementHoveredOverRow = true;
