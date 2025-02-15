@@ -2,7 +2,6 @@
 	import {
 		TimelineDropArea,
 		type ITimelineDraggedElementPosition,
-		type ITimelineElementBounds,
 		type ITimelineTrack
 	} from '$lib/interfaces/Timeline';
 	import { onMount } from 'svelte';
@@ -12,20 +11,11 @@
 		draggedElementPosition,
 		draggedOverThreshold,
 		isTimelineElementBeingDragged,
-		thumbOffset,
-		timelineTracks
+		thumbOffset
 	} from '../../../stores/store';
 	import TimelineRowElement from './TimelineRowElement.svelte';
 	import { CONSTS } from '$lib/utils/consts';
-	import {
-		cleanUpEmptyTracks,
-		convertMsToPx,
-		convertPxToMs,
-		handleElementIndeces,
-		handleOverlapping,
-		handleTimelineMediaDrop,
-		resetOverUnderDividers
-	} from '$lib/utils/utils';
+	import { convertMsToPx, handleTimelineMediaDrop, resetOverUnderDividers } from '$lib/utils/utils';
 	import type { IMedia } from '$lib/interfaces/Media';
 
 	export let track: ITimelineTrack;
@@ -47,132 +37,6 @@
 	onMount(() => {
 		const tracksEl = document.getElementsByClassName('timeline-tracks')[0];
 		tracksElBoundRect = tracksEl.getBoundingClientRect();
-
-		// listen to event when a timeline element is dropped
-		window.addEventListener(CONSTS.customEventNameDropTimelineElement, () => {
-			console.log(
-				`${CONSTS.customEventNameDropTimelineElement} event triggered in row -> elementHoveredOverRow:`,
-				elementHoveredOverRow
-			);
-
-			// if no data for the dragged element is defined or no element is hovered over the row we just return
-			if (!$draggedElementData || !$draggedElementPosition || !elementHoveredOverRow) return;
-
-			const draggedData = $draggedElementData;
-			const draggedPosition = $draggedElementPosition;
-
-			// get position of dropped element along the x axis
-			const xWithoutOffset = draggedPosition.left - CONSTS.timelineRowOffset;
-			const x = xWithoutOffset < CONSTS.timelineRowOffset ? 0 : xWithoutOffset;
-			const elementEnd = x + draggedData.width;
-
-			// convert the dragged element bounds from px into ms
-			const elBoundsInMs: ITimelineElementBounds = {
-				start: convertPxToMs(x),
-				end: convertPxToMs(elementEnd)
-			};
-
-			console.log(
-				'Timeline -> row drop-timeline-element -> dropped element on the x axis:',
-				x,
-				'elementEnd:',
-				elementEnd,
-				'elBoundsInMs:',
-				elBoundsInMs
-			);
-
-			// reset value on drop
-			elementHoveredOverRow = false;
-
-			// update the current tracks in the store with the newly moved element
-			timelineTracks.update((tracks) => {
-				// get the previous track and element index of dragged element
-				const prevTrackIndex = draggedData.prevTrackIndex;
-				const prevElementIndex = draggedData.prevElementIndex;
-
-				console.log(
-					'Timeline -> element dropped on track -> after while old element index:',
-					prevElementIndex,
-					'old trackIndex:',
-					prevTrackIndex,
-					'new track index:',
-					index,
-					'tracks:',
-					tracks
-				);
-
-				// get the dragged element from the previous track
-				const foundEl = tracks[prevTrackIndex].elements[prevElementIndex];
-
-				// TODO: just for logging out element without the long dataUrl, can be removed after testing
-				const copy: any = Object.assign({}, foundEl);
-				delete copy.mediaImage;
-
-				console.log(
-					'Timeline -> element dropped on track -> after while foundEl:',
-					copy,
-					'trackIndex:',
-					prevTrackIndex,
-					'moved in the same track:',
-					draggedData.prevTrackIndex === index
-				);
-				// element was moved in the same track
-				if (draggedData.prevTrackIndex === index) {
-					// check and handle if any elements overlap after moving and update the track elements if necessary
-					tracks[index].elements = handleOverlapping(
-						elBoundsInMs,
-						tracks[index].elements,
-						prevElementIndex // we ignore the index of the dragged element so we don't check if the element overlaps with itself
-					);
-
-					// check and handle if the element with the updated start time is still at the correct index and if not update the track element
-					tracks[index].elements = handleElementIndeces(
-						foundEl,
-						elBoundsInMs.start,
-						tracks[index].elements,
-						prevElementIndex
-					);
-				}
-				// element was dragged onto a different track
-				else {
-					// remove dragged element from old track
-					tracks[prevTrackIndex].elements.splice(prevElementIndex, 1);
-					console.log(
-						'Timeline -> element dropped on track -> tracks after element removed from track:',
-						JSON.parse(JSON.stringify(tracks))
-					);
-
-					// check and handle if any elements overlap after moving and update the track elements if necessary
-					tracks[index].elements = handleOverlapping(
-						elBoundsInMs,
-						tracks[index].elements,
-						undefined // we also set this to be undefined since the element was dragged from a different track
-					);
-
-					// check and handle if the element with the updated start time is still at the correct index and if not update the track elements
-					tracks[index].elements = handleElementIndeces(
-						foundEl,
-						elBoundsInMs.start,
-						tracks[index].elements,
-						tracks[index].elements.length, // we use the current length here and not length - 1 since we will add the element inside the function and then the length will be increased by one and we want the index of the last element
-						true
-					);
-
-					// clean up old track if its empty now
-					cleanUpEmptyTracks(tracks);
-					console.log(
-						'Timeline -> element dropped on track -> tracks after empty track is removed:',
-						JSON.parse(JSON.stringify(tracks))
-					);
-				}
-
-				console.log(
-					'Timeline -> row drop-timeline-element -> just before returning tracks -> tracks:',
-					[...tracks]
-				);
-				return tracks;
-			});
-		});
 	});
 
 	// TODO: refactor to be a util function (including the function in the divider)

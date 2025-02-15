@@ -2,7 +2,6 @@
 	import { TimelineDropArea, type ITimelineDraggedElementPosition } from '$lib/interfaces/Timeline';
 	import { onMount } from 'svelte';
 	import {
-		draggedElementData,
 		draggedElementPosition,
 		draggedOverFirstDivider,
 		draggedUnderLastDivider,
@@ -10,12 +9,7 @@
 		timelineTracks
 	} from '../../../stores/store';
 	import { CONSTS } from '$lib/utils/consts';
-	import {
-		cleanUpEmptyTracks,
-		createTrackWithElement,
-		handleTimelineMediaDrop,
-		resetOverUnderDividers
-	} from '$lib/utils/utils';
+	import { handleTimelineMediaDrop, resetOverUnderDividers } from '$lib/utils/utils';
 	import type { IMedia } from '$lib/interfaces/Media';
 
 	export let index: number;
@@ -43,119 +37,32 @@
 			left: dividerElBoundRect.left - tracksElBoundRect.left,
 			top: dividerElBoundRect.top - tracksElBoundRect.top
 		};
-
-		// listen to event when a timeline element is dropped
-		window.addEventListener(CONSTS.customEventNameDropTimelineElement, () => {
-			console.log(
-				`${CONSTS.customEventNameDropTimelineElement} event triggered in divider -> isElementHovered:`,
-				elementOverDivider
-			);
-
-			if (!elementOverDivider) return;
-
-			if (!$draggedElementData) return;
-
-			const elementId = $draggedElementData.elementId;
-			const elementData = $draggedElementData.data;
-
-			console.log(
-				'element dropped on divider -> draggedElementData:',
-				$draggedElementData,
-				'elementData:',
-				elementData
-			);
-
-			timelineTracks.update((tracks) => {
-				// find dragged element index using the element id
-				let elementIndexInTrack = -1;
-				let trackIndex = 0;
-				while (elementIndexInTrack === -1 && trackIndex < tracks.length) {
-					console.log(
-						'element dropped on divider -> in while tracks:',
-						JSON.parse(JSON.stringify(tracks)),
-						'trackIndex:',
-						trackIndex
-					);
-					elementIndexInTrack = tracks[trackIndex].elements.findIndex(
-						(el) => el.elementId === elementId
-					);
-					if (elementIndexInTrack === -1) {
-						trackIndex++;
-					}
-				}
-
-				// TODO: fix behavior when two elements on one track and trying to move first element onto a divider
-
-				// if the dragged element is in the same track as the track it got dragged from -> don't change any tracks
-				if (elementIndexInTrack === -1) {
-					return tracks;
-				}
-
-				console.log(
-					'element dropped on divider -> track index:',
-					trackIndex,
-					'foundElIndex:',
-					elementIndexInTrack,
-					'divider index:',
-					index,
-					'divider adjacent to track:',
-					index === trackIndex || index === trackIndex + 1,
-					'tracks before:',
-					JSON.parse(JSON.stringify(tracks))
-				);
-
-				// create new track and add dragged element into it
-				const track = createTrackWithElement(elementData);
-
-				// remove dragged element from track
-				tracks[trackIndex].elements.splice(elementIndexInTrack, 1);
-				console.log(
-					'element dropped on divider -> tracks after element removed from track:',
-					JSON.parse(JSON.stringify(tracks))
-				);
-
-				// TODO: check for array bounds
-
-				// add new track that includes the dragged element
-				tracks.splice(index, 0, track);
-				console.log(
-					'element dropped on divider -> tracks after new track has been added:',
-					JSON.parse(JSON.stringify(tracks))
-				);
-
-				// clean up old track if its empty now
-				cleanUpEmptyTracks(tracks);
-				console.log(
-					'element dropped on divider -> tracks after empty track is removed:',
-					JSON.parse(JSON.stringify(tracks))
-				);
-
-				return tracks;
-			});
-		});
 	});
 
 	// check if a timeline element is hovered over the divider
 	function isElementHovered(draggedEl: ITimelineDraggedElementPosition | null) {
-		if (!draggedEl || !offsetInParent) return;
+		if (!draggedEl || !offsetInParent || $draggedOverFirstDivider || $draggedUnderLastDivider)
+			return;
 
 		// current mouse position on the y axis
 		// TODO: refactor into util function
 		const curYPos = draggedEl.clickedY;
 		elementOverDivider =
 			curYPos >= offsetInParent.top && curYPos <= offsetInParent.top + dividerElBoundRect.height;
-		// console.log(
-		// 	'isElementHovered -> draggedEl',
-		// 	draggedEl,
-		// 	'dividerBounds:',
-		// 	dividerElBoundRect,
-		// 	'offsetInParent:',
-		// 	offsetInParent,
-		// 	'curYPos:',
-		// 	curYPos,
-		// 	'elementOverDivider:',
-		// 	elementOverDivider
-		// );
+		console.log(
+			'isElementHovered -> draggedEl',
+			draggedEl,
+			'dividerBounds:',
+			dividerElBoundRect,
+			'offsetInParent:',
+			offsetInParent,
+			'curYPos:',
+			curYPos,
+			'elementOverDivider:',
+			elementOverDivider,
+			'divider index:',
+			index
+		);
 	}
 
 	function onHoverElement(e: DragEvent) {
