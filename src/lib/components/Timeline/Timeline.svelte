@@ -20,10 +20,8 @@
 		currentPlaybackTime,
 		currentThumbPosition,
 		currentTimelineScale,
-		draggedElementData,
 		draggedElementPosition,
 		draggedOverFirstDivider,
-		draggedOverThreshold,
 		draggedUnderLastDivider,
 		horizontalScroll,
 		isThumbBeingDragged,
@@ -38,16 +36,13 @@
 		timelineTracks,
 		verticalScroll
 	} from '../../../stores/store';
-	import {
-		TimelineDropArea,
-		type ITimelineDraggedElementPosition,
-		type ITimelineTrack
-	} from '$lib/interfaces/Timeline';
+	import { TimelineDropArea, type ITimelineTrack } from '$lib/interfaces/Timeline';
 	import TimelineControls from './TimelineControls.svelte';
 	import { CONSTS } from '$lib/utils/consts';
 	import TimelineRowDivider from './TimelineRowDivider.svelte';
 	import TimelineEmpty from './TimelineEmpty.svelte';
 	import { dropTimelineElementHandler } from '$lib/utils/drop-timeline-element-handler.utils';
+	import { hoverTimelineElementHandler } from '$lib/utils/hover-timeline-element-handler.utils';
 
 	let scrollContainerEl: HTMLDivElement;
 	let isOverflowingX = false;
@@ -124,36 +119,13 @@
 		);
 	});
 
+	// handle where the dragged element is hovered over
+	$: hoverTimelineElementHandler($draggedElementPosition, scrollContainerEl);
+
 	// get the max playback time everytime the timelineTracks store changes
 	$: getMaxPlaybackTime($timelineTracks);
 
 	$: resetStoreValues($isTimelineElementBeingDragged);
-
-	// check if the dragged element is hovered over the timeline
-	$: isElementHovered($draggedElementPosition);
-
-	// TODO: refactor to be a util function (including the function in the divider)
-	// check if timeline element is currently hovered over row
-	function isElementHovered(draggedEl: ITimelineDraggedElementPosition | null) {
-		if (
-			!draggedEl ||
-			!$draggedElementData ||
-			!$draggedOverThreshold ||
-			!$isTimelineElementBeingDragged
-		)
-			return;
-
-		const parentTopOffset = scrollContainerEl.getBoundingClientRect();
-
-		// current dragged position on the y axis (including the parent top offset and ruler height)
-		const curYPos = draggedEl.clickedY + parentTopOffset.top + 26;
-
-		// update local variables if they're null
-		updateFirstAndLastDividerIfNull();
-
-		// check if given y coordinate is lower or higher than first/last divider and update store
-		isYHigherOrLowerThanDividers(curYPos);
-	}
 
 	function getMaxPlaybackTime(tracks: ITimelineTrack[]) {
 		console.log(
@@ -248,7 +220,14 @@
 	function updateFirstAndLastDividerIfNull() {
 		let dividers;
 
-		if (!firstDivider || !lastDivider) {
+		console.log(
+			'on hover updateFirstAndLastDividerIfNull -> dividers before if:',
+			dividers,
+			'firstDivider/lastDivider:',
+			firstDivider,
+			'/',
+			lastDivider
+		);
 		if (
 			!firstDivider ||
 			allBoundingRectValuesZero(firstDivider) ||
@@ -262,6 +241,7 @@
 			if (dividers.length < 2) {
 				return;
 			}
+			console.log('on hover updateFirstAndLastDividerIfNull -> dividers in if:', dividers);
 
 			// get the first and last one from list of dividers
 			firstDivider = dividers[0];

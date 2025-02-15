@@ -1,12 +1,13 @@
-// this function is registered on page mount as a callback to the timeline element drop event
 
 import { type ITimelineDraggedElementData, type ITimelineElement, type ITimelineElementBounds, type ITimelineTrack, TimelineDropArea } from "$lib/interfaces/Timeline";
 import { get } from "svelte/store";
-import { draggedElementPosition, timelineTracks } from "../../stores/store";
+import { draggedElementHover, draggedElementPosition, timelineTracks } from "../../stores/store";
 import { CONSTS } from "./consts";
 import { cleanUpEmptyTracks, convertPxToMs, createTrackWithElement, handleElementIndeces, handleOverlapping } from "./utils";
 
-// it handles the dropped element depending on where it got dropped
+/**
+ * this function is registered on page mount as a callback to the timeline element drop event and handles the dropped element depending on where it got dropped
+ */
 export const dropTimelineElementHandler = (e: CustomEvent<ITimelineDraggedElementData>) => {
     // re-assign used properties from event details
     const draggedData = e.detail
@@ -25,8 +26,8 @@ export const dropTimelineElementHandler = (e: CustomEvent<ITimelineDraggedElemen
     // get the timeline tracks before the dragged element is removed
 
     const tracks = get(timelineTracks)
-    // get amount of dividers and tracks
 
+    // get amount of dividers and tracks
     const amountOfDividers = tracks.length + 1
     const amountOfTracks = tracks.length
 
@@ -86,7 +87,7 @@ export const dropTimelineElementHandler = (e: CustomEvent<ITimelineDraggedElemen
         // element dropped either above or below the timeline elements
         case TimelineDropArea.TIMELINE:
 
-            // new index will be the same index as either the first divider or the last one, depending in if was dropped above or below the timeline elements
+            // new index will be the same index as either the first divider or the last one, depending on if was dropped above or below the timeline elements
             const newIndex = droppedAboveElements ? 0 : tracks.length
 
             timelineTracks.update(prevTracks => {
@@ -236,6 +237,9 @@ export const dropTimelineElementHandler = (e: CustomEvent<ITimelineDraggedElemen
             console.error(`No correct drop area was provided: drop area '${dropArea}' not defined`)
             break;
     }
+
+    // reset the hovered over store value
+    draggedElementHover.set(null)
 
 }
 
