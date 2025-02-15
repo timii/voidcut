@@ -1,6 +1,6 @@
 import { ExportState } from '$lib/interfaces/Ffmpeg';
 import type { IMedia } from '$lib/interfaces/Media';
-import { type ISelectedElement, type ITimelineDraggedElement, type ITimelineDraggedElementData, type ITimelineDraggedElementPosition, type ITimelineElementResizeData, type ITimelineTrack, type TimelineElementResizeSide } from '$lib/interfaces/Timeline';
+import { type ITimelineDraggedElementHover, type ISelectedElement, type ITimelineDraggedElement, type ITimelineDraggedElementData, type ITimelineDraggedElementPosition, type ITimelineElementResizeData, type ITimelineTrack } from '$lib/interfaces/Timeline';
 import { CONSTS } from '$lib/utils/consts';
 import { writable } from 'svelte/store';
 
@@ -39,6 +39,7 @@ export const elementResizeData = writable<ITimelineElementResizeData | undefined
 // TODO: remove old store variable
 export const draggedElement = writable<ITimelineDraggedElement | null>(null); // contains information about the dragged timeline element
 export const draggedElementPosition = writable<ITimelineDraggedElementPosition | null>(null) // keeps track of the dragged element position
+export const draggedElementHover = writable<ITimelineDraggedElementHover | null>(null) // keeps track of what element the dragged element is hovered over
 export const draggedOverThreshold = writable<boolean>(false) // keeps track if the element has been dragged more than the threshold
 export const draggedOverFirstDivider = writable<boolean>(false) // keeps track if the dragged element is under the last element
 export const draggedUnderLastDivider = writable<boolean>(false) // keeps track if the dragged element is under the last element

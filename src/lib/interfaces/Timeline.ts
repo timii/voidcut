@@ -57,6 +57,11 @@ export interface ITimelineDraggedElementData {
     prevElementIndex: number; // the element index inside the previous track of the dragged element  
 }
 
+export interface ITimelineDraggedElementHover {
+    dropArea: TimelineDropArea; // over what kind of element it is currently hovered over
+    index: number; // index of the element the element is hovered over
+}
+
 export interface ITimelineElementBounds {
     start: number; // start of the timeline element (in milliseconds)
     end: number; // end of the timeline element (in milliseconds)
