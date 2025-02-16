@@ -2,7 +2,7 @@
 	import Timeline from '$lib/components/timeline/Timeline.svelte';
 	import MediaPool from '$lib/components/workbench/MediaPool.svelte';
 	import Preview from '$lib/components/preview/Preview.svelte';
-	import { exportOverlayOpen, thumbOffset, windowWidth } from '../stores/store';
+	import { exportOverlayOpen, thumbOffset, windowHeight, windowWidth } from '../stores/store';
 	import Header from '$lib/components/header/Header.svelte';
 	import { onMount } from 'svelte';
 	import { initializeFfmpeg } from '$lib/utils/ffmpeg.utils';
@@ -33,7 +33,7 @@
 		await initializeFfmpeg();
 
 		// get the initial window size
-		onWindowResize(window.innerWidth);
+		onWindowResize(window.innerWidth, window.innerHeight);
 
 		// block dropping files other than the media pool so the local file isn't opened in the tab
 		const eventsToBlock = ['drop', 'dragover'];
@@ -49,12 +49,13 @@
 	});
 
 	//  listen to window changes and update the store variable on change
-	function onWindowResize(width: number) {
+	function onWindowResize(width: number, height: number) {
 		// subtract the offset from the window width
 		const windowSizeMinusOffset = width - $thumbOffset;
 
 		windowWidth.set(windowSizeMinusOffset);
-		console.log('fitTo window resize:', windowSizeMinusOffset);
+		windowHeight.set(height);
+		console.log('fitTo window resize:', windowSizeMinusOffset, 'width:', width, 'height:', height);
 	}
 </script>
 
@@ -81,7 +82,7 @@
 	<ExportDialog open={$exportOverlayOpen} />
 </Overlay>
 
-<svelte:window on:resize={() => onWindowResize(innerWidth)} />
+<svelte:window on:resize={() => onWindowResize(innerWidth, innerHeight)} />
 
 <!-- preload images -->
 <!-- TODO: check its possible to remove the warnings in the console caused by the preload -->
