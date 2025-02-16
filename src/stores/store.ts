@@ -1,5 +1,6 @@
 import { ExportState } from '$lib/interfaces/Ffmpeg';
 import type { IMedia } from '$lib/interfaces/Media';
+import { PreviewAspectRatio } from '$lib/interfaces/Player';
 import { type ITimelineDraggedElementHover, type ISelectedElement, type ITimelineDraggedElement, type ITimelineDraggedElementData, type ITimelineDraggedElementPosition, type ITimelineElementResizeData, type ITimelineTrack } from '$lib/interfaces/Timeline';
 import { CONSTS } from '$lib/utils/consts';
 import { writable } from 'svelte/store';
@@ -52,3 +53,4 @@ export const availableMedia = writable<IMedia[]>([]);
 
 // Preview
 export const previewPlaying = writable(false);
+export const previewAspectRatio = writable(PreviewAspectRatio.E16_9); // keeps track of the aspect ratio used for the preview

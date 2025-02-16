@@ -5,3 +5,7 @@ export interface IPlayerElement extends ITimelineElement {
 }
 
 export interface IPlayerElementsMap { [x: string]: { el: HTMLElement; properties: IPlayerElement } }
+
+export enum PreviewAspectRatio {
+    E16_9 = '16/9'
+}
