@@ -15,7 +15,6 @@ import {
     currentPlaybackTime,
     currentTimelineScale,
     currentThumbPosition,
-    thumbOffset,
     horizontalScroll,
     selectedElement,
     draggedElement,
@@ -28,6 +27,7 @@ import {
     possibleScaleValues,
     draggedOverFirstDivider,
     draggedUnderLastDivider,
+    previewAspectRatio,
 } from "../../stores/store";
 import { CONSTS } from "./consts";
 import { adjustingInterval } from "./betterInterval";
@@ -35,7 +35,7 @@ import { get } from "svelte/store";
 import resolveConfig from 'tailwindcss/resolveConfig'
 import tailwindConfig from '../../../tailwind.config.js'
 import { generateAudioWaveform } from "./ffmpeg.utils";
-import type { IPlayerElement } from "$lib/interfaces/Player";
+import { type IPlayerElement } from "$lib/interfaces/Player";
 import type { Time } from "$lib/interfaces/Time";
 
 let interval: {
@@ -562,11 +562,26 @@ export function isDraggedElementAFile(list: DataTransferItemList | undefined): b
     return containsFile
 }
 
-// checks if a given bounding rect
-export function allBoundingRectValuesZero(element: Element) {
+// checks if a given bounding rect has only 0s as values
+export function allBoundingRectValuesZero(element: Element): boolean {
     const boundingRect = element.getBoundingClientRect()
     const values = Object.values(boundingRect)
     return values.every(value => !value || value === 0)
+}
+
+// check if a given width and height have the same ratio as the aspect ratio defined in the store
+export function isSameAspectRatio(width: number, height: number): boolean {
+    // get aspect ratio from store as a string
+    const aspectRatioString = get(previewAspectRatio)
+    // convert string to array of 2 numbers for the aspect ratio (first element: width, second: height)
+    const aspectRatios = aspectRatioString.split('/')
+    // calculate the ratio between both values
+    const storeRatio = +(+aspectRatios[0] / +aspectRatios[1]).toFixed(2)
+
+    // calculate ratio between given width and height (only include first two digits after dot)
+    const givenRatio = +(width / height).toFixed(2)
+
+    return storeRatio === givenRatio
 }
 
 //#endregion

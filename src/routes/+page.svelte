@@ -60,20 +60,22 @@
 </script>
 
 <main class="flex flex-col w-screen h-screen max-h-screen max-w-screen">
-	<div class="upper flex flex-basis-2/3 flex-col flex-1">
+	<div class="upper flex flex-basis-2/3 flex-col flex-1 max-h-[66%]">
 		<div class="header">
 			<Header></Header>
 		</div>
-		<div class="flex flex-1 shrink-0">
+		<!-- max height is the full height minus the height of the preview controls (+ padding) -->
+		<div class="flex flex-1 shrink-0 max-h-[calc(100%-64px)]">
 			<div class="flex-1 py-4 pr-4 workbench basis-1/3">
 				<MediaPool></MediaPool>
 			</div>
-			<div class="flex-1 py-4 preview basis-2/3">
+			<!-- max height is the full height minus the height of the preview controls -->
+			<div class="flex-1 py-4 preview basis-2/3 max-h-[calc(100%-32px)]">
 				<Preview></Preview>
 			</div>
 		</div>
 	</div>
-	<div class="timeline flex-1 basis-1/3 h-[33%] max-h-[33%]">
+	<div class="timeline flex-1 basis-1/3 h-[33%] max-h-[33%] min-h-[33%]">
 		<Timeline></Timeline>
 	</div>
 </main>

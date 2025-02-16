@@ -1,15 +1,20 @@
 <script lang="ts">
 	import { MediaType } from '$lib/interfaces/Media';
 	import type { IPlayerElement, IPlayerElementsMap } from '$lib/interfaces/Player';
-	import type { ITimelineElement, ITimelineTrack } from '$lib/interfaces/Timeline';
-	import { CONSTS } from '$lib/utils/consts';
-	import { getCurrentMediaTime, isPlaybackInElement } from '$lib/utils/utils';
+	import type { ITimelineTrack } from '$lib/interfaces/Timeline';
+	import { getCurrentMediaTime, isPlaybackInElement, isSameAspectRatio } from '$lib/utils/utils';
 	import {
 		availableMedia,
 		currentPlaybackTime,
+		previewAspectRatio,
 		previewPlaying,
-		timelineTracks
+		timelineTracks,
+		windowHeight,
+		windowWidth
 	} from '../../../stores/store';
+
+	let previewPlayerRef: HTMLDivElement;
+	let fullWidth = true;
 
 	$: timelineElements = flattenTimelineTracks($timelineTracks);
 
@@ -23,6 +28,30 @@
 
 	// handle playing and pausing elements when the currentPlaybackTime store value changes
 	$: handlePlaybackTimeUpdate($currentPlaybackTime);
+
+	// handle preview player sizing when either window height or width change
+	$: handleWindowWidthOrHeightChange($windowWidth, $windowHeight);
+
+	// check if preview player sizing needs to be updated on window size change
+	function handleWindowWidthOrHeightChange(_: number, __: number) {
+		if (!previewPlayerRef) {
+			return;
+		}
+
+		// get the height and width from the preview player
+		const previewBoundingRect = previewPlayerRef.getBoundingClientRect();
+		const previewWidth = previewBoundingRect.width;
+		const previewHeight = previewBoundingRect.height;
+
+		// check if the current width and height of the player match the aspect ratio defined in the store
+		const sameAspectRatio = isSameAspectRatio(previewWidth, previewHeight);
+
+		// if the aspect ratio of the preview player doesn't match the on in the store
+		if (!sameAspectRatio) {
+			// if the height was cut off (width: 100%, height: auto) before, cut off width (width: auto, height: 100%) now and the other way around
+			fullWidth = !fullWidth;
+		}
+	}
 
 	// handles what elements need to be updated while playback is running
 	function handlePlaybackTimeUpdate(playbackTime: number) {
@@ -183,8 +212,16 @@
 	}
 </script>
 
-<div class="relative w-full h-full bg-black preview-player">
-	<!-- for each element in the timeline show a video/audio/image element -->
+<!-- set either height or width value to 100% to keep aspect ratio -->
+<div
+	class="relative bg-black preview-player max-h-full max-w-full"
+	style="
+		aspect-ratio: {$previewAspectRatio};
+		{fullWidth ? 'width: 100%;' : 'height: 100%'}
+	"
+	bind:this={previewPlayerRef}
+>
+	<!-- for each element in the timeline show either a video, audio or image element -->
 	{#each timelineElements as element, i (element.elementId)}
 		{#if element.type === MediaType.Video}
 			<!-- TODO: hide controls at the end when everything works -->
