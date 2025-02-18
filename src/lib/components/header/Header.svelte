@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { callFfmpeg } from '$lib/utils/ffmpeg.utils';
-	import { exportOverlayOpen } from '../../../stores/store';
+	import { exportOverlayOpen, timelineTracks } from '../../../stores/store';
 	import Button from '../shared/Button.svelte';
 	import AppIcon from '$lib/assets/general/icon-white-50.png';
 	import ExportIcon from '$lib/assets/header/export.png';
@@ -20,5 +20,10 @@
 		</div>
 	</div>
 
-	<Button text={'Export'} onClickCallback={onExportButtonClick} icon={ExportIcon}></Button>
+	<Button
+		text={'Export'}
+		onClickCallback={onExportButtonClick}
+		icon={ExportIcon}
+		disabled={$timelineTracks.length < 1}
+	></Button>
 </div>
