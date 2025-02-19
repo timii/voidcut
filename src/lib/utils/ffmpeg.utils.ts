@@ -1,11 +1,12 @@
 import { FFmpeg } from "@ffmpeg/ffmpeg";
-import { availableMedia, exportOverlayOpen, exportState, ffmpegLoaded, ffmpegProgress, ffmpegProgressElapsedTime, ffmpegProgressPrevValue, processedFile, processedFileSize, timelineTracks } from "../../stores/store";
+import { availableMedia, exportOverlayOpen, exportState, ffmpegLoaded, ffmpegProgress, ffmpegProgressElapsedTime, ffmpegProgressPrevValue, previewAspectRatio, processedFile, processedFileSize, timelineTracks } from "../../stores/store";
 import { get } from "svelte/store";
 import { convertDataUrlToUIntArray, convertFileToDataUrl, resizeFilePreview, msToS, sToMS } from "./utils";
 import { ExportState, type IFfmpegElement } from "$lib/interfaces/Ffmpeg";
 import { adjustingInterval } from "./betterInterval";
 import { CONSTS } from "./consts";
 import { MediaType } from "$lib/interfaces/Media";
+import { aspectRatio1080pMap } from "$lib/interfaces/Player";
 
 let ffmpeg: FFmpeg
 let elapsedTimeInterval: {
@@ -348,7 +349,7 @@ export async function terminateFfmpegExecution() {
 
 // #region export timer
 // set up the interval for updating the elapsed time
-function startTimer() {
+function startTimer(): void {
     //reset the previous store value
     ffmpegProgressElapsedTime.set(0)
 
@@ -366,10 +367,18 @@ function startTimer() {
 }
 
 // clear the interval
-function stopTimer() {
+function stopTimer(): void {
     if (elapsedTimeInterval) {
         elapsedTimeInterval.stop()
     }
+}
+
+// get the height and width of the output video (in px) from the aspect ratio in the store
+function getExportSizing(): string {
+    const aspectRatio = get(previewAspectRatio)
+
+    // return the mapped aspect ratio to the correct px values
+    return aspectRatio1080pMap.get(aspectRatio)!
 }
 
 // #region waveform
