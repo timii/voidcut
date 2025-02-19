@@ -240,8 +240,8 @@ function createFfmpegFlags(mediaData: IFfmpegElement[]): string[] {
         filterNumber += 1
         console.log("createFfmpegFlags in for each -> filterComplexString:", filterComplexString)
 
-        // overlay the element between the offset and offset + duration
-        filterComplexString += `[${overlayInputs[0]}][${overlayInputs[1]}]overlay=enable='between(t,${offsetInS},${offsetInS + durationInS})'[${filterNumber}];`
+        // center the overlay both horizontally and vertically and only show it between the offset and offset + duration
+        filterComplexString += `[${overlayInputs[0]}][v0]overlay=(W-w)/2:(H-h)/2:enable='between(t,${offsetInS},${offsetInS + durationInS})'[${filterNumber}];`
         overlayInputs[0] = `${filterNumber}`
         filterNumber += 1
         console.log("createFfmpegFlags in for each -> filterComplexString:", filterComplexString)
