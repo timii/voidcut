@@ -171,8 +171,11 @@ async function createBlankVideo(mediaData: IFfmpegElement[]) {
     // create a "video" with just a black screen and no audio
     // we will overlay every element on top of this "base" video 
     const flags: string[] = []
+
+    // get the correct px values from the defined aspect ratio
+    const aspectRatio = getExportSizing()
     flags.push(
-        "-f", "lavfi", "-i", "color=size=1280x720:rate=25:color=black", "-f", "lavfi", "-i", "anullsrc=channel_layout=stereo:sample_rate=44100", "-t", `${maxLengthInS}`, "blank.mp4"
+        "-f", "lavfi", "-i", `color=size=${aspectRatio}:rate=60:color=black`, "-f", "lavfi", "-i", "anullsrc=channel_layout=stereo:sample_rate=44100", "-t", `${maxLengthInS}`, "blank.mp4"
     )
 
     // execute the blank video creation command and wait until its done
@@ -209,7 +212,6 @@ function createFfmpegFlags(mediaData: IFfmpegElement[]): string[] {
     let amixOutput: number
     let filterComplexString = ''
     // go over each element and map offsets to video and audio delays
-    // for (let i = 0; i < videoData.length; i++) {
     for (let i = mediaData.length - 1; i >= 0; i--) {
         const curEl = mediaData[i]
         const offsetInS = +msToS(curEl.offset).toFixed(2)
