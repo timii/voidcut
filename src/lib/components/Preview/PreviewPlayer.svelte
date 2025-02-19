@@ -230,11 +230,11 @@
 				data-duration={element.duration}
 				preload="auto"
 				controls
-				class="absolute top-0 left-0 w-full h-full pointer-events-none"
-				style="display: {displayMediaElement(
-					$currentPlaybackTime,
-					element
-				)}; z-index:{timelineElements.length - i};"
+				class="absolute top-0 left-0 w-full h-full pointer-events-none object-contain"
+				style="
+					display: {displayMediaElement($currentPlaybackTime, element)}; 
+					z-index:{timelineElements.length - i};
+				"
 				src={element.src}
 				bind:this={playerElementsMap[element.elementId].el}
 			>
@@ -247,10 +247,10 @@
 				preload="auto"
 				controls
 				class="absolute top-0 left-0 w-full h-full pointer-events-none"
-				style="display: {displayMediaElement(
-					$currentPlaybackTime,
-					element
-				)}; z-index:{timelineElements.length - i};"
+				style="
+					display: {displayMediaElement($currentPlaybackTime, element)}; 
+					z-index:{timelineElements.length - i};
+				"
 				src={element.src}
 				bind:this={playerElementsMap[element.elementId].el}
 			></audio>
@@ -259,11 +259,11 @@
 				src={element.src}
 				alt=""
 				bind:this={playerElementsMap[element.elementId].el}
-				style="display: {displayMediaElement(
-					$currentPlaybackTime,
-					element
-				)}; z-index:{timelineElements.length - i};"
-				class="absolute top-0 left-0 w-full h-full pointer-events-none"
+				class="absolute top-0 left-0 w-full h-full pointer-events-none object-contain"
+				style="
+					display: {displayMediaElement($currentPlaybackTime, element)}; 
+					z-index:{timelineElements.length - i};
+				"
 				data-id={element.elementId}
 			/>
 		{:else}
