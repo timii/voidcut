@@ -239,9 +239,11 @@ function createFfmpegFlags(mediaData: IFfmpegElement[]): string[] {
 
         filterNumber += 1
         console.log("createFfmpegFlags in for each -> filterComplexString:", filterComplexString)
+        // scale overlayed media to fit into current aspect ratio
+        const scaleString = `[${overlayInputs[1]}]scale=h=1080:w=-1[v0]`
 
         // center the overlay both horizontally and vertically and only show it between the offset and offset + duration
-        filterComplexString += `[${overlayInputs[0]}][v0]overlay=(W-w)/2:(H-h)/2:enable='between(t,${offsetInS},${offsetInS + durationInS})'[${filterNumber}];`
+        filterComplexString += `${scaleString};[${overlayInputs[0]}][v0]overlay=(W-w)/2:(H-h)/2:enable='between(t,${offsetInS},${offsetInS + durationInS})'[${filterNumber}];`
         overlayInputs[0] = `${filterNumber}`
         filterNumber += 1
         console.log("createFfmpegFlags in for each -> filterComplexString:", filterComplexString)
