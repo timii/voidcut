@@ -173,7 +173,7 @@ async function createBlankVideo(mediaData: IFfmpegElement[]) {
     const flags: string[] = []
 
     // get the correct px values from the defined aspect ratio
-    const aspectRatio = getExportSizing()
+    const aspectRatio = getAspectRatioInPx()
     flags.push(
         "-f", "lavfi", "-i", `color=size=${aspectRatio}:rate=60:color=black`, "-f", "lavfi", "-i", "anullsrc=channel_layout=stereo:sample_rate=44100", "-t", `${maxLengthInS}`, "blank.mp4"
     )
@@ -207,6 +207,7 @@ function createFfmpegFlags(mediaData: IFfmpegElement[]): string[] {
     flags.push('-filter_complex')
 
     let filterNumber = 0
+    let scaledElement = 0
     let amixInputNumbers: number[] = []
     let overlayInputs: string[] = []
     let amixOutput: number
@@ -239,14 +240,20 @@ function createFfmpegFlags(mediaData: IFfmpegElement[]): string[] {
 
         filterNumber += 1
         console.log("createFfmpegFlags in for each -> filterComplexString:", filterComplexString)
+
+        // get the aspect ratio defined in the store and replace the "x" in the string "VALUExVALUE" with a ":" so it can be used with scale
+        const aspectRatio = getAspectRatioInPx().replace('x', ':')
+
+        const scaleOutput = `[v${scaledElement}]`
         // scale overlayed media to fit into current aspect ratio
-        const scaleString = `[${overlayInputs[1]}]scale=h=1080:w=-1[v0]`
+        const scaleString = `[${overlayInputs[1]}]scale='${aspectRatio}:force_original_aspect_ratio=decrease'${scaleOutput}`
 
         // center the overlay both horizontally and vertically and only show it between the offset and offset + duration
-        filterComplexString += `${scaleString};[${overlayInputs[0]}][v0]overlay=(W-w)/2:(H-h)/2:enable='between(t,${offsetInS},${offsetInS + durationInS})'[${filterNumber}];`
+        filterComplexString += `${scaleString};[${overlayInputs[0]}]${scaleOutput}overlay=(W-w)/2:(H-h)/2:enable='between(t,${offsetInS},${offsetInS + durationInS})'[${filterNumber}];`
         overlayInputs[0] = `${filterNumber}`
         filterNumber += 1
         console.log("createFfmpegFlags in for each -> filterComplexString:", filterComplexString)
+        scaledElement += 1
 
         // ignore audio delay for images 
         if (curEl.mediaType !== MediaType.Image) {
@@ -377,8 +384,8 @@ function stopTimer(): void {
     }
 }
 
-// get the height and width of the output video (in px) from the aspect ratio in the store
-function getExportSizing(): string {
+// get the height and width of the current aspect ratio defined in the store (in the format VALUExVALUE)
+function getAspectRatioInPx(): string {
     const aspectRatio = get(previewAspectRatio)
 
     // return the mapped aspect ratio to the correct px values
