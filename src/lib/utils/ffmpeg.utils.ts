@@ -1,5 +1,5 @@
 import { FFmpeg } from "@ffmpeg/ffmpeg";
-import { availableMedia, exportOverlayOpen, exportState, ffmpegLoaded, ffmpegProgress, ffmpegProgressElapsedTime, ffmpegProgressPrevValue, previewAspectRatio, processedFile, processedFileSize, timelineTracks } from "../../stores/store";
+import { availableMedia, exportOverlayOpen, exportState, ffmpegLoaded, ffmpegProgress, ffmpegProgressElapsedTime, ffmpegProgressPrevValue, maxPlaybackTime, previewAspectRatio, processedFile, processedFileSize, timelineTracks } from "../../stores/store";
 import { get } from "svelte/store";
 import { convertDataUrlToUIntArray, convertFileToDataUrl, resizeFilePreview, msToS, sToMS } from "./utils";
 import { ExportState, type IFfmpegElement } from "$lib/interfaces/Ffmpeg";
@@ -73,7 +73,7 @@ export async function callFfmpeg() {
     console.log('[FFMPEG] mapping of timeline elements successful');
 
     // create blank video with only black screen
-    const blankVideoReturn = await createBlankVideo(mediaData)
+    const blankVideoReturn = await createBlankVideo()
     console.log('[FFMPEG] creation of blank video successful');
 
     // handle error cases when executing ffmpeg and stop execution
@@ -155,18 +155,9 @@ function mapTimelineElements(): IFfmpegElement[] {
 }
 
 // #region blank
-async function createBlankVideo(mediaData: IFfmpegElement[]) {
-    let maxLength = 0
-
-    // go through each media element and get the latest point of any element for the blank video length
-    mediaData.forEach(el => {
-        // if the current element duration + offset are bigger than the maxLength, update it
-        if (el.duration + el.offset > maxLength) {
-            maxLength = el.duration + el.offset
-        }
-    })
-    const maxLengthInS = maxLength / 1000
-
+async function createBlankVideo() {
+    // get the latest point of any element for the blank video length
+    const maxLengthInS = get(maxPlaybackTime) / 1000
 
     // create a "video" with just a black screen and no audio
     // we will overlay every element on top of this "base" video 
