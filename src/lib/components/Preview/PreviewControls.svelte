@@ -28,10 +28,10 @@
 			disableButtons = !doesElementExistInTimeline();
 
 			// disable the "forward" buttons if we are the max play back time
-			disableForwardButtons = $currentPlaybackTime === $maxPlaybackTime;
+			disableForwardButtons = $currentPlaybackTime >= $maxPlaybackTime;
 
 			// disable the "backward buttons if we are the start of the timeline
-			disableBackwardButtons = $currentPlaybackTime === 0;
+			disableBackwardButtons = $currentPlaybackTime <= 0;
 		}, 0);
 	}
 
