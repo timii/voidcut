@@ -384,7 +384,7 @@ function getAspectRatioInPx(): string {
 }
 
 // #region waveform
-// generates an image of the waveform using ffmpeg from the given file
+// generates an image of the waveform from a given file using ffmpeg
 export async function generateAudioWaveform(file: File) {
     // convert audio file to DataUrl and then UIntArray first
     const audioDataUrl = await convertFileToDataUrl(file)

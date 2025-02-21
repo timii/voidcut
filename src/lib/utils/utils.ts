@@ -311,28 +311,42 @@ export function resizeFilePreview(file: File): Promise<string> {
         fr.readAsDataURL(file);
 
         // add eventlistener to when the FileReader finished loading
-        fr.onload = (event) => {
-            // resize created preview image to be the same size as the media pool element by loading a temporary image into the canvas and resizing the canvas
+        fr.onload = () => {
             const img = new Image();
-            // img.src = event.target?.result?.toString()!;
             img.src = fr.result as string;
 
             img.onload = () => {
-                const elem = document.createElement('canvas');
+                // create a new canvas element where the image will be loaded into
+                const canvas = document.createElement('canvas');
 
                 // set the canvas to be the same height as the media pool element
-                elem.width = CONSTS.mediaPoolElementWidth;
-                elem.height = CONSTS.mediaPoolElementHeight;
+                canvas.width = CONSTS.mediaPoolElementWidth;
+                canvas.height = CONSTS.mediaPoolElementHeight;
 
-                const ctx = elem.getContext('2d');
+                const ctx = canvas.getContext('2d');
                 if (!ctx) {
                     console.error('Error getting canvas context')
                     reject('Error getting canvas context')
 
                 }
 
-                ctx!.drawImage(img, 0, 0, CONSTS.mediaPoolElementWidth, CONSTS.mediaPoolElementHeight);
+                // get ratios between both height and width
+                const hRatio = canvas.width / img.width;
+                const vRatio = canvas.height / img.height;
 
+                // use smaller ratio for scaling image into canvas
+                const ratio = Math.min(hRatio, vRatio);
+
+                // x and y positions to center scaled image
+                const centerX = (canvas.width - img.width * ratio) / 2;
+                const centerY = (canvas.height - img.height * ratio) / 2;
+
+                // draw the image at correct image and with correct size
+                ctx!.drawImage(img, 0, 0, img.width, img.height,
+                    centerX, centerY, img.width * ratio, img.height * ratio);
+
+
+                // return the dataUrl string of the resized image
                 const resizedImage = ctx!.canvas.toDataURL();
                 resolve(resizedImage as string)
             }
