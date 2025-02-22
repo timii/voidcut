@@ -432,4 +432,27 @@
 	:global(.drag-over) {
 		background-color: red;
 	}
+
+	/* update scrollbar styling for timeline */
+	::-webkit-scrollbar {
+		width: 6px;
+		height: 6px;
+	}
+
+	::-webkit-scrollbar-track {
+		background: theme(colors.background-scrollbar-track);
+	}
+
+	::-webkit-scrollbar-thumb {
+		background: theme(colors.background-scrollbar-thumb);
+		border-radius: 10px;
+	}
+
+	::-webkit-scrollbar-thumb:hover {
+		background: theme(colors.background-scrollbar-thumb-hover);
+	}
+
+	::-webkit-scrollbar-corner {
+		background: transparent;
+	}
 </style>

@@ -29,6 +29,9 @@ export default {
         "background-stripe1": "#0284c733", // accent color (opacity 0.2)
         "background-stripe2": "#01517933", // darker accent color (opacity 0.2)
         "background-ruler": "#c2c2c2",
+        "background-scrollbar-track": "#212127",
+        "background-scrollbar-thumb": "#808080", // taken from firefox scrollbar
+        "background-scrollbar-thumb-hover": "#959595", // taken from firefox scrollbar
 
         // accent colors
         "accent-color": '#0284c7',
