@@ -59,7 +59,7 @@
 	}
 </script>
 
-<main class="flex flex-col w-screen h-screen max-h-screen max-w-screen">
+<main class="flex flex-col w-screen h-screen max-h-screen max-w-screen overflow-hidden">
 	<div class="upper flex flex-basis-2/3 flex-col flex-1 max-h-[66%]">
 		<div class="header">
 			<Header></Header>
@@ -75,7 +75,7 @@
 			</div>
 		</div>
 	</div>
-	<div class="timeline flex-1 basis-1/3 h-[33%] max-h-[33%] min-h-[33%]">
+	<div class="timeline flex-1 basis-1/3 h-[33%] max-h-[34%] min-h-[33%]">
 		<Timeline></Timeline>
 	</div>
 </main>
