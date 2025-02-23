@@ -273,10 +273,11 @@ function createFfmpegFlags(mediaData: IFfmpegElement[]): string[] {
 
     console.log("createFfmpegFlags -> flags:", flags)
 
-    // map output of last overlay to ouput file
-    flags.push('-map', `[${overlayInputs[0]}]`)
-    // map output of amix to ouput file
-    flags.push('-map', `[${amixOutput}]`)
+    // keep track of all the output variables so we can use them in the filter_complex string
+    const outputMap = new Map<string, string[]>()
+
+    const trimString = trimElements(mediaData, outputMap)
+    console.log("createFfmpegFlags after time:", trimString, "map:", outputMap);
 
     flags.push(`${outputFileName}`)
 
@@ -305,6 +306,44 @@ function createFfmpegFlags(mediaData: IFfmpegElement[]): string[] {
     // ffmpeg -i testvideo1.mp4 -i testvideo2.mp4 -filter_complex "[0:v]setpts=expr=PTS+0/TB[1];[0:a]adelay=delays=0s:all=1[2];[1:a]adelay=delays=10s:all=1[5];[1:v]setpts=expr=PTS-STARTPTS,tpad=start_duration=10[4];[4][1]overlay=eof_action=pass[out_v];[2][5]amix[out_a]" -map "[out_a]" -map "[out_v]" out.mp4
 
     return flags
+}
+
+// #region flag helpers
+// handle trimming and correctly setting the timeline positions of each element
+function trimElements(mediaData: IFfmpegElement[], outputMap: Map<string, string[]>): string {
+    console.log("createFfmpegFlags trimElements -> mediaData:", mediaData, "outputMap:", outputMap);
+
+    // create an "trim" key with an empty array that will keep track of the output variable names to be used later 
+    outputMap.set("trim", [])
+
+    let trimString = ''
+
+    // loop through all elements beginning from the last and ending with the first element
+    for (let i = mediaData.length - 1; i >= 0; i--) {
+        // get current element
+        const curEl = mediaData[i]
+
+        // get all necessary properties and convert them to seconds with two digits after the dot
+        const offsetInS = +msToS(curEl.offset).toFixed(2)
+        const durationInS = +msToS(curEl.duration).toFixed(2)
+        const trimFromStart = +msToS(curEl.trimFromStart).toFixed(2)
+        const trimFromEnd = +msToS(curEl.trimFromEnd).toFixed(2)
+
+        // decrement indeces
+        const inputIndex = i + 1
+        const outputName = `trim${inputIndex}`
+
+        // build the filter string for current element by appending it to the previous element(s)
+        trimString += `[${inputIndex}:v]trim=start=${trimFromStart}:end=${trimFromEnd},setpts=PTS-STARTPTS+${offsetInS}/TB[${outputName}]`
+
+        console.log("createFfmpegFlags trimElements -> in for loop:", i, "curEl:", curEl, "offsetInS:", offsetInS, "durationInS:", durationInS, "trimFromStart:", trimFromStart, "trimFromEnd:", trimFromEnd, "inputIndex:", inputIndex, "string:", trimString);
+
+        const prevMapValue = outputMap.get("trim") ?? ''
+        // add the output name of created filter into map value
+        outputMap.set("trim", [...prevMapValue, outputName])
+    }
+
+    return trimString
 }
 
 // #region write files
