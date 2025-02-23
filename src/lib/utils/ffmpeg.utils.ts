@@ -134,11 +134,12 @@ function mapTimelineElements(): IFfmpegElement[] {
         // map media element and convert their source data url into UInt8Array that 
         // can be used in ffmpeg
         const splitFilename = mediaEl.name.split('.')
-        const fileType = splitFilename && splitFilename.length > 1 ? splitFilename.pop() : ''
+        const fileType = splitFilename && splitFilename.length > 1 ? splitFilename.pop()! : ''
         return { uIntArr: convertDataUrlToUIntArray(mediaEl.src), fileType }
     });
     console.log('callFfmpeg -> mediaElements:', mediaData);
 
+    // map the media data and timeline element togehter so it can be used in ffmpeg
     const mappedElements: IFfmpegElement[] = mediaData.map((data, i) => {
         const timelineElement = timelineElements[i]
         return {
@@ -146,8 +147,10 @@ function mapTimelineElements(): IFfmpegElement[] {
             duration: timelineElement.duration,
             offset: timelineElement.playbackStartTime,
             mediaType: timelineElement.type,
-            fileExtension: data.fileType
-        } as IFfmpegElement
+            fileExtension: data.fileType,
+            trimFromStart: timelineElement.trimFromStart,
+            trimFromEnd: timelineElement.trimFromEnd
+        }
     })
     console.log('callFfmpeg -> mappedElements:', mappedElements);
 
