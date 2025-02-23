@@ -276,8 +276,23 @@ function createFfmpegFlags(mediaData: IFfmpegElement[]): string[] {
     // keep track of all the output variables so we can use them in the filter_complex string
     const outputMap = new Map<string, string[]>()
 
+    // append strings created in the steps to this string
+    let filterComplexString = ''
+
+    // --------------------------------------
+    // 1. video processing (except for audio elements)
+    // --------------------------------------
+
+    // TODO: skip/handle audio elements for trimming and find out how to handle them in the map
+    // 1.1 trim element videos and shift their timeline forward accordingly so that they appear at the correct times
     const trimString = trimElements(mediaData, outputMap)
-    console.log("createFfmpegFlags after time:", trimString, "map:", outputMap);
+    filterComplexString += trimString
+    console.log("createFfmpegFlags after trim:", trimString, "map:", outputMap);
+
+    // 1.2 reset the blank video’s (background video) timestamp to the start
+    const resetTimestampString = resetBackgroundVideoTimestamp(outputMap)
+    filterComplexString += resetTimestampString
+    console.log("createFfmpegFlags after reset:", resetTimestampString, "map:", outputMap);
 
     flags.push(`${outputFileName}`)
 
@@ -334,7 +349,7 @@ function trimElements(mediaData: IFfmpegElement[], outputMap: Map<string, string
         const outputName = `trim${inputIndex}`
 
         // build the filter string for current element by appending it to the previous element(s)
-        trimString += `[${inputIndex}:v]trim=start=${trimFromStart}:end=${trimFromEnd},setpts=PTS-STARTPTS+${offsetInS}/TB[${outputName}]`
+        trimString += `[${inputIndex}:v]trim=start=${trimFromStart}:end=${trimFromEnd},setpts=PTS-STARTPTS+${offsetInS}/TB[${outputName}];`
 
         console.log("createFfmpegFlags trimElements -> in for loop:", i, "curEl:", curEl, "offsetInS:", offsetInS, "durationInS:", durationInS, "trimFromStart:", trimFromStart, "trimFromEnd:", trimFromEnd, "inputIndex:", inputIndex, "string:", trimString);
 
@@ -344,6 +359,18 @@ function trimElements(mediaData: IFfmpegElement[], outputMap: Map<string, string
     }
 
     return trimString
+}
+
+// reset the blank video’s (background video) timestamp to the start
+function resetBackgroundVideoTimestamp(outputMap: Map<string, string[]>) {
+    const outputName = 'bg'
+    // create the string to reset the background video timestamp to the start
+    const resetString = `[0:v]setpts=PTS-STARTPTS[${outputName}];`
+
+    // add the output name to the map
+    outputMap.set('reset', [outputName])
+
+    return resetString
 }
 
 // #region write files
