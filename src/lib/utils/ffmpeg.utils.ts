@@ -285,19 +285,28 @@ function createFfmpegFlags(mediaData: IFfmpegElement[]): string[] {
 
     // TODO: skip/handle audio elements for trimming and find out how to handle them in the map
     // 1.1 trim element videos and shift their timeline forward accordingly so that they appear at the correct times
-    const trimString = trimElements(mediaData, outputMap)
-    filterComplexString += trimString
-    console.log("createFfmpegFlags after trim:", trimString, "map:", outputMap);
+    const updateVideosString = updateElementVideos(mediaData, outputMap)
+    filterComplexString += updateVideosString
+    console.log("createFfmpegFlags after updating video streams:", updateVideosString, "map:", outputMap);
 
     // 1.2 reset the blank video’s (background video) timestamp to the start
     const resetTimestampString = resetBackgroundVideoTimestamp(outputMap)
     filterComplexString += resetTimestampString
-    console.log("createFfmpegFlags after reset:", resetTimestampString, "map:", outputMap);
+    console.log("createFfmpegFlags after reset background:", resetTimestampString, "map:", outputMap);
 
     // 1.3 overlay each element starting from the last timeline row
     const overlayString = overlayElements(mediaData, outputMap)
     filterComplexString += overlayString
     console.log("createFfmpegFlags after overlay:", overlayString, "map:", outputMap);
+
+    // --------------------------------------
+    // 2. audio processing (except for images)
+    // --------------------------------------
+
+    // 2.1 trim the element audios, resets timestamps and delays them accodingly to their offset
+    const updateAudiosString = updateElementAudios(mediaData, outputMap)
+    filterComplexString += updateAudiosString
+    console.log("createFfmpegFlags after updating audio streams:", updateAudiosString, "map:", outputMap);
 
     flags.push(`${outputFileName}`)
 
@@ -329,10 +338,8 @@ function createFfmpegFlags(mediaData: IFfmpegElement[]): string[] {
 }
 
 // #region flag helpers
-// handle trimming and correctly setting the timeline positions of each element
-function trimElements(mediaData: IFfmpegElement[], outputMap: Map<string, string[]>): string {
-    console.log("createFfmpegFlags trimElements -> mediaData:", mediaData, "outputMap:", outputMap);
-
+// handle trimming, timestamps and delays for the video streams
+function updateElementVideos(mediaData: IFfmpegElement[], outputMap: Map<string, string[]>): string {
     // create a "trim" key with an empty array that will keep track of the output variable names to be used later 
     outputMap.set("trim", [])
 
@@ -356,7 +363,7 @@ function trimElements(mediaData: IFfmpegElement[], outputMap: Map<string, string
         // build the filter string for current element by appending it to the previous element(s)
         trimString += `[${inputIndex}:v]trim=start=${trimFromStart}:end=${trimFromEnd},setpts=PTS-STARTPTS+${offsetInS}/TB[${outputName}];`
 
-        console.log("createFfmpegFlags trimElements -> in for loop:", i, "curEl:", curEl, "offsetInS:", offsetInS, "durationInS:", durationInS, "trimFromStart:", trimFromStart, "trimFromEnd:", trimFromEnd, "inputIndex:", inputIndex, "string:", trimString);
+        console.log("createFfmpegFlags updateElementVideos -> in for loop:", i, "curEl:", curEl, "offsetInS:", offsetInS, "durationInS:", durationInS, "trimFromStart:", trimFromStart, "trimFromEnd:", trimFromEnd, "inputIndex:", inputIndex, "string:", trimString);
 
         const prevMapValue = outputMap.get("trim") ?? ''
         // add the output name of created filter into map value
@@ -367,7 +374,7 @@ function trimElements(mediaData: IFfmpegElement[], outputMap: Map<string, string
 }
 
 // reset the blank video’s (background video) timestamp to the start
-function resetBackgroundVideoTimestamp(outputMap: Map<string, string[]>) {
+function resetBackgroundVideoTimestamp(outputMap: Map<string, string[]>): string {
     const outputName = 'bg'
     // create the string to reset the background video timestamp to the start
     const resetString = `[0:v]setpts=PTS-STARTPTS[${outputName}];`
@@ -379,7 +386,7 @@ function resetBackgroundVideoTimestamp(outputMap: Map<string, string[]>) {
 }
 
 // handle overlapping elements in the correct order
-function overlayElements(mediaData: IFfmpegElement[], outputMap: Map<string, string[]>) {
+function overlayElements(mediaData: IFfmpegElement[], outputMap: Map<string, string[]>): string {
     let overlayString = ''
 
     // keep track of the output name from the last overlay
@@ -419,6 +426,49 @@ function overlayElements(mediaData: IFfmpegElement[], outputMap: Map<string, str
     outputMap.set('overlay', [outputName ?? ''])
 
     return overlayString
+}
+
+// handle trimming, timestamps and delays for the audio streams
+function updateElementAudios(mediaData: IFfmpegElement[], outputMap: Map<string, string[]>): string {
+    let atrimString = ''
+
+    // add the background audio to the output map
+    outputMap.set('atrim', ['0:a'])
+
+    // loop through all elements beginning from the last and ending with the first element
+    for (let i = mediaData.length - 1; i >= 0; i--) {
+        // get current element
+        const curEl = mediaData[i]
+
+        // if current element is an image, skip current iteration
+        if (curEl.mediaType === MediaType.Image) {
+            continue
+        }
+
+        // get all necessary properties and convert them to seconds with two digits after the dot
+        const offsetInS = +msToS(curEl.offset).toFixed(2)
+        const durationInS = +msToS(curEl.duration).toFixed(2)
+        const trimFromStart = +msToS(curEl.trimFromStart).toFixed(2)
+        const trimFromEnd = +msToS(curEl.trimFromEnd).toFixed(2)
+
+        // decrement indeces
+        const inputIndex = i + 1
+        const outputName = `atrim${inputIndex}`
+
+        // [1:a]atrim=start=7:end=14,asetpts=PTS-STARTPTS,adelay=8000:all=1[ova1];
+        // [2:a]atrim=start=5:end=12,asetpts=PTS-STARTPTS,adelay=2000:all=1[ova2];
+
+        // build the filter string for current element by appending it to the previous element(s)
+        atrimString += `[${inputIndex}:a]atrim=start=${trimFromStart}:end=${trimFromEnd},setpts=PTS-STARTPTS,adelay=${offsetInS}:all=1[${outputName}];`
+
+        console.log("createFfmpegFlags updateElementAudios -> in for loop:", i, "curEl:", curEl, "offsetInS:", offsetInS, "durationInS:", durationInS, "trimFromStart:", trimFromStart, "trimFromEnd:", trimFromEnd, "inputIndex:", inputIndex, "string:", atrimString);
+
+        const prevMapValue = outputMap.get("atrim") ?? ''
+        // add the output name of created filter into map value
+        outputMap.set("atrim", [...prevMapValue, outputName])
+    }
+
+    return atrimString
 }
 
 // #region write files
