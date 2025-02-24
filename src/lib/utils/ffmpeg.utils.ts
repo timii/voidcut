@@ -308,6 +308,24 @@ function createFfmpegFlags(mediaData: IFfmpegElement[]): string[] {
     filterComplexString += updateAudiosString
     console.log("createFfmpegFlags after updating audio streams:", updateAudiosString, "map:", outputMap);
 
+    // 2.2 mixes the background audio with all overlay audio tracks
+    const mixingAudiosString = mixAudioStreams(outputMap)
+    filterComplexString += mixingAudiosString
+    console.log("createFfmpegFlags after mixing audio streams:", mixingAudiosString, "map:", outputMap);
+
+    // push final filter_complex into flags array
+    flags.push(filterComplexString)
+    console.log("createFfmpegFlags after all steps:", filterComplexString, "map:", outputMap);
+
+    // map the final video and audio stream to the output file
+    const finalVideoStream = outputMap.get('overlay')![0]
+    // map final video stream to ouput file
+    flags.push('-map', `[${finalVideoStream}]`)
+
+    const finalAudioStream = outputMap.get('audioMix')![0]
+    // map final audio stream to ouput file
+    flags.push('-map', `[${finalAudioStream}]`)
+
     flags.push(`${outputFileName}`)
 
     console.log("createFfmpegFlags -> flags:", flags)
@@ -412,7 +430,7 @@ function overlayElements(mediaData: IFfmpegElement[], outputMap: Map<string, str
         }
 
         // use the current i to create a "unique" output name
-        outputName = `tmp${i}`
+        outputName = `ovrl${i}`
 
         // get all necessary properties and convert them to seconds with two digits after the dot
         const startInS = +msToS(curEl.offset).toFixed(2)
@@ -455,9 +473,6 @@ function updateElementAudios(mediaData: IFfmpegElement[], outputMap: Map<string,
         const inputIndex = i + 1
         const outputName = `atrim${inputIndex}`
 
-        // [1:a]atrim=start=7:end=14,asetpts=PTS-STARTPTS,adelay=8000:all=1[ova1];
-        // [2:a]atrim=start=5:end=12,asetpts=PTS-STARTPTS,adelay=2000:all=1[ova2];
-
         // build the filter string for current element by appending it to the previous element(s)
         atrimString += `[${inputIndex}:a]atrim=start=${trimFromStart}:end=${trimFromEnd},setpts=PTS-STARTPTS,adelay=${offsetInS}:all=1[${outputName}];`
 
@@ -469,6 +484,26 @@ function updateElementAudios(mediaData: IFfmpegElement[], outputMap: Map<string,
     }
 
     return atrimString
+}
+
+// handle mixing all updated audio streams with the background audio stream
+function mixAudioStreams(outputMap: Map<string, string[]>): string {
+    const outputName = 'outa'
+
+    // get all audio streams and their length from the map
+    const allAudioStreams = outputMap.get("atrim")!
+    const amountOfAudioStreams = allAudioStreams.length
+
+    // join all audio streams into one string and each stream surrounded by "[]"
+    let audioString = `[${allAudioStreams.join('][')}]`
+
+    // build audio mixing string
+    audioString += `amix=inputs=${amountOfAudioStreams}[${outputName}]`
+
+    // add output name of filter into map
+    outputMap.set("audioMix", [outputName])
+
+    return audioString
 }
 
 // #region write files
