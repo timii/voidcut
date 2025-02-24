@@ -294,6 +294,11 @@ function createFfmpegFlags(mediaData: IFfmpegElement[]): string[] {
     filterComplexString += resetTimestampString
     console.log("createFfmpegFlags after reset:", resetTimestampString, "map:", outputMap);
 
+    // 1.3 overlay each element starting from the last timeline row
+    const overlayString = overlayElements(mediaData, outputMap)
+    filterComplexString += overlayString
+    console.log("createFfmpegFlags after overlay:", overlayString, "map:", outputMap);
+
     flags.push(`${outputFileName}`)
 
     console.log("createFfmpegFlags -> flags:", flags)
@@ -328,7 +333,7 @@ function createFfmpegFlags(mediaData: IFfmpegElement[]): string[] {
 function trimElements(mediaData: IFfmpegElement[], outputMap: Map<string, string[]>): string {
     console.log("createFfmpegFlags trimElements -> mediaData:", mediaData, "outputMap:", outputMap);
 
-    // create an "trim" key with an empty array that will keep track of the output variable names to be used later 
+    // create a "trim" key with an empty array that will keep track of the output variable names to be used later 
     outputMap.set("trim", [])
 
     let trimString = ''
@@ -367,10 +372,53 @@ function resetBackgroundVideoTimestamp(outputMap: Map<string, string[]>) {
     // create the string to reset the background video timestamp to the start
     const resetString = `[0:v]setpts=PTS-STARTPTS[${outputName}];`
 
-    // add the output name to the map
+    // add the output name to the map with only one element as the value
     outputMap.set('reset', [outputName])
 
     return resetString
+}
+
+// handle overlapping elements in the correct order
+function overlayElements(mediaData: IFfmpegElement[], outputMap: Map<string, string[]>) {
+    let overlayString = ''
+
+    // keep track of the output name from the last overlay
+    let outputName = null
+
+    // get all elements to overlay 
+    const overlayElements = outputMap.get('trim')!
+
+    // loop through all elements beginning from the last and ending with the first element to correctly overlay them
+    for (let i = mediaData.length - 1; i >= 0; i--) {
+        // get current element
+        const curEl = mediaData[i]
+
+        // determine what element is the background for the overlay (first iteration is the blank video)
+        const outputToOverlayOn = outputName ?? outputMap.get('reset')![0]
+
+        // get the next element and remove it from the array
+        const nextElement = overlayElements.shift()
+
+        // if there is no next element break out of loop
+        if (!nextElement) {
+            break;
+        }
+
+        // use the current i to create a "unique" output name
+        outputName = `tmp${i}`
+
+        // get all necessary properties and convert them to seconds with two digits after the dot
+        const startInS = +msToS(curEl.offset).toFixed(2)
+        const endInS = +msToS(curEl.offset + curEl.duration).toFixed(2)
+
+        // build string with times for when to show the overlay for each element
+        overlayString += `[${outputToOverlayOn}][${nextElement}]overlay=0:0:enable='between(t,${startInS},${endInS})'[${outputName}];`
+    }
+
+    // add the output name of the last overlay to the map
+    outputMap.set('overlay', [outputName ?? ''])
+
+    return overlayString
 }
 
 // #region write files
