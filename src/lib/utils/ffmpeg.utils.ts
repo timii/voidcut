@@ -1,8 +1,8 @@
 import { FFmpeg } from "@ffmpeg/ffmpeg";
 import { availableMedia, exportOverlayOpen, exportState, ffmpegLoaded, ffmpegProgress, ffmpegProgressElapsedTime, ffmpegProgressPrevValue, maxPlaybackTime, previewAspectRatio, processedFile, processedFileSize, timelineTracks } from "../../stores/store";
 import { get } from "svelte/store";
-import { convertDataUrlToUIntArray, convertFileToDataUrl, resizeFilePreview, msToS, sToMS } from "./utils";
-import { ExportState, type IFfmpegElement } from "$lib/interfaces/Ffmpeg";
+import { convertDataUrlToUIntArray, convertFileToDataUrl, resizeFilePreview, msToS } from "./utils";
+import { ExportState, type OutputMap, OutputMapKey, type IFfmpegElement } from "$lib/interfaces/Ffmpeg";
 import { adjustingInterval } from "./betterInterval";
 import { CONSTS } from "./consts";
 import { MediaType } from "$lib/interfaces/Media";
@@ -274,7 +274,7 @@ function createFfmpegFlags(mediaData: IFfmpegElement[]): string[] {
     console.log("createFfmpegFlags -> flags:", flags)
 
     // keep track of all the output variables so we can use them in the filter_complex string
-    const outputMap = new Map<string, string[]>()
+    const outputMap: OutputMap = new Map<OutputMapKey, string[]>()
 
     // append strings created in the steps to this string
     let filterComplexString = ''
@@ -318,11 +318,11 @@ function createFfmpegFlags(mediaData: IFfmpegElement[]): string[] {
     console.log("createFfmpegFlags after all steps:", filterComplexString, "map:", outputMap);
 
     // map the final video and audio stream to the output file
-    const finalVideoStream = outputMap.get('overlay')![0]
+    const finalVideoStream = outputMap.get(OutputMapKey.OVERLAY)![0]
     // map final video stream to ouput file
     flags.push('-map', `[${finalVideoStream}]`)
 
-    const finalAudioStream = outputMap.get('audioMix')![0]
+    const finalAudioStream = outputMap.get(OutputMapKey.AUDIO_MIX)![0]
     // map final audio stream to ouput file
     flags.push('-map', `[${finalAudioStream}]`)
 
@@ -357,9 +357,9 @@ function createFfmpegFlags(mediaData: IFfmpegElement[]): string[] {
 
 // #region flag helpers
 // handle trimming, timestamps and delays for the video streams
-function updateElementVideos(mediaData: IFfmpegElement[], outputMap: Map<string, string[]>): string {
+function updateElementVideos(mediaData: IFfmpegElement[], outputMap: OutputMap): string {
     // create a "trim" key with an empty array that will keep track of the output variable names to be used later 
-    outputMap.set("trim", [])
+    outputMap.set(OutputMapKey.TRIM, [])
 
     let trimString = ''
 
@@ -383,35 +383,36 @@ function updateElementVideos(mediaData: IFfmpegElement[], outputMap: Map<string,
 
         console.log("createFfmpegFlags updateElementVideos -> in for loop:", i, "curEl:", curEl, "offsetInS:", offsetInS, "durationInS:", durationInS, "trimFromStart:", trimFromStart, "trimFromEnd:", trimFromEnd, "inputIndex:", inputIndex, "string:", trimString);
 
-        const prevMapValue = outputMap.get("trim") ?? ''
+        // get the previous array
+        const prevMapValue = outputMap.get(OutputMapKey.TRIM) ?? ''
         // add the output name of created filter into map value
-        outputMap.set("trim", [...prevMapValue, outputName])
+        outputMap.set(OutputMapKey.TRIM, [...prevMapValue, outputName])
     }
 
     return trimString
 }
 
 // reset the blank video’s (background video) timestamp to the start
-function resetBackgroundVideoTimestamp(outputMap: Map<string, string[]>): string {
+function resetBackgroundVideoTimestamp(outputMap: OutputMap): string {
     const outputName = 'bg'
     // create the string to reset the background video timestamp to the start
     const resetString = `[0:v]setpts=PTS-STARTPTS[${outputName}];`
 
     // add the output name to the map with only one element as the value
-    outputMap.set('reset', [outputName])
+    outputMap.set(OutputMapKey.RESET, [outputName])
 
     return resetString
 }
 
 // handle overlapping elements in the correct order
-function overlayElements(mediaData: IFfmpegElement[], outputMap: Map<string, string[]>): string {
+function overlayElements(mediaData: IFfmpegElement[], outputMap: OutputMap): string {
     let overlayString = ''
 
     // keep track of the output name from the last overlay
     let outputName = null
 
     // get all elements to overlay 
-    const overlayElements = outputMap.get('trim')!
+    const overlayElements = outputMap.get(OutputMapKey.TRIM)!
 
     // loop through all elements beginning from the last and ending with the first element to correctly overlay them
     for (let i = mediaData.length - 1; i >= 0; i--) {
@@ -419,7 +420,7 @@ function overlayElements(mediaData: IFfmpegElement[], outputMap: Map<string, str
         const curEl = mediaData[i]
 
         // determine what element is the background for the overlay (first iteration is the blank video)
-        const outputToOverlayOn = outputName ?? outputMap.get('reset')![0]
+        const outputToOverlayOn = outputName ?? outputMap.get(OutputMapKey.RESET)![0]
 
         // get the next element and remove it from the array
         const nextElement = overlayElements.shift()
@@ -441,17 +442,17 @@ function overlayElements(mediaData: IFfmpegElement[], outputMap: Map<string, str
     }
 
     // add the output name of the last overlay to the map
-    outputMap.set('overlay', [outputName ?? ''])
+    outputMap.set(OutputMapKey.OVERLAY, [outputName ?? ''])
 
     return overlayString
 }
 
 // handle trimming, timestamps and delays for the audio streams
-function updateElementAudios(mediaData: IFfmpegElement[], outputMap: Map<string, string[]>): string {
+function updateElementAudios(mediaData: IFfmpegElement[], outputMap: OutputMap): string {
     let atrimString = ''
 
     // add the background audio to the output map
-    outputMap.set('atrim', ['0:a'])
+    outputMap.set(OutputMapKey.ATRIM, ['0:a'])
 
     // loop through all elements beginning from the last and ending with the first element
     for (let i = mediaData.length - 1; i >= 0; i--) {
@@ -478,20 +479,21 @@ function updateElementAudios(mediaData: IFfmpegElement[], outputMap: Map<string,
 
         console.log("createFfmpegFlags updateElementAudios -> in for loop:", i, "curEl:", curEl, "offsetInS:", offsetInS, "durationInS:", durationInS, "trimFromStart:", trimFromStart, "trimFromEnd:", trimFromEnd, "inputIndex:", inputIndex, "string:", atrimString);
 
-        const prevMapValue = outputMap.get("atrim") ?? ''
+        // get the previous array
+        const prevMapValue = outputMap.get(OutputMapKey.ATRIM) ?? ''
         // add the output name of created filter into map value
-        outputMap.set("atrim", [...prevMapValue, outputName])
+        outputMap.set(OutputMapKey.ATRIM, [...prevMapValue, outputName])
     }
 
     return atrimString
 }
 
 // handle mixing all updated audio streams with the background audio stream
-function mixAudioStreams(outputMap: Map<string, string[]>): string {
+function mixAudioStreams(outputMap: OutputMap): string {
     const outputName = 'outa'
 
     // get all audio streams and their length from the map
-    const allAudioStreams = outputMap.get("atrim")!
+    const allAudioStreams = outputMap.get(OutputMapKey.ATRIM)!
     const amountOfAudioStreams = allAudioStreams.length
 
     // join all audio streams into one string and each stream surrounded by "[]"
@@ -501,7 +503,7 @@ function mixAudioStreams(outputMap: Map<string, string[]>): string {
     audioString += `amix=inputs=${amountOfAudioStreams}[${outputName}]`
 
     // add output name of filter into map
-    outputMap.set("audioMix", [outputName])
+    outputMap.set(OutputMapKey.AUDIO_MIX, [outputName])
 
     return audioString
 }
