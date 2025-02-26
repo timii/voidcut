@@ -475,7 +475,7 @@ function updateElementAudios(mediaData: IFfmpegElement[], outputMap: OutputMap):
         const outputName = `atrim${inputIndex}`
 
         // build the filter string for current element by appending it to the previous element(s)
-        atrimString += `[${inputIndex}:a]atrim=start=${trimFromStart}:end=${trimFromEnd},setpts=PTS-STARTPTS,adelay=${offsetInS}:all=1[${outputName}];`
+        atrimString += `[${inputIndex}:a]atrim=start=${trimFromStart}ms:end=${trimFromEnd},asetpts=PTS-STARTPTS,adelay=${offsetInS}s:all=1[${outputName}];`
 
         console.log("createFfmpegFlags updateElementAudios -> in for loop:", i, "curEl:", curEl, "offsetInS:", offsetInS, "durationInS:", durationInS, "trimFromStart:", trimFromStart, "trimFromEnd:", trimFromEnd, "inputIndex:", inputIndex, "string:", atrimString);
 
