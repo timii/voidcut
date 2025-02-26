@@ -411,7 +411,9 @@ export function convertDataUrlToUIntArray(dataUrl: string) {
 export function pausePlayback() {
     console.log("pausePlayback")
     previewPlaying.set(false)
-    interval.stop()
+    if (interval) {
+        interval.stop()
+    }
     // playbackIntervalId.update((id) => {
     //     // use current interval id to clear the interval
     //     clearInterval(id)
