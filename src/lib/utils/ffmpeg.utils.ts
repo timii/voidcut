@@ -189,9 +189,9 @@ function createFfmpegFlags(mediaData: IFfmpegElement[]): string[] {
     // include the blank video as the first input
     flags.push('-i', 'blank.mp4')
 
-    // loop backwards through the array to fix the order of overlaying and add filenames as input flags
-    for (let i = mediaData.length - 1; i >= 0; i--) {
-        const fileName = createFileName(i + 1, mediaData[i].fileExtension);
+    // add each media element as an input for ffmpeg
+    for (let i = 1; i <= mediaData.length; i++) {
+        const fileName = createFileName(i, mediaData[i - 1]);
 
         // push the -i flag with the input name
         flags.push('-i', fileName);
@@ -380,7 +380,7 @@ function updateElementVideos(mediaData: IFfmpegElement[], outputMap: OutputMap):
         const outputName = `trim${inputIndex}`
 
         // build the filter string for current element by appending it to the previous element(s)
-        trimString += `[${inputIndex}:v]trim=start=${trimFromStart}:end=${trimFromEnd},setpts=PTS-STARTPTS+${offsetInS}/TB[${outputName}];`
+        trimString += `[${inputIndex}:v]trim=start=${trimFromStart}:duration=${durationInS},setpts=PTS-STARTPTS+${offsetInS}/TB[${outputName}];`
 
         console.log("createFfmpegFlags updateElementVideos -> in for loop:", i, "curEl:", curEl, "offsetInS:", offsetInS, "durationInS:", durationInS, "trimFromStart:", trimFromStart, "trimFromEnd:", trimFromEnd, "inputIndex:", inputIndex, "string:", trimString);
 
@@ -476,7 +476,7 @@ function updateElementAudios(mediaData: IFfmpegElement[], outputMap: OutputMap):
         const outputName = `atrim${inputIndex}`
 
         // build the filter string for current element by appending it to the previous element(s)
-        atrimString += `[${inputIndex}:a]atrim=start=${trimFromStart}ms:end=${trimFromEnd},asetpts=PTS-STARTPTS,adelay=${offsetInS}s:all=1[${outputName}];`
+        atrimString += `[${inputIndex}:a]atrim=start=${trimFromStart}:duration=${durationInS},asetpts=PTS-STARTPTS,adelay=${curEl.offset}:all=1[${outputName}];`
 
         console.log("createFfmpegFlags updateElementAudios -> in for loop:", i, "curEl:", curEl, "offsetInS:", offsetInS, "durationInS:", durationInS, "trimFromStart:", trimFromStart, "trimFromEnd:", trimFromEnd, "inputIndex:", inputIndex, "string:", atrimString);
 
