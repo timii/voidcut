@@ -369,6 +369,15 @@ function updateElementVideos(mediaData: IFfmpegElement[], outputMap: OutputMap):
         // get current element
         const curEl = mediaData[i]
 
+        // if current element is an audio, skip current iteration since there is no video stream to offset or trim
+        if (curEl.mediaType === MediaType.Audio) {
+            // get the previous array
+            const prevMapValue = outputMap.get(OutputMapKey.TRIM) ?? ''
+            // add 'null' into map value so the overlay later knows to skip it
+            outputMap.set(OutputMapKey.TRIM, [...prevMapValue, 'null'])
+            continue;
+        }
+
         // get all necessary properties and convert them to seconds with two digits after the dot
         const offsetInS = +msToS(curEl.offset).toFixed(2)
         const durationInS = +msToS(curEl.duration).toFixed(2)
@@ -426,6 +435,11 @@ function overlayElements(mediaData: IFfmpegElement[], outputMap: OutputMap): str
         // get the next element and remove it from the array
         const nextElement = overlayElements.shift()
 
+        // if the next element should be skipped, continue to next iteration
+        if (nextElement === 'null') {
+            continue
+        }
+
         // if there is no next element break out of loop
         if (!nextElement) {
             break;
@@ -460,7 +474,7 @@ function updateElementAudios(mediaData: IFfmpegElement[], outputMap: OutputMap):
         // get current element
         const curEl = mediaData[i]
 
-        // if current element is an image, skip current iteration
+        // if current element is an image, skip current iteration since there is no audio stream to offset or trim
         if (curEl.mediaType === MediaType.Image) {
             continue
         }
