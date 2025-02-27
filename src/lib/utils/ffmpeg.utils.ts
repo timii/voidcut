@@ -148,6 +148,7 @@ function mapTimelineElements(): IFfmpegElement[] {
             offset: timelineElement.playbackStartTime,
             mediaType: timelineElement.type,
             fileExtension: data.fileType,
+            fileName: timelineElement.mediaName.replace(`.${data.fileType}`, ''),
             trimFromStart: timelineElement.trimFromStart,
             trimFromEnd: timelineElement.trimFromEnd
         }
@@ -512,15 +513,16 @@ function mixAudioStreams(outputMap: OutputMap): string {
 // write given video data into ffmpeg.wasm filesystem
 async function writeFilesToFfmpeg(mediaData: IFfmpegElement[]) {
     for (const [i, el] of mediaData.entries()) {
-        const fileName = createFileName(i + 1, el.fileExtension);
+        const fileName = createFileName(i + 1, el);
+
         await ffmpeg.writeFile(fileName, el.mediaData);
     }
 }
 
 // #region create file name
-// create a ffmpeg input file name string using the given index adn file extension
-function createFileName(index: number, fileExtension: string) {
-    return `input${index}.${fileExtension}`;
+// create a ffmpeg input file name string using the given index, media name and file extension
+function createFileName(index: number, mediaElement: IFfmpegElement) {
+    return `${mediaElement.fileName}_${index}.${mediaElement.fileExtension}`;
 }
 
 // #region download output

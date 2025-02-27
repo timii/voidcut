@@ -6,6 +6,7 @@ export interface IFfmpegElement {
     offset: number; // offset in ms
     mediaType: MediaType; // type of media
     fileExtension: string; // file extension
+    fileName: string; // file name
     trimFromStart: number, // how much is trimmed from the start in milliseconds
     trimFromEnd: number, // how much is trimmed from the end in milliseconds
 }
