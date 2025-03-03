@@ -452,8 +452,8 @@ function overlayElements(mediaData: IFfmpegElement[], outputMap: OutputMap): str
         const startInS = +msToS(curEl.offset).toFixed(2)
         const endInS = +msToS(curEl.offset + curEl.duration).toFixed(2)
 
-        // build string with times for when to show the overlay for each element
-        overlayString += `[${outputToOverlayOn}][${nextElement}]overlay=0:0:enable='between(t,${startInS},${endInS})'[${outputName}];`
+        // build string with times for when to show the overlay for each element and center element on the x and y axis
+        overlayString += `[${outputToOverlayOn}][${nextElement}]overlay=(W-w)/2:(H-h)/2:enable='between(t,${startInS},${endInS})'[${outputName}];`
     }
 
     // add the output name of the last overlay to the map
