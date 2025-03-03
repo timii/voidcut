@@ -13,7 +13,11 @@
 		timelineTracks
 	} from '../../../stores/store';
 	import { CONSTS } from '$lib/utils/consts';
-	import { handleTimelineMediaDrop, resetOverUnderDividers } from '$lib/utils/utils';
+	import {
+		handleTimelineMediaDrop,
+		isDraggedElementAFile,
+		resetOverUnderDividers
+	} from '$lib/utils/utils';
 	import type { IMedia } from '$lib/interfaces/Media';
 
 	export let index: number;
@@ -58,6 +62,12 @@
 		// prevent default behavior
 		e.preventDefault();
 		e.stopPropagation();
+
+		// don't highlight the divider if an external file (that isn't added to media pool) is hovered over
+		if (isDraggedElementAFile(e.dataTransfer?.items)) {
+			return;
+		}
+
 		hoverElement = true;
 		resetOverUnderDividers();
 	}

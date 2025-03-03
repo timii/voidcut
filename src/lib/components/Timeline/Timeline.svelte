@@ -7,6 +7,7 @@
 		handleTimelineMediaDrop,
 		hasHorizontalScrollbar,
 		hasVerticalScrollbar,
+		isDraggedElementAFile,
 		moveTimelineThumb,
 		onlyPrimaryButtonClicked,
 		resetAllBeingDragged,
@@ -290,6 +291,11 @@
 		e.preventDefault();
 		e.stopPropagation();
 
+		// don't highlight the timeline if an external file (that isn't added to media pool) is hovered over
+		if (isDraggedElementAFile(e.dataTransfer?.items)) {
+			return;
+		}
+
 		// update local variables if they're null
 		updateFirstAndLastDividerIfNull();
 
@@ -427,12 +433,6 @@
 </div>
 
 <style lang="postcss">
-	/* needs to have :global prefix because class gets added dynamically */
-	/* TODO: if not needed anymore */
-	:global(.drag-over) {
-		background-color: red;
-	}
-
 	/* update scrollbar styling for timeline */
 	::-webkit-scrollbar {
 		width: 6px;

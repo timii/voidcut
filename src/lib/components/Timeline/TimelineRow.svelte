@@ -13,7 +13,12 @@
 	} from '../../../stores/store';
 	import TimelineRowElement from './TimelineRowElement.svelte';
 	import { CONSTS } from '$lib/utils/consts';
-	import { convertMsToPx, handleTimelineMediaDrop, resetOverUnderDividers } from '$lib/utils/utils';
+	import {
+		convertMsToPx,
+		handleTimelineMediaDrop,
+		isDraggedElementAFile,
+		resetOverUnderDividers
+	} from '$lib/utils/utils';
 	import type { IMedia } from '$lib/interfaces/Media';
 
 	export let track: ITimelineTrack;
@@ -61,6 +66,12 @@
 		// prevent default behavior
 		e.preventDefault();
 		e.stopPropagation();
+
+		// don't highlight the row if an external file (that isn't added to media pool) is hovered over
+		if (isDraggedElementAFile(e.dataTransfer?.items)) {
+			return;
+		}
+
 		hoverElement = true;
 
 		resetOverUnderDividers();
