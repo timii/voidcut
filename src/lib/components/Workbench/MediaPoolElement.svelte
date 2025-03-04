@@ -47,12 +47,20 @@
 		on:mouseleave={() => (isHovering = false)}
 		bind:this={elementRef}
 	>
-		<img
-			src={file.previewImage}
-			alt="media preview"
-			class="w-full h-full rounded-[6px]"
-			bind:this={previewImageRef}
-		/>
+		{#if file.loaded}
+			<!-- show preview image when finished loading -->
+			<img
+				src={file.previewImage}
+				alt="media preview"
+				class="w-full h-full rounded-[6px]"
+				bind:this={previewImageRef}
+			/>
+		{:else}
+			<!-- else show loading background -->
+			<div
+				class="w-full h-full rounded-[6px] bg-hover-stipes animate-loadingStripes bg-[length:300%_200%]"
+			></div>
+		{/if}
 
 		<!-- if the file has a duration show it in the element -->
 		{#if file.duration}

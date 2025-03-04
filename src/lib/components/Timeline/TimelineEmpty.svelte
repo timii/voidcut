@@ -39,6 +39,3 @@
 		style="opacity: {hoverFile ? '1' : '0'};"
 	></div>
 </div>
-
-<style lang="postcss">
-</style>
