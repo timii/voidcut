@@ -12,6 +12,16 @@ export default {
         // custom background stripes
         "hover-stipes": "repeating-linear-gradient(45deg,#0284c733,#0284c733 10px,#01517933 10px,#01517933 20px)",
       },
+      keyframes: {
+        // custom keyframes
+        loadingStripes: {
+          '100%': { backgroundPosition: '100% 100%' },
+        }
+      },
+      animation: {
+        // custom animations
+        loadingStripes: 'loadingStripes 2s linear infinite',
+      },
       colors: {
         // background colors
         "background-color": '#151519',
