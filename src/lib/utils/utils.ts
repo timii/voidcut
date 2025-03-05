@@ -61,16 +61,55 @@ export async function handleFileUpload(files: FileList) {
     // convert FileList type to an array of files
     const filesArr = [...files];
 
-    // add metadata to each file
-    const mediaArr: IMedia[] = await Promise.all(filesArr.map(async (file) => {
-        console.log("utils -> in filesArr map file type:", file, file.type)
-
+    // add the files directly to the store but set "loaded" to false so they show up in the media pool as loading
+    const mappedFiles: IMedia[] = filesArr.map(file => {
         // get the file type prefix
         const fileTypeString = file.type.split('/')[0].toUpperCase()
 
         // convert the string into an enum value
-        // const fileType: MediaType = MediaType[fileTypeString as keyof typeof MediaType]
         const fileType = fileTypeString as MediaType
+
+        return {
+            name: file.name,
+            mediaId: generateId(),
+            type: fileType,
+            // initially set loaded to false and update it later when preview image and metadata have been loaded
+            loaded: false,
+            previewImage: '',
+            src: ''
+        }
+    })
+
+    saveFilesToStore(mappedFiles);
+
+    // update each media element that was just created with the loaded metadata and preview image
+    for (const [i, file] of mappedFiles.entries()) {
+
+        // get file metadata and create preview image
+        const { fileMetadata, filePreviewImage } = await getFileMetadataAndPreviewImage(file.type, filesArr[i])
+
+        availableMedia.update(media => {
+            // find correct media element using its mediaId
+            let index = media.findIndex(el => el.mediaId === file.mediaId)
+
+            // check if an element was found
+            if (index === -1) {
+                console.error(`Media element with id ${file.mediaId} wasn't found in store`);
+                return media;
+            }
+
+            // update element in store with file metadata, preview image and update loaded to true
+            media[index] = {
+                ...media[index],
+                previewImage: filePreviewImage,
+                loaded: true,
+                ...fileMetadata
+            }
+
+            return media;
+        })
+    }
+}
 
 // get the file metadata and create preview image from a given file and file type
 async function getFileMetadataAndPreviewImage(fileType: MediaType, file: File) {
@@ -583,6 +622,11 @@ export function isSameAspectRatio(width: number, height: number): boolean {
     const givenRatio = +(width / height).toFixed(2)
 
     return storeRatio === givenRatio
+}
+
+// delays further async running by given ms amount (mainly used for testing) 
+export function delay(ms: number) {
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 //#endregion
