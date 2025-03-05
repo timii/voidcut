@@ -71,62 +71,47 @@ export async function handleFileUpload(files: FileList) {
         // convert the string into an enum value
         // const fileType: MediaType = MediaType[fileTypeString as keyof typeof MediaType]
         const fileType = fileTypeString as MediaType
-        console.log("utils -> in filesArr map file type after convert:", fileType, fileTypeString)
 
-        let fileMetadata: IFileMetadata = {} as IFileMetadata
-        let filePreviewImage: string = '';
-        switch (fileType) {
-            case MediaType.Audio:
+// get the file metadata and create preview image from a given file and file type
+async function getFileMetadataAndPreviewImage(fileType: MediaType, file: File) {
+    let fileMetadata: IFileMetadata = {} as IFileMetadata
+    let filePreviewImage: string = '';
+    switch (fileType) {
+        case MediaType.Audio:
 
-                // get metadata for the audio file
-                fileMetadata = await getFileMetadata(file, MediaType.Audio)
+            // get metadata for the audio file
+            fileMetadata = await getFileMetadata(file, MediaType.Audio)
 
-                // generate wave form image for the preview image
-                const generatedImage = await generateAudioWaveform(file)
-                if (generatedImage) {
-                    filePreviewImage = generatedImage
-                }
-                break;
-            case MediaType.Image:
+            // generate wave form image for the preview image
+            const generatedImage = await generateAudioWaveform(file)
+            if (generatedImage) {
+                filePreviewImage = generatedImage
+            }
+            break;
+        case MediaType.Image:
 
-                // convert uploaded file into dataUrl and save it as the source of the image
-                const fileAsDataUrl = await convertFileToDataUrl(file)
-                fileMetadata = { src: fileAsDataUrl }
+            // convert uploaded file into dataUrl and save it as the source of the image
+            const fileAsDataUrl = await convertFileToDataUrl(file)
+            fileMetadata = { src: fileAsDataUrl }
 
-                // also create a resized version for the preview image when dragging the media pool element
-                const resizedFile = await resizeFilePreview(file)
+            // also create a resized version for the preview image when dragging the media pool element
+            const resizedFile = await resizeFilePreview(file)
 
-                filePreviewImage = resizedFile
+            filePreviewImage = resizedFile
 
-                break;
-            case MediaType.Video:
+            break;
+        case MediaType.Video:
 
-                // get metadata of current file
-                fileMetadata = await getFileMetadata(file, MediaType.Video)
+            // get metadata of current file
+            fileMetadata = await getFileMetadata(file, MediaType.Video)
 
-                // create image of uploaded media to show as preview
-                filePreviewImage = await getVideoPreviewImage(file)
-                break;
-            default:
-                console.error("No fitting media type found")
-        }
-
-
-
-        console.log("utils -> in filesArr map file:", file, "previewImage:", filePreviewImage, "metadata:", fileMetadata)
-        return {
-            name: file.name,
-            mediaId: generateId(),
-            type: fileType,
-            // TODO: implement loading so that the element gets directly added into store but with loaded false only and then we update it here so we can show a loading media element in the media pool already
-            loaded: true,
-            previewImage: filePreviewImage,
-            ...fileMetadata
-        }
-    }))
-
-    console.log('handleFileUpload -> mediaArr after map:', mediaArr);
-    saveFilesToStore(mediaArr);
+            // create image of uploaded media to show as preview
+            filePreviewImage = await getVideoPreviewImage(file)
+            break;
+        default:
+            console.error("No fitting media type found")
+    }
+    return { fileMetadata, filePreviewImage }
 }
 
 // handle given media when it's dropped into the timeline
