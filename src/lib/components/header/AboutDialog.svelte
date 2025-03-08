@@ -3,6 +3,8 @@
 	import IconButton from '../shared/IconButton.svelte';
 	import CloseIcon from '$lib/assets/header/close.png';
 	import GithubIcon from '$lib/assets/header/github.png';
+	import AppIcon from '$lib/assets/general/icon-white-50.png';
+	import ExternalLink from '../shared/ExternalLink.svelte';
 
 	export let open = false;
 
@@ -18,22 +20,27 @@
 		on:click={closeDialog}
 	>
 		<div
-			class="fixed -translate-x-1/2 -translate-y-1/2 about-dialog bg-background-highlight text-text-highlight top-1/2 left-1/2 h-[400px] w-[700px] rounded-2xl p-8 gap-3 flex flex-col items-center justify-center"
+			class="fixed -translate-x-1/2 -translate-y-1/2 about-dialog bg-background-highlight text-text-highlight top-1/2 left-1/2 h-[400px] w-[400px] rounded-2xl p-8 gap-3 flex flex-col items-center justify-center"
 			on:click={(e) => e.stopPropagation()}
 		>
 			<div class="absolute right-8 top-6">
 				<IconButton onClickCallback={closeDialog} icon={CloseIcon}></IconButton>
 			</div>
+
+			<div class="bg-accent-color p-2 rounded-2xl">
+				<img src={AppIcon} alt="logo" width="46" />
+			</div>
+
 			<div class="flex justify-center items-center gap-1">
-				Created by timii
-				<a
-					href="https://github.com/timii"
-					target="_blank"
-					rel="author"
-					on:click={(e) => e.stopPropagation()}
-				>
-					<span><IconButton icon={GithubIcon}></IconButton></span></a
-				>
+				Created by
+				<ExternalLink link="https://github.com/timii">
+					<IconButton icon={GithubIcon}></IconButton>
+					timii
+				</ExternalLink>
+			</div>
+
+			<div class="flex justify-center items-center gap-1">
+				Icons by <ExternalLink link="https://icons8.com/">Icons8</ExternalLink>
 			</div>
 		</div>
 	</div>
