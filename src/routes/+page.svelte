@@ -25,6 +25,7 @@
 		'header/export.png',
 		'header/download.png',
 		'header/cancel.png',
+		'header/github.png',
 		'preview/pause.png',
 		'workbench/delete.png',
 		'workbench/upload.png'
