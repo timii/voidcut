@@ -46,6 +46,11 @@
 			</div>
 
 			<div>Version: {version}</div>
+
+			<div class="flex justify-center items-center gap-1">
+				License:
+				<ExternalLink link="https://github.com/timii/voidcut/blob/main/LICENSE">MIT</ExternalLink>
+			</div>
 		</div>
 	</div>
 {/if}
