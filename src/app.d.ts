@@ -7,6 +7,9 @@ declare global {
 		// interface PageData {}
 		// interface Platform {}
 	}
+
+	// app version defined in the vite config 
+	declare const __VERSION__: string
 }
 
-export {};
+export { };

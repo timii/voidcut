@@ -1,5 +1,6 @@
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig, ViteDevServer } from 'vite';
+import pkg from './package.json' assert { type: 'json' }
 
 // necessary for ffmpeg.wasm to work
 /** @type {import('vite').Plugin} */
@@ -29,5 +30,8 @@ export default defineConfig({
 	},
 	optimizeDeps: {
 		exclude: ['@ffmpeg/ffmpeg', '@ffmpeg/util']
+	},
+	define: {
+		__VERSION__: `"${pkg.version}"`,
 	},
 });

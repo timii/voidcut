@@ -8,6 +8,8 @@
 
 	export let open = false;
 
+	const version = __VERSION__;
+
 	function closeDialog(e: Event) {
 		e.stopPropagation();
 		aboutOverlayOpen.set(false);
@@ -20,14 +22,14 @@
 		on:click={closeDialog}
 	>
 		<div
-			class="fixed -translate-x-1/2 -translate-y-1/2 about-dialog bg-background-highlight text-text-highlight top-1/2 left-1/2 h-[400px] w-[400px] rounded-2xl p-8 gap-3 flex flex-col items-center justify-center"
+			class="fixed -translate-x-1/2 -translate-y-1/2 about-dialog bg-background-highlight text-text-highlight top-1/2 left-1/2 h-[300px] w-[400px] rounded-2xl p-8 gap-3 flex flex-col items-center justify-center"
 			on:click={(e) => e.stopPropagation()}
 		>
 			<div class="absolute right-8 top-6">
 				<IconButton onClickCallback={closeDialog} icon={CloseIcon}></IconButton>
 			</div>
 
-			<div class="bg-accent-color p-2 rounded-2xl">
+			<div class="bg-accent-color p-2 rounded-2xl mb-2">
 				<img src={AppIcon} alt="logo" width="46" />
 			</div>
 
@@ -42,6 +44,8 @@
 			<div class="flex justify-center items-center gap-1">
 				Icons by <ExternalLink link="https://icons8.com/">Icons8</ExternalLink>
 			</div>
+
+			<div>Version: {version}</div>
 		</div>
 	</div>
 {/if}
