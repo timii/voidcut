@@ -1,10 +1,10 @@
 <script lang="ts">
 	import type { IMedia } from '$lib/interfaces/Media';
 	import { CONSTS } from '$lib/utils/consts';
-	import { formatTime } from '$lib/utils/utils';
+	import { cleanUpEmptyTracks, formatTime } from '$lib/utils/utils';
 	import DeleteIcon from '$lib/assets/workbench/delete.png';
 	import { fade } from 'svelte/transition';
-	import { availableMedia } from '../../../stores/store';
+	import { availableMedia, timelineTracks } from '../../../stores/store';
 
 	export let file: IMedia;
 	export let index: number;
@@ -31,9 +31,23 @@
 		);
 	}
 
-	// delete current element in the store value
+	// handle deleting a media pool element
 	function deleteElement() {
+		// delete current element in the store
 		availableMedia.update((media) => media.toSpliced(index, 1));
+
+		// update timeline tracks in store after filtering elements
+		timelineTracks.update((tracks) => {
+			// go through each track and remove all elements that have the same media id as the deleted media
+			for (let i = 0; i < tracks.length; i++) {
+				tracks[i].elements = tracks[i].elements.filter((el) => el.mediaId !== file.mediaId);
+			}
+
+			// remove empty tracks if necessary
+			cleanUpEmptyTracks(tracks);
+
+			return tracks;
+		});
 	}
 </script>
 
