@@ -36,7 +36,7 @@
 		// delete current element in the store
 		availableMedia.update((media) => media.toSpliced(index, 1));
 
-		// update timeline tracks in store after filtering elements
+		// update timeline tracks in store after deleting elements
 		timelineTracks.update((tracks) => {
 			// go through each track and remove all elements that have the same media id as the deleted media
 			for (let i = 0; i < tracks.length; i++) {

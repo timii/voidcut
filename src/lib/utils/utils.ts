@@ -1052,14 +1052,19 @@ export function getNextRightElementStartTime(trackIndex: number, elementIndex: n
 
 // go through a given array of tracks and remove tracks that don't have any elements
 export function cleanUpEmptyTracks(tracks: ITimelineTrack[]) {
-    // check if there is an empty track in the array. If yes get the index
-    const index = tracks.findIndex(track => !track.elements || track.elements.length === 0)
-
-    if (index === -1) {
+    if (tracks.length === 0) {
         return tracks
     }
 
-    tracks.splice(index, 1)
+    // loop through the tracks in reverse (to not mess up the indeces when deleting)
+    for (let i = tracks.length; i > 0; i--) {
+
+        // if the track is empty, remove it
+        if (!tracks[i - 1].elements || tracks[i - 1].elements.length === 0) {
+            tracks.splice(i - 1, 1)
+        }
+    }
+
 }
 
 // create an empty track with a given element
