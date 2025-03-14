@@ -5,6 +5,7 @@
 	import {
 		aboutOverlayOpen,
 		exportOverlayOpen,
+		restoreStateOverlayOpen,
 		thumbOffset,
 		windowHeight,
 		windowWidth
@@ -16,6 +17,7 @@
 	import ExportDialog from '$lib/components/header/ExportDialog.svelte';
 	import AboutDialog from '$lib/components/header/AboutDialog.svelte';
 	import { restoreLastState } from '$lib/utils/persistence.utils';
+	import RestoreStateDialog from '$lib/components/persistence/RestoreStateDialog.svelte';
 
 	// list of images that are being preloaded
 	const baseImgPath = 'src/lib/assets/';
@@ -102,6 +104,10 @@
 
 <Overlay>
 	<AboutDialog open={$aboutOverlayOpen} />
+</Overlay>
+
+<Overlay>
+	<RestoreStateDialog open={$restoreStateOverlayOpen} />
 </Overlay>
 
 <svelte:window on:resize={() => onWindowResize(innerWidth, innerHeight)} />

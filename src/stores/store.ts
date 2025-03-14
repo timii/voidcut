@@ -9,6 +9,7 @@ import { writable } from 'svelte/store';
 export const windowWidth = writable(0) // current window width in ms
 export const windowHeight = writable(0) // current window height px
 export const aboutOverlayOpen = writable(false)
+export const restoreStateOverlayOpen = writable(false)
 
 // Ffmpeg
 export const ffmpegLoaded = writable(false)

@@ -3,8 +3,9 @@
  */
 
 import { get, type Writable } from "svelte/store";
-import { availableMedia, currentTimelineScale, previewAspectRatio, timelineTracks } from "../../stores/store";
+import { availableMedia, currentTimelineScale, previewAspectRatio, restoreStateOverlayOpen, timelineTracks } from "../../stores/store";
 import { CONSTS } from "./consts";
+import { delay } from "./utils";
 
 // TODO: create function to run in regular intervals in the background that saves the current state from the stores into the localStorage -> do it async if possible to not block the ui on every update
 // on page load we check if a value for the key is given in localStorage and then use it, if not we don't
@@ -33,8 +34,6 @@ export function setupBackupInterval() {
 
 // write current state into local storage
 export function updateState() {
-    console.log("[BACKUP] update backup");
-
     // get store value for each map element and write it into local storage using the map key
     storeNamesMap.forEach((value, key) => {
         console.log("[BACKUP] update in for each map -> key:", key, "value:", get(value));
@@ -52,8 +51,9 @@ export function getState() {
 }
 
 // restore last state from local storage and update the store variables 
-export function restoreLastState() {
-    // const state = readItem(tracksStorageKey)
+export async function restoreLastState() {
+    // show dialog while last state is being restored 
+    restoreStateOverlayOpen.set(true)
 
     // get storage value for each map element and write it into the corresponsing stores
     storeNamesMap.forEach((value, key) => {
@@ -65,6 +65,9 @@ export function restoreLastState() {
             value.set(storageValue)
         }
     })
+
+    // hide dialog after everything has been restored 
+    restoreStateOverlayOpen.set(false)
 }
 
 // writes given data into local storage using given key
