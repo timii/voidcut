@@ -3,20 +3,21 @@
  */
 
 import { get, type Writable } from "svelte/store";
-import { availableMedia, timelineTracks } from "../../stores/store";
+import { availableMedia, currentTimelineScale, previewAspectRatio, timelineTracks } from "../../stores/store";
+import { CONSTS } from "./consts";
 
 // TODO: create function to run in regular intervals in the background that saves the current state from the stores into the localStorage -> do it async if possible to not block the ui on every update
 // on page load we check if a value for the key is given in localStorage and then use it, if not we don't
 
 let interval
-const tracksStorageKey = "tracks"
-const mediaStorageKey = "media"
 
 // map of each store value that is being saved in local storage with their corresponding key
 const storeNamesMap = new Map<string, Writable<unknown>>(
     [
-        [tracksStorageKey, timelineTracks],
-        [mediaStorageKey, availableMedia]
+        [CONSTS.tracksStorageKey, timelineTracks],
+        [CONSTS.mediaStorageKey, availableMedia],
+        [CONSTS.timelineScaleStorageKey, currentTimelineScale],
+        [CONSTS.previewAspectRatioStorageKey, previewAspectRatio],
     ]
 )
 
@@ -34,7 +35,7 @@ export function setupBackupInterval() {
 export function updateState() {
     console.log("[BACKUP] update backup");
 
-    // get store value from each map element and write it into local storage using the map key
+    // get store value for each map element and write it into local storage using the map key
     storeNamesMap.forEach((value, key) => {
         console.log("[BACKUP] update in for each map -> key:", key, "value:", get(value));
         writeItem(key, get(value))
@@ -43,18 +44,21 @@ export function updateState() {
 
 // get last saved state from local storage 
 export function getState() {
-    const state = readItem(tracksStorageKey)
-    console.log("[BACKUP] get backup ->", state);
+    // get storage value for each map element and print it to console
+    storeNamesMap.forEach((_, key) => {
+        const storageValue = readItem(key)
+        console.log("[BACKUP] get last saved state ->", key, ": ", storageValue);
+    })
 }
 
 // restore last state from local storage and update the store variables 
 export function restoreLastState() {
     // const state = readItem(tracksStorageKey)
 
-    // get storage value from each map element and write it into the corresponsing stores
+    // get storage value for each map element and write it into the corresponsing stores
     storeNamesMap.forEach((value, key) => {
         const storageValue = readItem(key)
-        console.log("[BACKUP] restore state in for each ->", storageValue);
+        console.log("[BACKUP] restore state in for each ->", key, ": ", storageValue);
 
         // only write value into store if we got a value from local storage
         if (storageValue !== null) {
