@@ -15,6 +15,7 @@
 	import Overlay from '$lib/components/shared/Overlay.svelte';
 	import ExportDialog from '$lib/components/header/ExportDialog.svelte';
 	import AboutDialog from '$lib/components/header/AboutDialog.svelte';
+	import { restoreLastState } from '$lib/utils/persistence.utils';
 
 	// list of images that are being preloaded
 	const baseImgPath = 'src/lib/assets/';
@@ -54,6 +55,12 @@
 				false
 			);
 		});
+
+		// setup and start the interval for locally backing up the state
+		// setupBackupInterval();
+
+		// if there is a saved state in local storage, restore it
+		restoreLastState();
 	});
 
 	//  listen to window changes and update the store variable on change
