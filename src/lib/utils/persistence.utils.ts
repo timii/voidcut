@@ -52,8 +52,7 @@ export function getState() {
 
 // restore last state from local storage and update the store variables 
 export async function restoreLastState() {
-    // show dialog while last state is being restored 
-    restoreStateOverlayOpen.set(true)
+
 
     // get storage value for each map element and write it into the corresponsing stores
     storeNamesMap.forEach((value, key) => {
@@ -70,13 +69,25 @@ export async function restoreLastState() {
     restoreStateOverlayOpen.set(false)
 }
 
+// check if a saved state is available in local storage
+export function lastStateAvailable(): boolean {
+    // check if every key is given in local storage
+    return Array.from(storeNamesMap.keys()).every((key) => {
+        const storageValue = readItem(key)
+        console.log("[BACKUP] lastStateAvailable ->", key, ": ", storageValue);
+
+        // only return false if the storage value is null
+        return storageValue !== null
+    })
+}
+
 // writes given data into local storage using given key
 export function writeItem(key: string, data: any): void {
     localStorage.setItem(key, JSON.stringify(data));
 }
 
 // reads data from local storage using given key
-export function readItem(key: string): any | null {
+export function readItem(key: string): unknown | null {
     const data = localStorage.getItem(key);
 
     return data ? JSON.parse(data) : null
