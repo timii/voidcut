@@ -16,17 +16,24 @@ export default {
         // custom keyframes
         loadingStripes: {
           '100%': { backgroundPosition: '100% 100%' },
-        }
+        },
+        loadingIndicator: {
+          '0%': { transform: 'rotate(0deg)' },
+          '100%': { transform: 'rotate(360deg)' }
+        },
       },
       animation: {
         // custom animations
         loadingStripes: 'loadingStripes 2s linear infinite',
+        loadingIndicator: 'loadingIndicator 2s linear infinite',
+
       },
       colors: {
         // background colors
         "background-color": '#151519',
         "background-highlight": '#212127',
         "background-progress": '#111114',
+        "background-loading": '#111114',
         "background-button": '#E6E6E6',
         "background-button-hover": '#e6e6e6cc',
         "background-icon-button": "#434346",
