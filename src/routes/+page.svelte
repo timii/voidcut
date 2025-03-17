@@ -16,7 +16,11 @@
 	import Overlay from '$lib/components/shared/Overlay.svelte';
 	import ExportDialog from '$lib/components/header/ExportDialog.svelte';
 	import AboutDialog from '$lib/components/header/AboutDialog.svelte';
-	import { lastStateAvailable, restoreLastState } from '$lib/utils/persistence.utils';
+	import {
+		lastStateAvailable,
+		restoreLastState,
+		setupBackupInterval
+	} from '$lib/utils/persistence.utils';
 	import RestoreStateDialog from '$lib/components/persistence/RestoreStateDialog.svelte';
 
 	// list of images that are being preloaded
@@ -59,7 +63,7 @@
 		});
 
 		// setup and start the interval for locally backing up the state
-		// setupBackupInterval();
+		setupBackupInterval();
 
 		// if there is a saved state in local storage, restore it
 		if (lastStateAvailable()) {

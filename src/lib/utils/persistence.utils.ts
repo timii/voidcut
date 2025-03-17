@@ -3,12 +3,9 @@
  */
 
 import { get, type Writable } from "svelte/store";
-import { availableMedia, currentTimelineScale, previewAspectRatio, restoreStateOverlayOpen, timelineTracks } from "../../stores/store";
+import { availableMedia, currentTimelineScale, exportOverlayOpen, previewAspectRatio, restoreStateOverlayOpen, timelineTracks } from "../../stores/store";
 import { CONSTS } from "./consts";
 import { delay } from "./utils";
-
-// TODO: create function to run in regular intervals in the background that saves the current state from the stores into the localStorage -> do it async if possible to not block the ui on every update
-// on page load we check if a value for the key is given in localStorage and then use it, if not we don't
 
 let interval
 
@@ -22,13 +19,21 @@ const storeNamesMap = new Map<string, Writable<unknown>>(
     ]
 )
 
-// setup intervals when to update the local backup
+// setup interval when to update the last state in storage 
 export function setupBackupInterval() {
-    let i = 0
     interval = setInterval(() => {
-        console.log("[BACKUP] in interval:", i);
-        // writeItem(backupKey, get(timelineTracks))
-        i += 1
+        console.log("[BACKUP] in interval");
+
+        // don't write current state into local storage 
+        if (get(restoreStateOverlayOpen) || get(exportOverlayOpen)) {
+            return
+        }
+
+        // update each storage value
+        storeNamesMap.forEach((value, key) => {
+            console.log("[BACKUP] update in interval -> key:", key, "value:", get(value));
+            writeItem(key, get(value))
+        })
     }, 2000)
 }
 
@@ -53,7 +58,6 @@ export function getState() {
 // restore last state from local storage and update the store variables 
 export async function restoreLastState() {
 
-
     // get storage value for each map element and write it into the corresponsing stores
     storeNamesMap.forEach((value, key) => {
         const storageValue = readItem(key)
@@ -64,6 +68,8 @@ export async function restoreLastState() {
             value.set(storageValue)
         }
     })
+
+    await delay(5000)
 
     // hide dialog after everything has been restored 
     restoreStateOverlayOpen.set(false)
