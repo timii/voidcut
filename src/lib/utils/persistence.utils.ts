@@ -24,7 +24,7 @@ export function setupBackupInterval() {
     interval = setInterval(() => {
         console.log("[BACKUP] in interval");
 
-        // don't write current state into local storage 
+        // don't write current state into local storage in specific cases 
         if (get(restoreStateOverlayOpen) || get(exportOverlayOpen)) {
             return
         }
@@ -34,7 +34,7 @@ export function setupBackupInterval() {
             console.log("[BACKUP] update in interval -> key:", key, "value:", get(value));
             writeItem(key, get(value))
         })
-    }, 2000)
+    }, 10000)
 }
 
 // write current state into local storage
