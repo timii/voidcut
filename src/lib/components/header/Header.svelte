@@ -6,7 +6,7 @@
 	import AboutIcon from '$lib/assets/header/about.png';
 	import ExportIcon from '$lib/assets/header/export.png';
 	import IconButton from '../shared/IconButton.svelte';
-	import { clear, getState, updateState } from '$lib/utils/persistence.utils';
+	import { clearStorage, getState, updateState } from '$lib/utils/persistence.utils';
 
 	async function openExportDialog() {
 		exportOverlayOpen.set(true);
@@ -18,18 +18,18 @@
 	}
 
 	// updates the current state in local storage, mainly used for testing
-	function saveCurrentState() {
-		updateState();
+	async function saveCurrentState() {
+		await updateState();
 	}
 
 	// get the current state from local storage, mainly used for testing
-	function getLastSavedState() {
-		getState();
+	async function getLastSavedState() {
+		await getState();
 	}
 
 	// clear local storage, mainly used for testing
-	function clearStorage() {
-		clear();
+	function onClearStorage() {
+		clearStorage();
 	}
 </script>
 
@@ -46,7 +46,7 @@
 		<!-- TODO: hide for production -->
 		<Button text={'Save'} onClickCallback={saveCurrentState}></Button>
 		<Button text={'Get'} onClickCallback={getLastSavedState}></Button>
-		<Button text={'Clear'} onClickCallback={clearStorage}></Button>
+		<Button text={'Clear'} onClickCallback={onClearStorage}></Button>
 		<IconButton icon={AboutIcon} size={20} onClickCallback={openAboutDialog}></IconButton>
 		<Button
 			text={'Export'}

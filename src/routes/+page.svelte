@@ -63,13 +63,16 @@
 		});
 
 		// setup and start the interval for locally backing up the state
-		setupBackupInterval();
+		await setupBackupInterval();
+
+		const stateAvailable = await isLastStateAvailableInStorage();
+		console.log('[BACKUP] stateAvailable:', stateAvailable);
 
 		// if there is a saved state in local storage, restore it
-		if (lastStateAvailable()) {
+		if (stateAvailable) {
 			// show dialog while last state is being restored
 			restoreStateOverlayOpen.set(true);
-			restoreLastState();
+			await restoreLastState();
 		}
 	});
 
