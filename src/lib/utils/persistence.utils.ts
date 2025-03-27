@@ -60,13 +60,15 @@ export async function getState() {
 export async function restoreLastState() {
     console.log("[BACKUP] restore map:", storeNamesMap);
 
-    // get storage value for each map element and write it into the corresponding store
-    for (const [key, value] of storeNamesMap.entries()) {
-        const storageValue = await readItem(key)
-        console.log("[BACKUP] restore state in for each ->", key, ": ", storageValue);
+    // get all storage values
+    const storageValues = await getMany([...storeNamesMap.keys()])
 
-        if (storageValue !== undefined) {
-            value.set(storageValue)
+    console.log("[BACKUP] storage values:", storageValues)
+
+    // write storage value into corresponding store
+    storeNamesMap.values().forEach((store, i) => {
+        if (storageValues !== undefined) {
+            store.set(storageValues[i])
         }
     }
     await delay(2000)
