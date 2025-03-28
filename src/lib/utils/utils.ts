@@ -629,6 +629,11 @@ export function delay(ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+// check if current build is production build
+export function isProduction(): boolean {
+    return import.meta.env.PROD
+}
+
 //#endregion
 
 // #region scrolling utils
