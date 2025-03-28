@@ -17,7 +17,8 @@
 	import ExportDialog from '$lib/components/header/ExportDialog.svelte';
 	import AboutDialog from '$lib/components/header/AboutDialog.svelte';
 	import {
-		lastStateAvailable,
+		initPersistenceWorker,
+		isLastStateAvailableInStorage,
 		restoreLastState,
 		setupBackupInterval
 	} from '$lib/utils/persistence.utils';
@@ -61,6 +62,8 @@
 				false
 			);
 		});
+
+		initPersistenceWorker();
 
 		// setup and start the interval for locally backing up the state
 		await setupBackupInterval();

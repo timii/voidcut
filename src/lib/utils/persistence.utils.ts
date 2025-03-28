@@ -1,11 +1,11 @@
 /**
- * This file includes everything for setting, updating, getting and clearing the current state in the localStorage
+ * This file is the abstract layer between the worker functions and components or files using the persistence utils
  */
 
 import { get, type Writable } from "svelte/store";
 import { availableMedia, currentTimelineScale, exportOverlayOpen, previewAspectRatio, restoreStateOverlayOpen, timelineTracks } from "../../stores/store";
 import { CONSTS } from "./consts";
-import { get as getKeyVal, set as setKeyVal, clear, update, getMany } from 'idb-keyval';
+import { readItem, updateItem, writeItem, readManyItems, clearItems } from "./persistence.worker";
 
 let interval
 
@@ -18,6 +18,13 @@ const storeNamesMap = new Map<string, Writable<unknown>>(
         [CONSTS.previewAspectRatioStorageKey, previewAspectRatio],
     ]
 )
+
+// initialize the persistence webworker
+export async function initPersistenceWorker() {
+    console.log("[BACKUP] init worker");
+    // create the worker using its path
+    new Worker("src/lib/utils/persistence.worker.js");
+}
 
 // setup interval when to update the last state in storage 
 export async function setupBackupInterval() {
@@ -36,7 +43,7 @@ export async function setupBackupInterval() {
 
 // write current state into local storage
 export async function updateState() {
-    console.log("[BACKUP] updateState maop:", storeNamesMap);
+    console.log("[BACKUP] updateState map:", storeNamesMap);
 
     // get store value for each map element and write it into local storage using the map key
     for (const [key, value] of storeNamesMap.entries()) {
@@ -44,7 +51,7 @@ export async function updateState() {
         console.log("[BACKUP] update in for each map -> key:", key, "value:", storeValue);
 
         // read value from current key
-        const valueExist = await getKeyVal(key);
+        const valueExist = await readItem(key);
 
         // if key/value exists update it
         if (valueExist !== undefined) {
@@ -60,7 +67,7 @@ export async function updateState() {
 
 // get last saved state from storage and log it into console
 export async function getState() {
-    const storageValues = await getMany([...storeNamesMap.keys()])
+    const storageValues = await readManyItems([...storeNamesMap.keys()])
     console.log("[BACKUP] get last saved state:", storageValues);
 }
 
@@ -69,7 +76,7 @@ export async function restoreLastState() {
     console.log("[BACKUP] restore map:", storeNamesMap);
 
     // get all storage values
-    const storageValues = await getMany([...storeNamesMap.keys()])
+    const storageValues = await readManyItems([...storeNamesMap.keys()])
 
     console.log("[BACKUP] storage values:", storageValues)
 
@@ -101,26 +108,6 @@ export async function isLastStateAvailableInStorage(): Promise<boolean> {
     return noUndefinedValue
 }
 
-// writes given data into indexedDB using given key
-export async function writeItem(key: string, data: any): Promise<void> {
-    // console.log("[BACKUP] write item -> key:", key, "data:", data);
-    setKeyVal(key, data)
-        .catch((err) => console.error(`[BACKUP] error "${err}" while setting key "${key}" to value "${data}"`));
-}
-
-// update indexedDB value of given key with given data
-export async function updateItem(key: string, data: any): Promise<void> {
-    update(key, (_) => data);
-}
-
-// reads data from indexedDB using given key
-export async function readItem(key: string): Promise<any> {
-    return await getKeyVal(key)
-}
-
-
-
-export function clearStorage(): void {
-    console.log("[BACKUP] clear storage");
-    clear()
+export async function clearStorage() {
+    await clearItems()
 }
