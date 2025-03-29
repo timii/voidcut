@@ -144,7 +144,8 @@
 </script>
 
 <div
-	class="timeline-row h-[50px] w-full mr-5 rounded flex bg-background-timeline-row"
+	class="timeline-row w-full mr-5 rounded flex bg-background-timeline-row"
+	style="height: {CONSTS.timelineRowElementHeight}px;"
 	data-row-index={index}
 	on:drop={onDropElement}
 	on:dragleave={onDropElement}
@@ -155,19 +156,24 @@
 >
 	<!-- element that is shown when a media pool element is being dragged -->
 	<div
-		class="clone-drop-zone h-[50px] mr-5 rounded outline-dashed outline-hover-outline z-10 absolute bg-hover-stipes"
-		style="width: {dropZoneWidth}px; display: {hoverElement
-			? 'unset'
-			: 'none'}; left: {dropZonePositionLeft}px;"
+		class="clone-drop-zone mr-5 rounded outline-dashed outline-hover-outline z-10 absolute bg-hover-stipes"
+		style="
+			height: {CONSTS.timelineRowElementHeight}px; 
+			width: {dropZoneWidth}px; 
+			display: {hoverElement ? 'unset' : 'none'};
+			left: {dropZonePositionLeft}px;
+		"
 	></div>
 
 	<!-- element that is shown when a timeline element is being dragged -->
 	<div
 		class="clone-drop-zone h-[50px] mr-5 rounded outline-dashed outline-hover-outline z-10 absolute bg-hover-stipes"
-		style="width: {elementWidth}px; display: {elementHoveredOverRow &&
-		$isTimelineElementBeingDragged
-			? 'unset'
-			: 'none'}; left: {dropZonePositionLeft}px;"
+		style="
+			height: {CONSTS.timelineRowElementHeight}px; 
+			width: {elementWidth}px; 
+			display: {elementHoveredOverRow && $isTimelineElementBeingDragged ? 'unset' : 'none'};
+			left: {dropZonePositionLeft}px;
+		"
 	></div>
 	<!-- use the elementId of each element as the unqiue key to use when the data changes -->
 	{#each track.elements as element, elementIndex (element.elementId)}
