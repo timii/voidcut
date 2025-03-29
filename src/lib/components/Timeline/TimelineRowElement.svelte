@@ -706,6 +706,7 @@
 	on:neodrag={onDrag}
 	on:neodrag:end={onDragEnd}
 	bind:this={elementRef}
+	role="none"
 >
 	<div
 		class=" absolute rounded outline outline-2 outline-hover-outline inset-[1px]"
@@ -743,11 +744,15 @@
 			class="timeline-row-element-handle absolute top-0 left-0 h-full bg-blue-400 w-2 cursor-ew-resize rounded-l"
 			on:mousemove={onResizeLeft}
 			on:mousedown={(e) => onHandleMouseDown(e, TimelineElementResizeSide.LEFT)}
+			role="button"
+			tabindex="0"
 		></div>
 		<div
 			class="timeline-row-element-handle absolute top-0 left-[calc(100%-8px)] h-full bg-blue-400 w-2 cursor-ew-resize rounded-r"
 			on:mousemove={onResizeRight}
 			on:mousedown={(e) => onHandleMouseDown(e, TimelineElementResizeSide.RIGHT)}
+			role="button"
+			tabindex="0"
 		></div>
 	{/if}
 </div>

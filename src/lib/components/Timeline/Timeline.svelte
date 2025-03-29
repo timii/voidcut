@@ -397,6 +397,7 @@
 		on:mousedown={handleMouseDown}
 		on:scroll={onTimelineScroll}
 		bind:this={scrollContainerEl}
+		role="none"
 	>
 		{#if $timelineTracks.length === 0}
 			<!-- show an empty state if nothing has been added to the timline -->

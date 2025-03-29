@@ -117,6 +117,7 @@
 	on:mousemove={onThumbMove}
 	on:mousedown={onThumbMove}
 	on:pointermove={onThumbMove}
+	role="none"
 >
 	<!-- on:mousedown={scrollTimeline} -->
 	<!-- on:mouseup={stopScrolling} -->

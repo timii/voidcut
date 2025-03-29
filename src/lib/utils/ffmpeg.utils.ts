@@ -542,10 +542,10 @@ function createFileName(index: number, mediaElement: IFfmpegElement) {
 // #region download output
 // convert output data into blob and download it
 export function downloadOutput() {
-    const data = get(processedFile) as Uint8Array<ArrayBuffer>
+    const data = get(processedFile)
     const a = document.createElement('a');
     // TODO: dynamic output file type instead of hardcoding 'video/mp4' after we added logic for setting custom output name and file type
-    a.href = URL.createObjectURL(new Blob([data.buffer], { type: 'video/mp4' }));
+    a.href = URL.createObjectURL(new Blob([data.buffer as ArrayBuffer], { type: 'video/mp4' }));
     a.download = outputFileName;
 
     setTimeout(() => {
@@ -627,11 +627,12 @@ export async function generateAudioWaveform(file: File) {
     }
 
     // read output file from ffmpeg.wasm
-    const outputData = await ffmpeg.readFile(outputName) as Uint8Array<ArrayBuffer>;
+    // const outputData = await ffmpeg.readFile(outputName) as Uint8Array<ArrayBuffer>;
+    const outputData = await ffmpeg.readFile(outputName) as Uint8Array;
     console.log('[FFMPEG] reading created output file successful');
 
     // turn outpout UIntArray into dataUrl
-    const blob = new Blob([outputData.buffer], { type: 'image/png' })
+    const blob = new Blob([outputData.buffer as ArrayBuffer], { type: 'image/png' })
     const dataUrl = await resizeFilePreview(blob as File)
 
     return dataUrl

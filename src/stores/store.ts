@@ -1,7 +1,7 @@
 import { ExportState } from '$lib/interfaces/Ffmpeg';
 import type { IMedia } from '$lib/interfaces/Media';
 import { PreviewAspectRatio } from '$lib/interfaces/Player';
-import { type ITimelineDraggedElementHover, type ISelectedElement, type ITimelineDraggedElement, type ITimelineDraggedElementData, type ITimelineDraggedElementPosition, type ITimelineElementResizeData, type ITimelineTrack } from '$lib/interfaces/Timeline';
+import type { ITimelineDraggedElementHover, ISelectedElement, ITimelineDraggedElement, ITimelineDraggedElementData, ITimelineDraggedElementPosition, ITimelineElementResizeData, ITimelineTrack } from '$lib/interfaces/Timeline';
 import { CONSTS } from '$lib/utils/consts';
 import { writable } from 'svelte/store';
 
@@ -18,7 +18,7 @@ export const ffmpegProgress = writable(0) // track the progress of ffmpeg in per
 export const ffmpegProgressPrevValue = writable(0) // track the previous value for progress of ffmpeg
 export const ffmpegProgressElapsedTime = writable(0) // track the elapsed time since the export has been started
 export const exportState = writable(ExportState.NOT_STARTED) // track the current state of the export
-export const processedFile = writable() // track the current state of the export
+export const processedFile = writable<Uint8Array>() // track the current state of the export
 export const processedFileSize = writable(0) // track the current state of the export
 
 // Timeline

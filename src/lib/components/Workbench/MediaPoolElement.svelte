@@ -60,6 +60,7 @@
 		on:mouseenter={() => (isHovering = true)}
 		on:mouseleave={() => (isHovering = false)}
 		bind:this={elementRef}
+		role="none"
 	>
 		{#if file.loaded}
 			<!-- show preview image when finished loading -->

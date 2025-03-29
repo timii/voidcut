@@ -1,5 +1,5 @@
 import { sveltekit } from '@sveltejs/kit/vite';
-import { defineConfig, ViteDevServer } from 'vite';
+import { defineConfig, type ViteDevServer } from 'vite';
 import pkg from './package.json' assert { type: 'json' }
 
 // necessary for ffmpeg.wasm to work

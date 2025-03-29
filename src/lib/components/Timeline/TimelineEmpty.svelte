@@ -27,6 +27,7 @@
 	on:dragleave={onHoverLeave}
 	on:dragenter={onHoverFile}
 	on:dragover={onHoverFile}
+	aria-hidden="true"
 >
 	<div class="text-center z-10">
 		Add media to the timeline to start creating your video!

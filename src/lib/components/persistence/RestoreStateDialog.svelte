@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { stopPropagation } from '$lib/utils/utils';
 	import LoadingIndicator from '../shared/LoadingIndicator.svelte';
 
 	export let open = false;
@@ -10,7 +11,8 @@
 	>
 		<div
 			class="fixed -translate-x-1/2 -translate-y-1/2 about-dialog bg-background-highlight text-text-highlight top-1/2 left-1/2 h-[300px] w-[400px] rounded-2xl p-8 gap-4 flex flex-col items-center justify-center"
-			on:click={(e) => e.stopPropagation()}
+			on:click={stopPropagation}
+			aria-hidden="true"
 		>
 			<LoadingIndicator></LoadingIndicator>
 

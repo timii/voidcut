@@ -151,6 +151,7 @@
 	on:dragenter={onHoverElement}
 	on:dragover={onHoverElement}
 	bind:this={rowRef}
+	role="none"
 >
 	<!-- element that is shown when a media pool element is being dragged -->
 	<div

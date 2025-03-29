@@ -95,6 +95,7 @@
 	on:pointermove={handleThumbMove}
 	on:dragenter={onHoverElement}
 	on:dragover={onHoverElement}
+	role="none"
 >
 	{#each { length: amountOfTicks } as _, i (i)}
 		<div

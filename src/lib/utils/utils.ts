@@ -35,7 +35,7 @@ import { get } from "svelte/store";
 import resolveConfig from 'tailwindcss/resolveConfig'
 import tailwindConfig from '../../../tailwind.config.js'
 import { generateAudioWaveform } from "./ffmpeg.utils";
-import { type IPlayerElement } from "$lib/interfaces/Player";
+import type { IPlayerElement } from "$lib/interfaces/Player";
 import type { Time } from "$lib/interfaces/Time";
 
 let interval: {
@@ -632,6 +632,11 @@ export function delay(ms: number) {
 // check if current build is production build
 export function isProduction(): boolean {
     return import.meta.env.PROD
+}
+
+// wrapper utils function to stop propagation for a given event
+export function stopPropagation(e: Event) {
+    e.stopPropagation();
 }
 
 //#endregion

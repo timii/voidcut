@@ -142,6 +142,7 @@
 	on:dragover={onHoverElement}
 	on:wheel={onScroll}
 	bind:this={dividerRef}
+	role="none"
 >
 	<div
 		class="track-divider-highlight h-[4px] rounded bg-background-timeline-row-element-hover"

@@ -81,7 +81,7 @@ export async function restoreLastState() {
     console.log("[BACKUP] storage values:", storageValues)
 
     // write storage value into corresponding store
-    storeNamesMap.values().forEach((store, i) => {
+    Array.from(storeNamesMap.values()).forEach((store: Writable<unknown>, i: number) => {
         if (storageValues !== undefined) {
             store.set(storageValues[i])
         }

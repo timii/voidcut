@@ -225,6 +225,7 @@
 	{#each timelineElements as element, i (element.elementId)}
 		{#if element.type === MediaType.Video}
 			<!-- TODO: hide controls at the end when everything works -->
+			<!-- svelte-ignore a11y-media-has-caption -->
 			<video
 				data-id={element.elementId}
 				data-duration={element.duration}

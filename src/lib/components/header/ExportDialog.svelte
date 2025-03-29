@@ -47,6 +47,7 @@
 	<div
 		class="absolute top-0 left-0 z-10 w-full h-full bg-opacity-80 bg-backdrop-color export-dialog-bg"
 		on:click={onClickBackdrop}
+		aria-hidden="true"
 	>
 		<div
 			class="fixed -translate-x-1/2 -translate-y-1/2 export-dialog bg-background-highlight text-text-highlight top-1/2 left-1/2 h-[400px] w-[700px] rounded-2xl p-8 gap-3 flex flex-col items-center justify-center"

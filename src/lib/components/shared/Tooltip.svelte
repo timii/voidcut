@@ -38,6 +38,7 @@
 	on:mouseenter={mouseOver}
 	on:mouseleave={mouseLeave}
 	class="tooltip-container"
+	role="dialog"
 >
 	<slot />
 </span>

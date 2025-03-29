@@ -48,6 +48,7 @@
 	on:dragleave={onHoverLeave}
 	on:dragenter={onHoverFile}
 	on:dragover={onHoverFile}
+	role="none"
 >
 	<div
 		class="absolute rounded outline-dashed outline-hover-outline bg-hover-stipes inset-4"

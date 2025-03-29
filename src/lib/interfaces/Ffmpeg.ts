@@ -1,4 +1,4 @@
-import { MediaType } from "./Media";
+import type { MediaType } from "./Media";
 
 export interface IFfmpegElement {
     mediaData: Uint8Array; // media data as an UInt8Array 

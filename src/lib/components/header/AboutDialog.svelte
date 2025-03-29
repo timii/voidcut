@@ -5,13 +5,14 @@
 	import GithubIcon from '$lib/assets/header/github.png';
 	import AppIcon from '$lib/assets/general/icon-white-50.png';
 	import ExternalLink from '../shared/ExternalLink.svelte';
+	import { stopPropagation } from '$lib/utils/utils';
 
 	export let open = false;
 
 	const version = __VERSION__;
 
 	function closeDialog(e: Event) {
-		e.stopPropagation();
+		stopPropagation(e);
 		aboutOverlayOpen.set(false);
 	}
 </script>
@@ -20,10 +21,12 @@
 	<div
 		class="absolute top-0 left-0 z-10 w-full h-full bg-opacity-80 bg-backdrop-color about-dialog-bg"
 		on:click={closeDialog}
+		aria-hidden="true"
 	>
 		<div
 			class="fixed -translate-x-1/2 -translate-y-1/2 about-dialog bg-background-highlight text-text-highlight top-1/2 left-1/2 h-[300px] w-[400px] rounded-2xl p-8 gap-3 flex flex-col items-center justify-center"
-			on:click={(e) => e.stopPropagation()}
+			on:click={stopPropagation}
+			aria-hidden="true"
 		>
 			<div class="absolute right-8 top-6">
 				<IconButton onClickCallback={closeDialog} icon={CloseIcon}></IconButton>
