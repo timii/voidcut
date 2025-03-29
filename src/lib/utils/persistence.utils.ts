@@ -16,6 +16,7 @@ const storeNamesMap = new Map<string, Writable<unknown>>(
         [CONSTS.mediaStorageKey, availableMedia],
         [CONSTS.timelineScaleStorageKey, currentTimelineScale],
         [CONSTS.previewAspectRatioStorageKey, previewAspectRatio],
+        [CONSTS.lastSaveStorageKey, lastSaveTime],
     ]
 )
 
@@ -36,12 +37,14 @@ export async function setupBackupInterval() {
             return
         }
 
+        const d = new Date()
+        // update time for last save with current time
+        // do it before updating the state to also persist the newest time and date value in storage
+        lastSaveTime.set(d.toLocaleString())
+
         // update storage with current store values
         await updateState()
 
-        const d = new Date()
-        // update time for last save with current time
-        lastSaveTime.set(d.toLocaleString())
     }, 10000)
 }
 

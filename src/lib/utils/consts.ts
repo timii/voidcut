@@ -151,4 +151,9 @@ export const CONSTS = {
      * Key name for saving the current preview aspect ratio
      */
     previewAspectRatioStorageKey: "preview-aspect-ratio",
+
+    /**
+     * Key name for saving the time and date of last save
+     */
+    lastSaveStorageKey: "last-save",
 }
