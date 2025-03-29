@@ -224,13 +224,11 @@
 	<!-- for each element in the timeline show either a video, audio or image element -->
 	{#each timelineElements as element, i (element.elementId)}
 		{#if element.type === MediaType.Video}
-			<!-- TODO: hide controls at the end when everything works -->
 			<!-- svelte-ignore a11y-media-has-caption -->
 			<video
 				data-id={element.elementId}
 				data-duration={element.duration}
 				preload="auto"
-				controls
 				class="absolute top-0 left-0 w-full h-full pointer-events-none object-contain"
 				style="
 					display: {displayMediaElement($currentPlaybackTime, element)}; 
@@ -241,12 +239,10 @@
 			>
 			</video>
 		{:else if element.type === MediaType.Audio}
-			<!-- TODO: hide controls at the end when everything works -->
 			<audio
 				data-id={element.elementId}
 				data-duration={element.duration}
 				preload="auto"
-				controls
 				class="absolute top-0 left-0 w-full h-full pointer-events-none"
 				style="
 					display: {displayMediaElement($currentPlaybackTime, element)}; 
