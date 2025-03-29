@@ -73,6 +73,7 @@
 			);
 		});
 
+		// initialize the web worker for the persistence utils
 		initPersistenceWorker();
 
 		// setup and start the interval for locally backing up the state
@@ -87,7 +88,19 @@
 			restoreStateOverlayOpen.set(true);
 			await restoreLastState();
 		}
+
+		// preload all images defined above
+		await preloadImages();
 	});
+
+	// manually use all defined icons for preload to avoid warnings in console that they are not being used
+	async function preloadImages() {
+		for (const image of preloadImageUrls) {
+			const img = new Image();
+			img.src = image;
+			img.onload = () => {};
+		}
+	}
 
 	//  listen to window changes and update the store variable on change
 	function onWindowResize(width: number, height: number) {
@@ -137,7 +150,6 @@
 <svelte:window on:resize={() => onWindowResize(innerWidth, innerHeight)} />
 
 <!-- preload images -->
-<!-- TODO: check its possible to remove the warnings in the console caused by the preload -->
 <svelte:head>
 	{#each preloadImageUrls as image}
 		<link rel="preload" as="image" href={image} />
