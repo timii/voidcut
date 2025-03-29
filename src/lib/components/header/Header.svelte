@@ -1,6 +1,11 @@
 <script lang="ts">
 	import { callFfmpeg } from '$lib/utils/ffmpeg.utils';
-	import { aboutOverlayOpen, exportOverlayOpen, timelineTracks } from '../../../stores/store';
+	import {
+		aboutOverlayOpen,
+		exportOverlayOpen,
+		lastSaveTime,
+		timelineTracks
+	} from '../../../stores/store';
 	import Button from '../shared/Button.svelte';
 	import AppIcon from '$lib/assets/general/icon-white-50.png';
 	import AboutIcon from '$lib/assets/header/about.png';
@@ -48,6 +53,9 @@
 			<Button text={'Save'} onClickCallback={saveCurrentState}></Button>
 			<Button text={'Get'} onClickCallback={getLastSavedState}></Button>
 			<Button text={'Clear'} onClickCallback={onClearStorage}></Button>
+		{/if}
+		{#if $lastSaveTime}
+			<div class="italic text-xs text-text-info">last save: {$lastSaveTime}</div>
 		{/if}
 		<IconButton icon={AboutIcon} size={20} onClickCallback={openAboutDialog}></IconButton>
 		<Button

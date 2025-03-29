@@ -3,7 +3,7 @@
  */
 
 import { get, type Writable } from "svelte/store";
-import { availableMedia, currentTimelineScale, exportOverlayOpen, previewAspectRatio, restoreStateOverlayOpen, timelineTracks } from "../../stores/store";
+import { availableMedia, currentTimelineScale, exportOverlayOpen, lastSaveTime, previewAspectRatio, restoreStateOverlayOpen, timelineTracks } from "../../stores/store";
 import { CONSTS } from "./consts";
 import { readItem, updateItem, writeItem, readManyItems, clearItems } from "./persistence.worker.js";
 
@@ -36,8 +36,12 @@ export async function setupBackupInterval() {
             return
         }
 
-        // update storage
+        // update storage with current store values
         await updateState()
+
+        const d = new Date()
+        // update time for last save with current time
+        lastSaveTime.set(d.toLocaleString())
     }, 10000)
 }
 
