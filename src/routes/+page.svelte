@@ -24,21 +24,31 @@
 	} from '$lib/utils/persistence.utils';
 	import RestoreStateDialog from '$lib/components/persistence/RestoreStateDialog.svelte';
 
-	// list of images that are being preloaded
-	const baseImgPath = 'src/lib/assets/';
-	const imageUrls = [
-		'header/close.png',
-		'header/complete.png',
-		'header/error.png',
-		'header/export.png',
-		'header/download.png',
-		'header/cancel.png',
-		'header/github.png',
-		'preview/pause.png',
-		'workbench/delete.png',
-		'workbench/upload.png'
+	// import icons directly so the path is resolved correctly after building
+	import CloseIcon from '$lib/assets/header/close.png';
+	import CompleteIcon from '$lib/assets/header/complete.png';
+	import ErrorIcon from '$lib/assets/header/error.png';
+	import ExportIcon from '$lib/assets/header/export.png';
+	import DownloadIcon from '$lib/assets/header/download.png';
+	import CancelIcon from '$lib/assets/header/cancel.png';
+	import GitHubIcon from '$lib/assets/header/github.png';
+	import PauseIcon from '$lib/assets/preview/pause.png';
+	import DeleteIcon from '$lib/assets/workbench/delete.png';
+	import UploadIcon from '$lib/assets/workbench/upload.png';
+
+	// list of images/icons that should be preloaded
+	const preloadImageUrls = [
+		CloseIcon,
+		CompleteIcon,
+		ErrorIcon,
+		ExportIcon,
+		DownloadIcon,
+		CancelIcon,
+		GitHubIcon,
+		PauseIcon,
+		DeleteIcon,
+		UploadIcon
 	];
-	$: preloadImageUrls = imageUrls.map((url) => baseImgPath + url);
 
 	// TODO: add onMount hook that resets the dragging store values on mouse up for the whole window
 	onMount(async () => {
