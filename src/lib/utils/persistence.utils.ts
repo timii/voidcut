@@ -5,7 +5,7 @@
 import { get, type Writable } from "svelte/store";
 import { availableMedia, currentTimelineScale, exportOverlayOpen, previewAspectRatio, restoreStateOverlayOpen, timelineTracks } from "../../stores/store";
 import { CONSTS } from "./consts";
-import { readItem, updateItem, writeItem, readManyItems, clearItems } from "./persistence.worker";
+import { readItem, updateItem, writeItem, readManyItems, clearItems } from "./persistence.worker.js";
 
 let interval
 
@@ -22,8 +22,8 @@ const storeNamesMap = new Map<string, Writable<unknown>>(
 // initialize the persistence webworker
 export async function initPersistenceWorker() {
     console.log("[BACKUP] init worker");
-    // create the worker using its path
-    new Worker("src/lib/utils/persistence.worker.js");
+    // create the worker and properly resolve worker in a production build for vite. This ensures that the correct path is used after the build
+    new Worker(new URL('./persistence.worker.js', import.meta.url), { type: 'module' });
 }
 
 // setup interval when to update the last state in storage 
