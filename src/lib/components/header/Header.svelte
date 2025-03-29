@@ -7,6 +7,7 @@
 	import ExportIcon from '$lib/assets/header/export.png';
 	import IconButton from '../shared/IconButton.svelte';
 	import { clearStorage, getState, updateState } from '$lib/utils/persistence.utils';
+	import { isProduction } from '$lib/utils/utils';
 
 	async function openExportDialog() {
 		exportOverlayOpen.set(true);
@@ -43,10 +44,11 @@
 	</div>
 
 	<div class="flex justify-center items-center gap-4">
-		<!-- TODO: hide for production -->
-		<Button text={'Save'} onClickCallback={saveCurrentState}></Button>
-		<Button text={'Get'} onClickCallback={getLastSavedState}></Button>
-		<Button text={'Clear'} onClickCallback={onClearStorage}></Button>
+		{#if !isProduction()}
+			<Button text={'Save'} onClickCallback={saveCurrentState}></Button>
+			<Button text={'Get'} onClickCallback={getLastSavedState}></Button>
+			<Button text={'Clear'} onClickCallback={onClearStorage}></Button>
+		{/if}
 		<IconButton icon={AboutIcon} size={20} onClickCallback={openAboutDialog}></IconButton>
 		<Button
 			text={'Export'}
