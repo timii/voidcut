@@ -40,8 +40,9 @@ export default {
         "background-tooltip": "#434346",
         "background-timeline-row": "#2c2c35",
         "background-timeline-row-element-hover": "#0369a1", // dark accent color
+        "background-timeline-row-element": "#cc7000", // complementary accent color
         "background-timeline-divider": "#0369a1", // dark accent color
-        "background-media-pool-element": "#2c2c2f",
+        "background-media-pool-element": "#cc7000", // complementary accent color
         "background-media-pool-time": "#151519",
         "background-stripe1": "#0284c733", // accent color (opacity 0.2)
         "background-stripe2": "#01517933", // darker accent color (opacity 0.2)
@@ -52,6 +53,9 @@ export default {
 
         // accent colors
         "accent-color": '#0284c7',
+
+        // complementary color to accent color
+        "second-accent-color": "#F08000",
 
         // text colors
         "text-color": '#c2c2c2',

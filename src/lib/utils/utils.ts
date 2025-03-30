@@ -429,7 +429,6 @@ export function convertDataUrlToUIntArray(dataUrl: string) {
 
 //#endregion
 
-
 // #region playback
 // remove interval that handles the current playback time
 export function pausePlayback() {

@@ -33,6 +33,7 @@
 	} from '../../../stores/store';
 	import { draggable } from '@neodrag/svelte';
 	import type { DragEventData } from '@neodrag/svelte';
+	import { MediaType } from '$lib/interfaces/Media';
 
 	export let element: ITimelineElement = {} as ITimelineElement;
 	export let elementIndex: number;
@@ -682,14 +683,14 @@
 </script>
 
 <!-- #region drag element -->
-<!-- TODO: replace just color in element with something better -->
 <div
 	class="timeline-row-element mr-5 rounded cursor-grab absolute"
 	style="
 		height: {CONSTS.timelineRowElementHeight}px;
 		width: {elementWidth}px;
-		background-color: {isSelected ? tailwindColors.orange[500] : tailwindColors.red[500]};
-		z-index: {dragging ? '50' : 'auto'}
+		z-index: {dragging ? '50' : 'auto'};
+		background-color: {element.type === MediaType.Audio ? '#cc7000' : ''};
+
 	"
 	data-element-el-index={elementIndex}
 	data-element-row-index={rowIndex}
@@ -709,7 +710,7 @@
 	role="none"
 >
 	<div
-		class=" absolute rounded outline outline-2 outline-hover-outline inset-[1px]"
+		class="absolute rounded outline outline-2 outline-hover-outline inset-[1px]"
 		style="opacity: {isSelected ? '1' : '0'};"
 	></div>
 

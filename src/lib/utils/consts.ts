@@ -56,7 +56,7 @@ export const CONSTS = {
     playbackIntervalTimer: 50,
 
     /**
-     * The height of each timeline row element in pixel
+     * The height of each timeline row element in pixels
      */
     timelineRowElementHeight: 50,
 

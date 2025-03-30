@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { IMedia } from '$lib/interfaces/Media';
+	import { MediaType, type IMedia } from '$lib/interfaces/Media';
 	import { CONSTS } from '$lib/utils/consts';
 	import { cleanUpEmptyTracks, formatTime } from '$lib/utils/utils';
 	import DeleteIcon from '$lib/assets/workbench/delete.png';
@@ -53,8 +53,12 @@
 
 <div class="flex flex-col items-center element-container">
 	<div
-		class="media relative rounded-lg p-[1px] bg-background-media-pool-element border-accent-color border cursor-pointer"
-		style="width: {CONSTS.mediaPoolElementWidth}px; height: {CONSTS.mediaPoolElementHeight}px;"
+		class="media relative rounded-lg p-[1px] border-accent-color border cursor-pointer"
+		style="
+			width: {CONSTS.mediaPoolElementWidth}px; 
+			height: {CONSTS.mediaPoolElementHeight}px;
+			background-color: {file.type === MediaType.Audio ? '#cc7000' : ''};
+		"
 		draggable="true"
 		on:dragstart={onDragElement}
 		on:mouseenter={() => (isHovering = true)}
