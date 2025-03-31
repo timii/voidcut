@@ -605,10 +605,13 @@ function getAspectRatioInPx(): string {
 
 // #region waveform
 // generates an image of the waveform from a given file using ffmpeg
-export async function generateAudioWaveform(file: File) {
+export async function generateAudioWaveform(file: File, size?: string) {
     // convert audio file to DataUrl and then UIntArray first
     const audioDataUrl = await convertFileToDataUrl(file)
     const audioUIntArray = await convertDataUrlToUIntArray(audioDataUrl)
+
+    // calculate the output image size
+    const imageSize = size ?? getMediaPoolImageSize()
 
     const inputName = 'audioInput.wav'
     const outputName = 'audioOutput.png'
@@ -616,7 +619,7 @@ export async function generateAudioWaveform(file: File) {
     await ffmpeg.writeFile(inputName, audioUIntArray);
     console.log('[FFMPEG] writing into ffmpeg filesystem successful');
 
-    const flags = ['-i', inputName, '-filter_complex', 'aformat=channel_layouts=mono,compand=gain=7:soft-knee=1,showwavespic=colors=#ff981a,drawbox=x=(iw-w)/2:y=(ih-h)/2:w=iw:h=1:color=#ffffff', '-frames:v', '1', outputName]
+    const flags = ['-i', inputName, '-filter_complex', `aformat=channel_layouts=mono,compand=gain=7:soft-knee=1,showwavespic=s=${imageSize}:colors=#ff981a`, '-frames:v', '1', outputName]
     // execute ffmpeg with the created flags
     const execReturn = await ffmpeg.exec(flags)
     console.log('[FFMPEG] executing ffmpeg commands successful');
@@ -627,13 +630,18 @@ export async function generateAudioWaveform(file: File) {
     }
 
     // read output file from ffmpeg.wasm
-    // const outputData = await ffmpeg.readFile(outputName) as Uint8Array<ArrayBuffer>;
     const outputData = await ffmpeg.readFile(outputName) as Uint8Array;
     console.log('[FFMPEG] reading created output file successful');
 
     // turn outpout UIntArray into dataUrl
     const blob = new Blob([outputData.buffer as ArrayBuffer], { type: 'image/png' })
-    const dataUrl = await resizeFilePreview(blob as File)
+    const dataUrl = await convertFileToDataUrl(blob as File)
 
     return dataUrl
+}
+
+// gets the default image size for the waveform
+function getMediaPoolImageSize(): string {
+    // create the size string out of the const values for the media pool dimensions
+    return `${CONSTS.mediaPoolElementWidth}x${CONSTS.mediaPoolElementHeight}`
 }

@@ -88,6 +88,12 @@ export async function handleFileUpload(files: FileList) {
         // get file metadata and create preview image
         const { fileMetadata, filePreviewImage } = await getFileMetadataAndPreviewImage(file.type, filesArr[i])
 
+        let fileTimelineElementImage: string | undefined = undefined
+        // generate a separate image for the timeline element of the audio file  
+        if (file.type === MediaType.Audio) {
+            fileTimelineElementImage = await getTimelineElementImage(filesArr[i], fileMetadata.duration ?? 0)
+        }
+
         availableMedia.update(media => {
             // find correct media element using its mediaId
             let index = media.findIndex(el => el.mediaId === file.mediaId)
@@ -102,6 +108,7 @@ export async function handleFileUpload(files: FileList) {
             media[index] = {
                 ...media[index],
                 previewImage: filePreviewImage,
+                timelineImage: fileTimelineElementImage,
                 loaded: true,
                 ...fileMetadata
             }
@@ -121,7 +128,7 @@ async function getFileMetadataAndPreviewImage(fileType: MediaType, file: File) {
             // get metadata for the audio file
             fileMetadata = await getFileMetadata(file, MediaType.Audio)
 
-            // generate wave form image for the preview image
+            // generate waveform image for the preview image
             const generatedImage = await generateAudioWaveform(file)
             if (generatedImage) {
                 filePreviewImage = generatedImage
@@ -133,7 +140,7 @@ async function getFileMetadataAndPreviewImage(fileType: MediaType, file: File) {
             const fileAsDataUrl = await convertFileToDataUrl(file)
             fileMetadata = { src: fileAsDataUrl }
 
-            // also create a resized version for the preview image when dragging the media pool element
+            // also create a resized version for the preview image for when dragging the media pool element
             const resizedFile = await resizeFilePreview(file)
 
             filePreviewImage = resizedFile
@@ -151,6 +158,24 @@ async function getFileMetadataAndPreviewImage(fileType: MediaType, file: File) {
             console.error("No fitting media type found")
     }
     return { fileMetadata, filePreviewImage }
+}
+
+// create timeline element image from a given file and duration
+async function getTimelineElementImage(file: File, duration: number): Promise<string> {
+    let fileTimelineElementImage: string = '';
+
+    // calulate the starting size of the image shown in the timeline element
+    const widthInPx = convertMsToPx(duration)
+    const size = `${widthInPx}x${CONSTS.mediaPoolElementHeight}`
+
+    // generate waveform image for the timeline element
+    const generatedImage = await generateAudioWaveform(file, size)
+    if (generatedImage) {
+        fileTimelineElementImage = generatedImage
+    }
+
+    return fileTimelineElementImage
+
 }
 
 // handle given media when it's dropped into the timeline
@@ -178,6 +203,7 @@ export function handleTimelineMediaDrop(media: IMedia, dropArea: TimelineDropAre
         mediaId: media.mediaId,
         mediaName: media.name,
         mediaImage: media.previewImage,
+        timelineImage: media.timelineImage,
         type: media.type,
         elementId: generateId(),
         videoOptions: {}
@@ -321,8 +347,8 @@ function getFileMetadata(file: File, type: MediaType.Video | MediaType.Audio): P
     });
 }
 
-// resizes a given file to be the same size as a media pool element
-export function resizeFilePreview(file: File): Promise<string> {
+// resizes a given file to given width and height (defaults are the dimensions of the media pool element)
+export function resizeFilePreview(file: File, width = CONSTS.mediaPoolElementWidth, height = CONSTS.mediaPoolElementHeight): Promise<string> {
     return new Promise((resolve, reject) => {
         if (!FileReader) {
             console.error('Error getting FileReader')
@@ -344,8 +370,8 @@ export function resizeFilePreview(file: File): Promise<string> {
                 const canvas = document.createElement('canvas');
 
                 // set the canvas to be the same height as the media pool element
-                canvas.width = CONSTS.mediaPoolElementWidth;
-                canvas.height = CONSTS.mediaPoolElementHeight;
+                canvas.width = width;
+                canvas.height = height;
 
                 const ctx = canvas.getContext('2d');
                 if (!ctx) {

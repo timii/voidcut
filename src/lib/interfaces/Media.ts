@@ -5,6 +5,7 @@ export interface IMedia {
     src: string; // dataUrl of media
     loaded: boolean; // is media finished uploading
     previewImage: string; // dataUrl string of preview image shown in the media pool
+    timelineImage?: string, // dataUrl string of image used in the timeline element
     duration?: number; // duration in milliseconds (only relevant for video and audio)
 }
 

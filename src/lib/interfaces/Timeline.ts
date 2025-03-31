@@ -6,6 +6,7 @@ export interface ITimelineElement {
     mediaId: string, // unique id of media
     mediaName: string, // name of media
     mediaImage: string, // preview image of the media
+    timelineImage?: string, // image used in the timeline element
     type: MediaType, // enum type of element
     duration: number, // current duration in milliseconds (can be different after element has been resized)
     maxDuration: number | undefined, // maximum duration in milliseconds (if undefined the element can be resized as much as the user wants to)
