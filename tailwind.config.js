@@ -55,7 +55,8 @@ export default {
         "accent-color": '#0284c7',
 
         // complementary color to accent color
-        "second-accent-color": "#F08000",
+        "second-accent-color": "#cc7000",
+        "lighter-second-accent-color": "#ff981a",
 
         // text colors
         "text-color": '#c2c2c2',

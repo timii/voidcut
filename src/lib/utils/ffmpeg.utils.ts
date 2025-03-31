@@ -616,7 +616,7 @@ export async function generateAudioWaveform(file: File) {
     await ffmpeg.writeFile(inputName, audioUIntArray);
     console.log('[FFMPEG] writing into ffmpeg filesystem successful');
 
-    const flags = ['-i', inputName, '-filter_complex', 'aformat=channel_layouts=mono,compand=gain=7:soft-knee=1,showwavespic=colors=#ffffff,drawbox=x=(iw-w)/2:y=(ih-h)/2:w=iw:h=1:color=#ffffff', '-frames:v', '1', outputName]
+    const flags = ['-i', inputName, '-filter_complex', 'aformat=channel_layouts=mono,compand=gain=7:soft-knee=1,showwavespic=colors=#ff981a,drawbox=x=(iw-w)/2:y=(ih-h)/2:w=iw:h=1:color=#ffffff', '-frames:v', '1', outputName]
     // execute ffmpeg with the created flags
     const execReturn = await ffmpeg.exec(flags)
     console.log('[FFMPEG] executing ffmpeg commands successful');
