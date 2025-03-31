@@ -719,37 +719,42 @@
 	<div class="timeline-row-element-drag-area w-[calc(100%-16px)] h-full absolute left-2"></div>
 
 	<!-- element name shown -->
-	<div class="timeline-row-element-name text-[12px] text-text-button ml-3 truncate select-none">
+	<!-- <div class="timeline-row-element-name text-[12px] text-text-button ml-3 truncate select-none">
 		{element.mediaName}
-	</div>
+	</div> -->
 
-	<!-- TODO: JUST FOR DEBUGGING. REMOVE AFTER TESTING -->
-	<div class="timeline-row-element-name text-[10px] text-text-button ml-3 truncate select-none">
-		{element.playbackStartTime / CONSTS.secondsMultiplier}s / {element.duration /
-			CONSTS.secondsMultiplier}s
-	</div>
-	<div class="timeline-row-element-name text-[10px] text-text-button ml-3 truncate select-none">
-		elIndex:{elementIndex}/row:{rowIndex}
-	</div>
+	<!-- TODO: only for debugging -->
+	<!-- {#if !isProduction()}
+		<div class="timeline-row-element-name text-[10px] text-text-button ml-3 truncate select-none">
+			{element.playbackStartTime / CONSTS.secondsMultiplier}s / {element.duration /
+				CONSTS.secondsMultiplier}s
+		</div>
+		<div class="timeline-row-element-name text-[10px] text-text-button ml-3 truncate select-none">
+			elIndex:{elementIndex}/row:{rowIndex}
+		</div>
+	{/if} -->
 
-	<!-- TODO: check if this works since when enabling it the thumb sometimes doesnt work correctly when trying to drag the element -->
-	<!-- element image -->
-	<!-- <div
-		class="timeline-row-element-image absolute top-0 left-0 z-50"
-		style="background-image: {element.mediaImage}; width: 50px; height: 50px;"
-	></div> -->
+	<div class="image-container h-full w-full relative pointer-events-none">
+		<div
+			class="image absolute left-0 top-0 w-full h-full pointer-events-none bg-repeat-x rounded"
+			style="
+				--imageUrl: url({element.timelineImage});
+				background-size: {element.type === MediaType.Audio ? '100% 100%' : 'auto 100%'};
+			"
+		></div>
+	</div>
 
 	<!-- element handles to resize an element -->
 	{#if (isSelected || isHovering) && !$isTimelineElementBeingDragged}
 		<div
-			class="timeline-row-element-handle absolute top-0 left-0 h-full bg-blue-400 w-2 cursor-ew-resize rounded-l"
+			class="timeline-row-element-handle absolute top-0 left-0 h-full z-50 bg-accent-color w-2 cursor-ew-resize rounded-l"
 			on:mousemove={onResizeLeft}
 			on:mousedown={(e) => onHandleMouseDown(e, TimelineElementResizeSide.LEFT)}
 			role="button"
 			tabindex="0"
 		></div>
 		<div
-			class="timeline-row-element-handle absolute top-0 left-[calc(100%-8px)] h-full bg-blue-400 w-2 cursor-ew-resize rounded-r"
+			class="timeline-row-element-handle absolute top-0 left-[calc(100%-8px)] h-full z-50 bg-accent-color w-2 cursor-ew-resize rounded-r"
 			on:mousemove={onResizeRight}
 			on:mousedown={(e) => onHandleMouseDown(e, TimelineElementResizeSide.RIGHT)}
 			role="button"
@@ -757,3 +762,10 @@
 		></div>
 	{/if}
 </div>
+
+<style lang="postcss">
+	.image {
+		background-image: var(--imageUrl);
+		background-repeat: repeat-x; /* repeat horizontally */
+	}
+</style>
