@@ -611,7 +611,7 @@ export async function generateAudioWaveform(file: File, size?: string) {
     const audioUIntArray = await convertDataUrlToUIntArray(audioDataUrl)
 
     // calculate the output image size
-    const imageSize = size ?? getMediaPoolImageSize()
+    const imageSize = size && size !== '' ? size : getMediaPoolImageSize()
 
     const inputName = 'audioInput.wav'
     const outputName = 'audioOutput.png'
