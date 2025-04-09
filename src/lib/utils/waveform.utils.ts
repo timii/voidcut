@@ -51,9 +51,19 @@ function generateSVG(waveform: number[], width: number, height: number) {
     }).join(' ');
 
     // stitch all "bars" together into one <path> in svg
-    return `
-      <svg viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg">
-        <path d="${pathData}" stroke="black" stroke-width="1" fill="none" />
-      </svg>
-    `;
+
+// convert a given svg element string into a base64 encoded dataUrl
+function svgToDataUrl(svg: Document): string {
+    if (!xmlSerializer) {
+        xmlSerializer = new XMLSerializer();
+    }
+
+    // serialize the SVG element to a string
+    const svgString = xmlSerializer.serializeToString(svg);
+
+    // Encode the SVG string in base64
+    const base64 = window.btoa(svgString);
+
+    // Create a data URL for the SVG image
+    return `data:image/svg+xml;base64,${base64}`;
 }
