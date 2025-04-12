@@ -1,10 +1,16 @@
+import { CONSTS } from "./consts";
+
+let audioCtx: AudioContext | undefined = undefined
+
 // generates an svg of the waveform from a given file
-export async function generateAudioWaveform(file: File, size?: string) {
+export async function generateAudioWaveformNew(file: File, width?: number): Promise<string> {
     // converts the file into a binary buffer
     const arrayBuffer = await file.arrayBuffer();
 
-    // create new audio context to use the web audio api
-    const audioCtx = new window.AudioContext();
+    // create new audio context to use the web audio api, if undefined
+    if (!audioCtx) {
+        audioCtx = new window.AudioContext();
+    }
 
     // turn binary audio into usable waveform samples
     const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
@@ -12,13 +18,21 @@ export async function generateAudioWaveform(file: File, size?: string) {
     // get only the left channel (mono) waveform data points (array of numbers from -1 to +1)
     const samples = audioBuffer.getChannelData(0);
 
+    const imageWidth = width ?? 200
+
     // downsample to 1000 points
-    const waveform = downsample(samples, 1000);
-    const svg = generateSVG(waveform, 1000, 200);
+    const waveform = downsample(samples, imageWidth);
+
+    // generate svg string
+    const svg = generateSVG(waveform, imageWidth, CONSTS.timelineRowElementHeight);
+
+    console.log("generateAudioWaveformNew -> svg:", svg);
+
+    return svg
 }
 
 // reduce given amount samples to given amount to decrease the amount of data points in the waveform
-function downsample(samples: Float32Array, amount: number) {
+function downsample(samples: Float32Array, amount: number): number[] {
     // define block size in which the samples should be split into
     const blockSize = Math.floor(samples.length / amount);
     const downsampled = [];
@@ -41,7 +55,6 @@ function downsample(samples: Float32Array, amount: number) {
 
 // generate the svg paths from a gievn array of samples and fit the svg into given dimensions
 function generateSVG(waveform: number[], width: number, height: number) {
-
     // for each point in the waveform draw a vertical line at that position — from the middle to the top & bottom to represent the classic "bar" waveform
     const halfHeight = height / 2;
     const pathData = waveform.map((v, i) => {
@@ -51,19 +64,9 @@ function generateSVG(waveform: number[], width: number, height: number) {
     }).join(' ');
 
     // stitch all "bars" together into one <path> in svg
+    const svgString = `<svg class="element-waveform" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="${pathData}" stroke="black" stroke-width="1" fill="none" />
+            </svg>`;
 
-// convert a given svg element string into a base64 encoded dataUrl
-function svgToDataUrl(svg: Document): string {
-    if (!xmlSerializer) {
-        xmlSerializer = new XMLSerializer();
-    }
-
-    // serialize the SVG element to a string
-    const svgString = xmlSerializer.serializeToString(svg);
-
-    // Encode the SVG string in base64
-    const base64 = window.btoa(svgString);
-
-    // Create a data URL for the SVG image
-    return `data:image/svg+xml;base64,${base64}`;
+    return svgString
 }
