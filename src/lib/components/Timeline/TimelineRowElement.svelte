@@ -735,13 +735,17 @@
 	{/if} -->
 
 	<div class="image-container h-full w-full relative pointer-events-none">
-		<div
-			class="image absolute left-0 top-0 w-full h-full pointer-events-none bg-repeat-x rounded"
-			style="
-				--imageUrl: url({element.timelineImage});
-				background-size: {element.type === MediaType.Audio ? '100% 100%' : 'auto 100%'};
-			"
-		></div>
+		{#if element.type === MediaType.Audio}
+			<div>{@html element.timelineImage}</div>
+		{:else}
+			<div
+				class="image absolute left-0 top-0 w-full h-full pointer-events-none bg-repeat-x rounded"
+				style="
+		--imageUrl: url({element.timelineImage});
+		background-size: auto 100%;
+		"
+			></div>
+		{/if}
 	</div>
 
 	<!-- element handles to resize an element -->
@@ -767,5 +771,9 @@
 	.image {
 		background-image: var(--imageUrl);
 		background-repeat: repeat-x; /* repeat horizontally */
+	}
+
+	:global(.element-waveform) {
+		width: 100% !important;
 	}
 </style>
