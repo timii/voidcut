@@ -37,7 +37,7 @@ import tailwindConfig from '../../../tailwind.config.js'
 import { generateAudioWaveform } from "./ffmpeg.utils";
 import type { IPlayerElement } from "$lib/interfaces/Player";
 import type { Time } from "$lib/interfaces/Time";
-import { generateAudioWaveformNew } from "./waveform.utils";
+import { generateAudioWaveformTimelineImage } from "./waveform.utils";
 
 let interval: {
     start: () => void;
@@ -169,13 +169,12 @@ async function getTimelineElementImage(file: File, duration: number): Promise<st
     const widthInPx = convertMsToPx(duration)
 
     // generate waveform image for the timeline element
-    const generatedImage = await generateAudioWaveformNew(file, widthInPx)
+    const generatedImage = await generateAudioWaveformTimelineImage(file, widthInPx)
     if (generatedImage) {
         fileTimelineElementImage = generatedImage
     }
 
     return fileTimelineElementImage
-
 }
 
 // handle given media when it's dropped into the timeline

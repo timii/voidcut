@@ -3,7 +3,7 @@ import { CONSTS } from "./consts";
 let audioCtx: AudioContext | undefined = undefined
 
 // generates an svg of the waveform from a given file
-export async function generateAudioWaveformNew(file: File, width?: number): Promise<string> {
+export async function generateAudioWaveformTimelineImage(file: File, width?: number): Promise<string> {
     // converts the file into a binary buffer
     const arrayBuffer = await file.arrayBuffer();
 
@@ -20,7 +20,7 @@ export async function generateAudioWaveformNew(file: File, width?: number): Prom
 
     const imageWidth = width ?? 200
 
-    // downsample to 1000 points
+    // downsample to have less data points
     const waveform = downsample(samples, imageWidth);
 
     // generate svg string
@@ -53,20 +53,43 @@ function downsample(samples: Float32Array, amount: number): number[] {
     return downsampled.map(v => v / max);
 }
 
-// generate the svg paths from a gievn array of samples and fit the svg into given dimensions
-function generateSVG(waveform: number[], width: number, height: number) {
-    // for each point in the waveform draw a vertical line at that position — from the middle to the top & bottom to represent the classic "bar" waveform
+// generate the svg paths from a given array of samples and fit the svg into given dimensions
+function generateSVG(samples: number[], width: number, height = CONSTS.timelineRowElementHeight, color = '#ff981a') {
     const halfHeight = height / 2;
-    const pathData = waveform.map((v, i) => {
-        const x = i;
-        const y = v * halfHeight;
-        return `M${x},${halfHeight - y} L${x},${halfHeight + y}`;
-    }).join(' ');
+    const roundedAmount = 1
 
-    // stitch all "bars" together into one <path> in svg
-    const svgString = `<svg class="element-waveform" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="${pathData}" stroke="black" stroke-width="1" fill="none" />
-            </svg>`;
+    // calculate the bar width so each bar takes up the same amount of space along the x axis
+    const barWidth = width / samples.length;
 
-    return svgString
+    const bars = samples.map((v, i) => {
+        // calculate the position along the x and y axis
+        const x = i * barWidth;
+        const y = (1 - v) * halfHeight;
+
+        // calculate the rectangle height by using the amplitude of each sample 
+        const barHeight = v * height;
+
+        // for each data point in the samples draw a rectangle at that position to represent the classic "bar" waveform
+        return `<rect 
+            x="${x.toFixed(2)}" 
+            y="${y.toFixed(2)}" 
+            width="${barWidth.toFixed(2)}" 
+            height="${barHeight.toFixed(2)}"
+            fill="${color}" 
+            rx="${roundedAmount}" />`;
+    }).join('\n'); // join every mapped rectangle into one big string 
+
+    // add the created rectangles into one svg
+    return `
+        <svg 
+            class="element-waveform" 
+            preserveAspectRatio="none" 
+            width="${width}" 
+            height="${height}" 
+            viewBox="0 0 ${width} ${height}" 
+            xmlns="http://www.w3.org/2000/svg"
+        >
+            ${bars}
+        </svg>
+    `;
 }
