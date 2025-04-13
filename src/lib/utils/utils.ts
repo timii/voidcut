@@ -89,7 +89,9 @@ export async function handleFileUpload(files: FileList) {
         // get file metadata and create preview image
         const { fileMetadata, filePreviewImage } = await getFileMetadataAndPreviewImage(file.type, filesArr[i])
 
-        let fileTimelineElementImage: string | undefined = undefined
+        // set the timeline image to be the preview image for image and video media files
+        let fileTimelineElementImage = filePreviewImage
+
         // generate a separate image for the timeline element of the audio file  
         if (file.type === MediaType.Audio) {
             fileTimelineElementImage = await getTimelineElementImage(filesArr[i], fileMetadata.duration ?? 0)
@@ -143,6 +145,9 @@ async function getFileMetadataAndPreviewImage(fileType: MediaType, file: File) {
 
             // also create a resized version for the preview image for when dragging the media pool element
             const resizedFile = await resizeFilePreview(file)
+
+            console.log("image resized file:", resizedFile);
+
 
             filePreviewImage = resizedFile
 

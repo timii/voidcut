@@ -741,9 +741,9 @@
 			<div
 				class="image absolute left-0 top-0 w-full h-full pointer-events-none bg-repeat-x rounded"
 				style="
-		--imageUrl: url({element.timelineImage});
-		background-size: auto 100%;
-		"
+					--imageUrl: url({element.timelineImage});
+					background-size: auto 100%;
+				"
 			></div>
 		{/if}
 	</div>
