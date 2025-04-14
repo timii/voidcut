@@ -146,9 +146,6 @@ async function getFileMetadataAndPreviewImage(fileType: MediaType, file: File) {
             // also create a resized version for the preview image for when dragging the media pool element
             const resizedFile = await resizeFilePreview(file)
 
-            console.log("image resized file:", resizedFile);
-
-
             filePreviewImage = resizedFile
 
             break;

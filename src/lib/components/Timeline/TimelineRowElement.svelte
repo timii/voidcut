@@ -48,6 +48,9 @@
 	// reset the position value for the element whenever any of the parameters changes
 	$: resetPosition(element.playbackStartTime, CONSTS.secondsMultiplier, $currentTimelineScale);
 
+	// update svg variables when the timeline scale changes
+	$: updateSvgVariables($currentTimelineScale);
+
 	// set the left offset once in the beginning
 	leftOffset = convertMsToPx(element.playbackStartTime);
 
@@ -89,6 +92,8 @@
 	let isHovering = false;
 	let resizeStartPosition = -1;
 	let resizeStartWidth: number | undefined = undefined;
+	let svgFullWidth: number = getFullWidth();
+	let svgLeftTrim: number = element.trimFromStart;
 
 	// #region onMount
 	onMount(() => {
@@ -121,6 +126,12 @@
 			}
 		});
 	});
+
+	function updateSvgVariables(_: number) {
+		// update the variables used by the svg when timeline scale changed
+		svgFullWidth = getFullWidth();
+		svgLeftTrim = convertMsToPx(element.trimFromStart);
+	}
 
 	// set a new position using the updated x value and reset y offset
 	function resetPosition(startTime: number, multiplier: number, scale: number) {
@@ -488,6 +499,9 @@
 				newTrimFromStart = Math.max(newTrimFromStart, 0);
 			}
 
+			// update the left offset for the svg if shown
+			svgLeftTrim = convertMsToPx(newTrimFromStart);
+
 			console.log(
 				'onResizeMouseMove left after calculate -> resizeStartPosition:',
 				resizeStartPosition,
@@ -680,6 +694,13 @@
 		}
 	}
 	// #endregion resize
+
+	// get full width in px of current element
+	function getFullWidth() {
+		console.log('getFullWidth -> element:', element);
+
+		return convertMsToPx(element.duration + element.trimFromStart + element.trimFromEnd);
+	}
 </script>
 
 <!-- #region drag element -->
@@ -736,7 +757,15 @@
 
 	<div class="image-container h-full w-full relative pointer-events-none">
 		{#if element.type === MediaType.Audio}
-			<div>{@html element.timelineImage}</div>
+			<div
+				class="overflow-hidden relative h-full w-full rounded"
+				style="
+					--fullWidth: {svgFullWidth}px;
+					--leftTrim: -{svgLeftTrim}px;
+				"
+			>
+				{@html element.timelineImage}
+			</div>
 		{:else}
 			<div
 				class="image absolute left-0 top-0 w-full h-full pointer-events-none bg-repeat-x rounded"
@@ -774,6 +803,8 @@
 	}
 
 	:global(.element-waveform) {
-		width: 100% !important;
+		width: var(--fullWidth) !important;
+		position: absolute;
+		left: var(--leftTrim);
 	}
 </style>
