@@ -800,6 +800,17 @@ export function isCurrentElementBeingResized(el: ITimelineElement): boolean {
 //#endregion
 
 // #region timeline utils
+// calculate amount the timeline needs to be scrolled by when the thumb reaches the edge (i.e. during playback)
+export function getTimelineScrollAmount(): number {
+    // get current size (in pixels) of one second using the current timeline scale
+    const size = get(currentTimelineScale)
+    // calculate the amount of times the thumb is being updated each second
+    // 1000 is the amount of millisceonds in a second
+    const amountOfThumbUpdates = 1000 / CONSTS.playbackIntervalTimer
+
+    return size / amountOfThumbUpdates
+}
+
 // move the timeline thumb using a given mouse event
 export function moveTimelineThumb(e: MouseEvent, keepSelectedElement = false) {
     e.preventDefault();

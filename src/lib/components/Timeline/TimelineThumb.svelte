@@ -11,6 +11,7 @@
 	} from '../../../stores/store';
 	import {
 		convertMsToPx,
+		getTimelineScrollAmount,
 		isElementFullyScrolled,
 		moveTimelineThumb,
 		pausePlayback
@@ -21,6 +22,7 @@
 	let thumbElementRef: HTMLElement;
 	let scrollInterval: number | undefined;
 	let timelineScrollContainer: HTMLElement | null;
+	let timelineScrollAmount = getTimelineScrollAmount();
 
 	onMount(() => {
 		// calculate left offset of thumb element
@@ -44,6 +46,9 @@
 		// calculate new thumb position using the updated scale
 		const newPosition = playbackInS * scale;
 		currentThumbPosition.set(newPosition);
+
+		// update the timeline scroll amount every time the scale changes
+		timelineScrollAmount = getTimelineScrollAmount();
 	}
 
 	function onPlaybackTimeChange(_: number) {
@@ -75,7 +80,7 @@
 			scrollContainerBoundingRect.width - thumbBoundingRect.x >= 0 &&
 			!timelineFullyScrolled
 		) {
-			timelineScrollContainer.scrollBy({ left: 7, behavior: 'smooth' });
+			timelineScrollContainer.scrollBy({ left: timelineScrollAmount, behavior: 'instant' });
 		}
 
 		// check if thumb is on the left edge
