@@ -8,8 +8,6 @@
 
 	// handle file(s) when media is uploaded
 	async function onMediaUpload(e: Event) {
-		console.log('media added:', e);
-
 		const inputTarget = e.target;
 		if (inputTarget) {
 			const files = (inputTarget as HTMLInputElement).files;

@@ -62,7 +62,6 @@
 				// delay resetting the store values to workaround when mouse down event fires after mouse button isn't held down anymore
 				setTimeout(() => {
 					resetAllBeingDragged();
-					console.log(e + ' mouseup');
 				}, CONSTS.resetDelay);
 			});
 		});
@@ -77,7 +76,6 @@
 			i = i * 2;
 		}
 		possibleScaleValues.set(values);
-		console.log('fit on mount -> values:', values);
 
 		// TODO: change that so check both scrollbars everytime something in the timeline changes and/or screen sitze changes
 		isOverflowingY = hasVerticalScrollbar(scrollContainerEl);
@@ -89,30 +87,6 @@
 
 		// set amount of ticks at the start
 		startAmountOfTicks.set(amountOfTicksRounded);
-		console.log(
-			'timeline width -> clientWidth:',
-			scrollContainerEl.clientWidth,
-			'scrollWidth:',
-			scrollContainerEl.scrollWidth,
-			'offsetWidth:',
-			scrollContainerEl.offsetWidth,
-			'thumbOffset:',
-			$thumbOffset,
-			'amount of ticks in the timeline possible:',
-			amountOfTicks,
-			'rounded up:',
-			amountOfTicksRounded
-		);
-		// TODO: check the timeline width everytime something in the timeline changes
-
-		console.log(
-			'onMount -> scrollContainerEl:',
-			scrollContainerEl,
-			'overflowY?:',
-			isOverflowingY,
-			'overflowX?:',
-			isOverflowingX
-		);
 
 		// listen to event when a timeline element is dropped
 		window.addEventListener(CONSTS.customEventNameDropTimelineElement, (e) =>
@@ -129,25 +103,16 @@
 	$: resetStoreValues($isTimelineElementBeingDragged);
 
 	function getMaxPlaybackTime(tracks: ITimelineTrack[]) {
-		console.log(
-			'Timeline -> timelineTracks changed:',
-			$timelineTracks,
-			'first track elements:',
-			$timelineTracks.length > 0 ? $timelineTracks[0].elements : []
-		);
-
 		// go through each row and element and check what the last playback time is
 		if (tracks.length > 0) {
 			let maxTime = 0;
 			tracks.forEach((track) => {
-				console.log('getMaxPlaybackTime -> track:', track);
 				track.elements.forEach((element) => {
 					// add element offset and duration to get the time the element ends
 					const endTime = element.playbackStartTime + element.duration;
 					if (endTime > maxTime) {
 						maxTime = endTime;
 					}
-					console.log('getMaxPlaybackTime -> element:', element, 'endTime:', endTime);
 				});
 			});
 			maxPlaybackTime.set(maxTime);
@@ -156,22 +121,11 @@
 			// but only if the new amount of ticks is equal or more to the start amount
 			const maxTimeAsTicks = Math.ceil(maxTime / CONSTS.secondsMultiplier);
 			if (maxTimeAsTicks >= $startAmountOfTicks) {
-				console.log('getMaxPlaybackTime in if');
 				amountOfTicksRounded = maxTimeAsTicks;
 			} else {
 				// if the max time is smaller than the starting amount of ticks set it back to the starting value to avoid timeline ruler being short than screen
 				amountOfTicksRounded = $startAmountOfTicks;
 			}
-			console.log(
-				'getMaxPlaybackTime -> after all for each maxTime:',
-				maxTime,
-				'amountOfTicksRounded:',
-				amountOfTicksRounded,
-				'startAmountOfTicks:',
-				$startAmountOfTicks,
-				'amountOfTicksRounded >= $startAmountOfTicks:',
-				amountOfTicksRounded >= $startAmountOfTicks
-			);
 		} else {
 			// if the array is empty -> reset maxPlaybackTime
 			maxPlaybackTime.set(0);
@@ -221,14 +175,6 @@
 	function updateFirstAndLastDividerIfNull() {
 		let dividers;
 
-		console.log(
-			'on hover updateFirstAndLastDividerIfNull -> dividers before if:',
-			dividers,
-			'firstDivider/lastDivider:',
-			firstDivider,
-			'/',
-			lastDivider
-		);
 		if (
 			!firstDivider ||
 			allBoundingRectValuesZero(firstDivider) ||
@@ -242,7 +188,6 @@
 			if (dividers.length < 2) {
 				return;
 			}
-			console.log('on hover updateFirstAndLastDividerIfNull -> dividers in if:', dividers);
 
 			// get the first and last one from list of dividers
 			firstDivider = dividers[0];
@@ -271,19 +216,6 @@
 		if (lower !== $draggedUnderLastDivider) {
 			draggedUnderLastDivider.set(lower);
 		}
-
-		console.log(
-			'on hover isYHigherOrLowerThanDividers -> firstRect/lastRect:',
-			firstRect,
-			'/',
-			lastRect,
-			'y:',
-			y,
-			'higher/lower:',
-			higher,
-			'/',
-			lower
-		);
 	}
 
 	function onHoverElement(e: DragEvent) {
@@ -324,35 +256,8 @@
 			return;
 		}
 
-		// if the thumbs x position is smaller than 0 it is out of the view and we clamp the thumb to the left side
-		// if (thumbBoundingRect.x < 0) {
-		// 	// subtract 16 from the scrol position to have no padding on the left side of the thumb
-		// 	currentThumbPosition.set(horizontalScrollValue - 16);
-		// }
-
-		// // if the thumbs x position is bigger than the width of the timeline (- the width of the timeline) we clamp it to the right side
-		// if (thumbBoundingRect.x > scrollContainerEl.clientWidth - 12) {
-		// 	// new thumb position is the amount scrolled + the width of the timeline (- the width of the thumb + left padding)
-		// 	currentThumbPosition.set(horizontalScrollValue + scrollContainerEl.clientWidth - 28);
-		// }
-
 		// subtract the horizontal scroll of current playback when scrolling to keep the thumb at the same time
 		currentThumbPosition.set(convertMsToPx($currentPlaybackTime) - horizontalScrollValue);
-
-		console.log(
-			'timeline scrolled -> e:',
-			// e,
-			'horizontal:',
-			horizontalScrollValue,
-			'thumbElementRef:',
-			thumbElementRef,
-			'thumbBoundingRect:',
-			thumbBoundingRect,
-			'scrollContainerEl:',
-			scrollContainerEl,
-			'scrollContainerEl.clientWidth:',
-			scrollContainerEl.clientWidth
-		);
 	}
 
 	// handle the pointermove event while over the timeline

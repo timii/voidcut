@@ -62,21 +62,6 @@
 	// here we actually don't want to use the util function to convert to px since we want the elementWidth to update when the currentTimelineScale changes
 	$: elementWidth = (element.duration / CONSTS.secondsMultiplier) * $currentTimelineScale;
 
-	console.log(
-		'TimelineRowElement -> element:',
-		element,
-		'width:',
-		elementWidth,
-		'duration:',
-		element.duration,
-		'scale:',
-		$currentTimelineScale,
-		'calc:',
-		convertMsToPx(element.duration),
-		'leftOffset:',
-		leftOffset
-	);
-
 	const tailwindVariables = getTailwindVariables();
 	const tailwindColors = tailwindVariables.theme.colors;
 	let elementRef: HTMLElement;
@@ -102,7 +87,6 @@
 			if ($isTimelineElementBeingDragged) {
 				e.preventDefault();
 				e.stopPropagation();
-				console.log('event listener on window while dragging');
 			}
 		});
 
@@ -149,7 +133,6 @@
 	// #region drag stuff
 	// get the starting mouse position when starting the dragging movement
 	function getMousePosition(e: MouseEvent) {
-		console.log('getMousePosition -> e:', e);
 		if ($isTimelineElementBeingResized || $isThumbBeingDragged) {
 			return;
 		}
@@ -187,20 +170,11 @@
 						clickedY: mouseStartPositioninTimeline!.mouseYInTimeline
 					}) as ITimelineDraggedElementPosition
 			);
-
-			console.log(
-				'getMousePosition -> mouseStartPosition:',
-				mouseStartPosition,
-				'draggedElementPosition:',
-				$draggedElementPosition
-			);
 		}
 	}
 
 	// handle start of dragging an element
 	function onDragStart(e: CustomEvent<DragEventData>) {
-		console.log('onDragStart -> e:', e);
-
 		if ($isTimelineElementBeingResized || $isThumbBeingDragged) {
 			return;
 		}
@@ -244,34 +218,10 @@
 					startY: e.detail.offsetY
 				}) as ITimelineDraggedElementPosition
 		);
-
-		console.log(
-			'onDragStart -> elDomRect:',
-			elDomRect,
-			'tracksElBoundRect:',
-			tracksElBoundRect,
-			'startPosition:',
-			elStartPosition,
-			'startingMousePosition:',
-			mouseStartPosition,
-			'draggedElementData:',
-			$draggedElementData,
-			'draggedElementPosition',
-			$draggedElementPosition
-		);
-
-		// const detail = e.detail as any;
-		// onElementClick({
-		// 	clientX: detail.offsetX,
-		// 	clientY: detail.offsetY,
-		// 	...e
-		// } as unknown as MouseEvent);
 	}
 
 	// handles the event while an element is being dragged
 	function onDrag(e: CustomEvent<DragEventData>) {
-		console.log('onDrag -> e:', e);
-
 		if ($isTimelineElementBeingResized || $isThumbBeingDragged) {
 			return;
 		}
@@ -317,8 +267,6 @@
 
 	// handles the end of dragging/dropping the element
 	function onDragEnd(e: CustomEvent<DragEventData>) {
-		console.log('onDragEnd -> e:', e);
-
 		if ($isTimelineElementBeingResized || $isThumbBeingDragged) {
 			return;
 		}
@@ -329,37 +277,6 @@
 		mouseStartPosition = undefined;
 		elStartPosition = undefined;
 		draggedOverThreshold.set(false);
-
-		// reset position so the timeline element gets placed inside a track again
-		// setTimeout(() => {
-		// 	topOffset = 0;
-		// 	// manually trigger update of the left offset so the new offset is actually updated
-		// 	leftOffset = convertMsToPx(element.playbackStartTime);
-
-		// 	// leftOffset = $draggedElementPosition
-		// 	// 	? $draggedElementPosition.left - CONSTS.timelineRowOffset
-		// 	// 	: leftOffset;
-
-		// 	console.error(
-		// 		'Timeline -> timeline element dropped leftOffset:',
-		// 		leftOffset,
-		// 		'playbackStartTime:',
-		// 		element.playbackStartTime
-		// 	);
-
-		// 	position = {
-		// 		x: leftOffset,
-		// 		y: topOffset
-		// 	};
-		// 	console.log(
-		// 		'element dropped on divider in testEnd -> topOffset reset:',
-		// 		position,
-		// 		'element.playbackStartTime:',
-		// 		element.playbackStartTime,
-		// 		'convertMsToPx(element.playbackStartTime):',
-		// 		convertMsToPx(element.playbackStartTime)
-		// 	);
-		// }, 0);
 
 		const curEl = e.detail.currentNode;
 		const elDomRect = curEl.getBoundingClientRect();
@@ -381,14 +298,6 @@
 		window.dispatchEvent(event);
 
 		// TODO: if at the point of mouse release the dragged element is neither over a timeline row or a divider we should check where to drop the element
-
-		// const detail = e.detail as any;
-		// onElementDrop({
-		// 	clientX: detail.offsetX,
-		// 	clientY: detail.offsetY,
-		// 	buttons: 1,
-		// 	...e
-		// } as unknown as MouseEvent);
 	}
 	// #endregion drag stuff
 
@@ -412,13 +321,6 @@
 			return;
 		}
 
-		console.log(
-			'onResizeMouseMove left before calculate -> resizeStartPosition:',
-			resizeStartPosition,
-			'elementWidth:',
-			elementWidth
-		);
-
 		// calculate difference between starting x position and current x position
 		const dx = resizeStartPosition - e.x;
 
@@ -429,8 +331,6 @@
 
 		// update starting x position for the next call of the mouse move
 		resizeStartPosition = e.x;
-
-		console.error('onResizeLeft -> elementRef:', elementRef);
 
 		// add the pixel difference to the width
 		const newWidth = parseInt(getComputedStyle(elementRef, '').width) + dx;
@@ -463,13 +363,6 @@
 		// convert new offset into milliseconds to use as playbackStartTime
 		const newLeftOffsetInMs = convertPxToMs(newLeftOffset);
 
-		console.error(
-			'resizeLeft -> newLeftOffsetInMs:',
-			newLeftOffsetInMs,
-			'endTime:',
-			newLeftOffsetInMs + newWidthInMs
-		);
-
 		const resizeData = $elementResizeData;
 
 		// check if a element to the left even exists on the current track
@@ -501,23 +394,6 @@
 
 			// update the left offset for the svg if shown
 			svgLeftTrim = convertMsToPx(newTrimFromStart);
-
-			console.log(
-				'onResizeMouseMove left after calculate -> resizeStartPosition:',
-				resizeStartPosition,
-				'resizeStartWidth:',
-				resizeStartWidth,
-				'maxDuration:',
-				element.maxDuration,
-				'newWidthInMs:',
-				newWidthInMs,
-				'newTrimFromStart:',
-				newTrimFromStart,
-				'element.trimFromStart:',
-				element.trimFromStart,
-				'dx:',
-				dx
-			);
 
 			tracks[rowIndex].elements[elementIndex] = {
 				...curEl,
@@ -555,17 +431,6 @@
 		// dx gets smaller, which is the opposite of what we want
 		const dx = -(resizeStartPosition - e.x);
 
-		console.log(
-			'onResizeMouseMove right before calculate -> resizeStartPosition:',
-			resizeStartPosition,
-			'elementWidth:',
-			elementWidth,
-			'dx:',
-			dx,
-			'element.trimFromEnd:',
-			element.trimFromEnd
-		);
-
 		// we need to block the resize if we try to increase the element size even though we haven't trimmed anything from that side
 		if (dx > 0 && element.trimFromEnd === 0 && !elementIsAnImage(element)) {
 			return;
@@ -583,13 +448,6 @@
 		const resizeData = $elementResizeData;
 
 		const elEndTime = element.playbackStartTime + newWidthInMs;
-
-		console.error(
-			'resizeRight -> end time:',
-			elEndTime,
-			'right element start time:',
-			resizeData?.nextElBounds.nextRightEl
-		);
 
 		// check if an element to the right even exists on the current track
 		const doesElToTheRightExist =
@@ -625,23 +483,6 @@
 				newTrimFromEnd += resizeStartWidth - newWidthInMs;
 				newTrimFromEnd = Math.max(newTrimFromEnd, 0);
 			}
-
-			console.log(
-				'onResizeMouseMove right after calculate -> resizeStartPosition:',
-				resizeStartPosition,
-				'resizeStartWidth:',
-				resizeStartWidth,
-				'maxDuration:',
-				element.maxDuration,
-				'newWidthInMs:',
-				newWidthInMs,
-				'newTrimFromEnd:',
-				newTrimFromEnd,
-				'element.trimFromEnd:',
-				element.trimFromEnd,
-				'dx:',
-				dx
-			);
 
 			tracks[rowIndex].elements[elementIndex] = {
 				...curEl,
@@ -697,8 +538,6 @@
 
 	// get full width in px of current element
 	function getFullWidth() {
-		console.log('getFullWidth -> element:', element);
-
 		return convertMsToPx(element.duration + element.trimFromStart + element.trimFromEnd);
 	}
 </script>

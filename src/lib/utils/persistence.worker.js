@@ -11,7 +11,6 @@ import { get, set, clear, update, getMany } from 'idb-keyval';
  * @return {Promise<void>} the empty promise when setting value is done
  */
 export async function writeItem(key, data) {
-    // console.log("[BACKUP] write item -> key:", key, "data:", data);
     set(key, data)
         .catch((err) => console.error(`[BACKUP] error "${err}" while setting key "${key}" to value "${data}"`));
 }
@@ -49,6 +48,5 @@ export async function readManyItems(keys) {
  * @return {Promise<void>} the empty promise after clearing storage is done
  */
 export async function clearItems() {
-    console.log("[BACKUP] clear items");
     await clear()
 }

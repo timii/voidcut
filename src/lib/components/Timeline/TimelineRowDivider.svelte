@@ -101,17 +101,6 @@
 	}
 
 	function isDraggedElementOverOrUnder(over: boolean, under: boolean) {
-		console.log(
-			'on hover isDraggedElementOverOrUnder -> over/under',
-			over,
-			'/',
-			under,
-			'index:',
-			index,
-			'$timelineTracks.length:',
-			$timelineTracks.length
-		);
-
 		// if current divider is the first one and the dragged element is over the first
 		const overCurrent = over && index === 0;
 		// if current divider is the last one and the dragged element is under the last
@@ -121,12 +110,6 @@
 
 		// highlight current divider if dragged element is either over current or under current element
 		hoverElementOverUnder = !notOverAndUnder && (overCurrent || underCurrent);
-
-		console.log(
-			'on hover isDraggedElementOverOrUnder -> hoverElementOverUnder:',
-			hoverElementOverUnder
-		);
-		console.log('-------------------');
 	}
 </script>
 

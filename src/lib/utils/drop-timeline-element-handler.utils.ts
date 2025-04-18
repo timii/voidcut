@@ -74,11 +74,8 @@ export const dropTimelineElementHandler = (e: CustomEvent<ITimelineDraggedElemen
                 droppedRowIndex += 1
             }
 
-            console.log("dropTimelineElementHandler while -> tempY:", tempY, "droppedDividerIndex:", droppedDividerIndex, "droppedRowIndex:", droppedRowIndex);
         }
     }
-
-    console.log("dropTimelineElementHandler called -> eventDetail:", draggedData, "elementPosition:", elementPosition, "tracks:", tracks, "amountOfDividers/amountOfTracks:", amountOfDividers, "/", amountOfTracks, "totalHeight:", totalHeight, "dropArea:", dropArea, "droppedIndex:", dropArea === TimelineDropArea.DIVIDER ? droppedDividerIndex : droppedRowIndex, "droppedAboveElements:", droppedAboveElements);
 
 
     // handle the element drop differently depending on where the element was dropped (timeline, divider or track)
@@ -128,50 +125,12 @@ export const dropTimelineElementHandler = (e: CustomEvent<ITimelineDraggedElemen
                 end: convertPxToMs(elementEnd)
             };
 
-            console.log(
-                'element dropped on track -> dropped element on the x axis:',
-                x,
-                'elementEnd:',
-                elementEnd,
-                'elBoundsInMs:',
-                elBoundsInMs
-            );
-
-            // reset value on drop
-            // elementHoveredOverRow = false;
 
             // update the current tracks in the store with the newly moved element
             timelineTracks.update((prevTracks) => {
-                // get the previous track and element index of dragged element
-                // const prevTrackIndex = draggedData.prevTrackIndex;
-                // const prevElementIndex = draggedData.prevElementIndex;
-
-                console.log(
-                    'element dropped on track -> after while old element index:',
-                    prevElementIndex,
-                    'old trackIndex:',
-                    prevTrackIndex,
-                    'new track index:',
-                    droppedRowIndex,
-                    'tracks:',
-                    prevTracks
-                );
 
                 // get the dragged element from the previous track
                 const foundEl = prevTracks[prevTrackIndex].elements[prevElementIndex];
-
-                // TODO: just for logging out element without the long dataUrl, can be removed after testing
-                const copy: any = Object.assign({}, foundEl);
-                delete copy.mediaImage;
-
-                console.log(
-                    'element dropped on track -> after while foundEl:',
-                    copy,
-                    'trackIndex:',
-                    prevTrackIndex,
-                    'moved in the same track:',
-                    prevTrackIndex === droppedRowIndex
-                );
 
                 // element was moved in the same track
                 if (prevTrackIndex === droppedRowIndex) {
@@ -194,10 +153,6 @@ export const dropTimelineElementHandler = (e: CustomEvent<ITimelineDraggedElemen
                 else {
                     // remove dragged element from old track
                     prevTracks[prevTrackIndex].elements.splice(prevElementIndex, 1);
-                    console.log(
-                        'element dropped on track -> tracks after element removed from track:',
-                        JSON.parse(JSON.stringify(prevTracks))
-                    );
 
                     // check and handle if any elements overlap after moving and update the track elements if necessary
                     prevTracks[droppedRowIndex].elements = handleOverlapping(
@@ -217,16 +172,8 @@ export const dropTimelineElementHandler = (e: CustomEvent<ITimelineDraggedElemen
 
                     // clean up old track if its empty now
                     cleanUpEmptyTracks(prevTracks);
-                    console.log(
-                        'element dropped on track -> tracks after empty track is removed:',
-                        JSON.parse(JSON.stringify(prevTracks))
-                    );
                 }
 
-                console.log(
-                    'element dropped on track -> just before returning tracks -> tracks:',
-                    [...prevTracks]
-                );
                 return prevTracks;
             });
 
@@ -254,31 +201,14 @@ function moveElementToNewTrack(
 ): ITimelineTrack[] {
     const track = createTrackWithElement(elementData);
 
-    console.log(
-        `element dropped on ${dropArea} -> before removing element from track:`,
-        JSON.parse(JSON.stringify(tracks)), "newIndex:", newIndex, "prevTrackIndex/prevElementIndex:", prevTrackIndex, "/", prevElementIndex
-    );
-
     // remove dragged element from track
     tracks[prevTrackIndex].elements.splice(prevElementIndex, 1);
-    console.log(
-        `element dropped on ${dropArea} -> tracks after element removed from track:`,
-        JSON.parse(JSON.stringify(tracks))
-    );
 
     // add new track that includes the dragged element
     tracks.splice(newIndex, 0, track);
-    console.log(
-        `element dropped on ${dropArea} -> tracks after new track has been added:`,
-        JSON.parse(JSON.stringify(tracks))
-    );
 
     // clean up old track if its empty now
     cleanUpEmptyTracks(tracks);
-    console.log(
-        `element dropped on ${dropArea} -> tracks after empty track is removed:`,
-        JSON.parse(JSON.stringify(tracks))
-    );
 
     return tracks
 }

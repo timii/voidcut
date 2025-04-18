@@ -17,7 +17,6 @@
 
 		// only handle files when actually dropped
 		if (files && files.length > 0 && e.type !== 'dragleave') {
-			console.log('media dropped in if:', e, 'dataTransfer:', e.dataTransfer, 'files:', files);
 			await handleFileUpload(files);
 		}
 	}

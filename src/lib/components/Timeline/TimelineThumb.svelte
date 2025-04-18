@@ -52,8 +52,6 @@
 	}
 
 	function onPlaybackTimeChange(_: number) {
-		console.log('onPlaybackTimeChange');
-
 		if ($isThumbBeingDragged) {
 			return;
 		}

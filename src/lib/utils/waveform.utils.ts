@@ -26,8 +26,6 @@ export async function generateAudioWaveformTimelineImage(file: File, width?: num
     // generate svg string
     const svg = generateSVG(waveform, imageWidth, CONSTS.timelineRowElementHeight);
 
-    console.log("generateAudioWaveformNew -> svg:", svg);
-
     return svg
 }
 

@@ -66,7 +66,6 @@ export async function callFfmpeg() {
     startTimer()
 
     exportState.set(ExportState.PROCESSING)
-    console.log('callFfmpeg called');
 
     // map timeline elements so they include all necessary information and can be used in ffmpeg
     const mediaData = mapTimelineElements()
@@ -125,7 +124,6 @@ export async function callFfmpeg() {
 function mapTimelineElements(): IFfmpegElement[] {
     // get all timeline elements and their properties
     const timelineElements = get(timelineTracks).flatMap(track => track.elements)
-    console.log('callFfmpeg -> timelineElements:', timelineElements);
 
     const mediaData = timelineElements.map((el) => {
         // map each timeline element to a media element in the pool to get the source dataUrl
@@ -137,7 +135,6 @@ function mapTimelineElements(): IFfmpegElement[] {
         const fileType = splitFilename && splitFilename.length > 1 ? splitFilename.pop()! : ''
         return { uIntArr: convertDataUrlToUIntArray(mediaEl.src), fileType }
     });
-    console.log('callFfmpeg -> mediaElements:', mediaData);
 
     // map the media data and timeline element togehter so it can be used in ffmpeg
     const mappedElements: IFfmpegElement[] = mediaData.map((data, i) => {
@@ -153,7 +150,6 @@ function mapTimelineElements(): IFfmpegElement[] {
             trimFromEnd: timelineElement.trimFromEnd
         }
     })
-    console.log('callFfmpeg -> mappedElements:', mappedElements);
 
     return mappedElements
 }
@@ -197,82 +193,7 @@ function createFfmpegFlags(mediaData: IFfmpegElement[]): string[] {
         flags.push('-i', fileName);
     }
 
-    console.log("createFfmpegFlags -> flags:", flags)
-
     flags.push('-filter_complex')
-
-    let filterNumber = 0
-    let scaledElement = 0
-    let amixInputNumbers: number[] = []
-    let overlayInputs: string[] = []
-    let amixOutput: number
-    let filterComplexString = ''
-    // go over each element and map offsets to video and audio delays
-    for (let i = mediaData.length - 1; i >= 0; i--) {
-        const curEl = mediaData[i]
-        const offsetInS = +msToS(curEl.offset).toFixed(2)
-        const durationInS = +msToS(curEl.duration).toFixed(2)
-        console.log("createFfmpegFlags in for each -> inputIndex:", i, "data:", curEl)
-        const inputIndex = mediaData.length - i
-
-        // ignore video delay for audio
-        if (curEl.mediaType !== MediaType.Audio) {
-            // set the video delay using the offset in seconds
-            filterComplexString += `[${inputIndex}:v]setpts=expr=PTS+${offsetInS}/TB[${filterNumber}];`
-        }
-
-        if (overlayInputs.length === 0) {
-            overlayInputs[0] = `0:v`
-        }
-        overlayInputs[1] = `${filterNumber}`
-
-        let overlayEofAction = 'pass'
-        let repeatLast = '1'
-        if (i === 0) {
-            // overlayEofAction = 'repeat'
-            repeatLast = '0'
-        }
-
-        filterNumber += 1
-        console.log("createFfmpegFlags in for each -> filterComplexString:", filterComplexString)
-
-        // get the aspect ratio defined in the store and replace the "x" in the string "VALUExVALUE" with a ":" so it can be used with scale
-        const aspectRatio = getAspectRatioInPx().replace('x', ':')
-
-        const scaleOutput = `[v${scaledElement}]`
-        // scale overlayed media to fit into current aspect ratio
-        const scaleString = `[${overlayInputs[1]}]scale='${aspectRatio}:force_original_aspect_ratio=decrease'${scaleOutput}`
-
-        // center the overlay both horizontally and vertically and only show it between the offset and offset + duration
-        filterComplexString += `${scaleString};[${overlayInputs[0]}]${scaleOutput}overlay=(W-w)/2:(H-h)/2:enable='between(t,${offsetInS},${offsetInS + durationInS})'[${filterNumber}];`
-        overlayInputs[0] = `${filterNumber}`
-        filterNumber += 1
-        console.log("createFfmpegFlags in for each -> filterComplexString:", filterComplexString)
-        scaledElement += 1
-
-        // ignore audio delay for images 
-        if (curEl.mediaType !== MediaType.Image) {
-            // set the audio delay using the offset in ms
-            filterComplexString += `[${inputIndex}:a]adelay=delays=${curEl.offset}:all=1[${filterNumber}];`
-            amixInputNumbers.push(filterNumber)
-            filterNumber += 1
-            console.log("createFfmpegFlags in for each -> filterComplexString:", filterComplexString)
-        }
-    }
-
-    // mix all the audio streams together
-    const amixInputsString: string = amixInputNumbers.reduce((prev, curr) => {
-        prev += `[${curr}]`
-        return prev
-    }, '')
-    const amixInputs: string = '[0:a]' + amixInputsString
-    filterComplexString += `${amixInputs}amix=inputs=${amixInputNumbers.length + 1}[${filterNumber}]`
-    amixOutput = filterNumber
-    console.log("createFfmpegFlags after for each -> filterComplexString:", filterComplexString)
-
-    flags.push(filterComplexString)
-
-    console.log("createFfmpegFlags -> flags:", flags)
 
     // keep track of all the output variables so we can use them in the filter_complex string
     const outputMap: OutputMap = new Map<OutputMapKey, string[]>()
@@ -288,17 +209,14 @@ function createFfmpegFlags(mediaData: IFfmpegElement[]): string[] {
     // 1.1 trim element videos and shift their timeline forward accordingly so that they appear at the correct times
     const updateVideosString = updateElementVideos(mediaData, outputMap)
     filterComplexString += updateVideosString
-    console.log("createFfmpegFlags after updating video streams:", updateVideosString, "map:", outputMap);
 
     // 1.2 reset the blank video’s (background video) timestamp to the start
     const resetTimestampString = resetBackgroundVideoTimestamp(outputMap)
     filterComplexString += resetTimestampString
-    console.log("createFfmpegFlags after reset background:", resetTimestampString, "map:", outputMap);
 
     // 1.3 overlay each element starting from the last timeline row
     const overlayString = overlayElements(mediaData, outputMap)
     filterComplexString += overlayString
-    console.log("createFfmpegFlags after overlay:", overlayString, "map:", outputMap);
 
     // --------------------------------------
     // 2. audio processing (except for images)
@@ -307,16 +225,13 @@ function createFfmpegFlags(mediaData: IFfmpegElement[]): string[] {
     // 2.1 trim the element audios, resets timestamps and delays them accodingly to their offset
     const updateAudiosString = updateElementAudios(mediaData, outputMap)
     filterComplexString += updateAudiosString
-    console.log("createFfmpegFlags after updating audio streams:", updateAudiosString, "map:", outputMap);
 
     // 2.2 mixes the background audio with all overlay audio tracks
     const mixingAudiosString = mixAudioStreams(outputMap)
     filterComplexString += mixingAudiosString
-    console.log("createFfmpegFlags after mixing audio streams:", mixingAudiosString, "map:", outputMap);
 
     // push final filter_complex into flags array
     flags.push(filterComplexString)
-    console.log("createFfmpegFlags after all steps:", filterComplexString, "map:", outputMap);
 
     // map the final video and audio stream to the output file
     const finalVideoStream = outputMap.get(OutputMapKey.OVERLAY)![0]
@@ -328,30 +243,6 @@ function createFfmpegFlags(mediaData: IFfmpegElement[]): string[] {
     flags.push('-map', `[${finalAudioStream}]`)
 
     flags.push(`${outputFileName}`)
-
-    console.log("createFfmpegFlags -> flags:", flags)
-    console.log("createFfmpegFlags -> flags string:", flags.join(' '))
-
-    // ffmpeg -i output.mp4 -i testvideo1.mp4 -i testvideo2.mp4 -filter_complex "[1:v]setpts=expr=PTS+5/TB[2];[1:a]adelay=delays=5s:all=1[3];[2:v]setpts=expr=PTS+0/TB[4];[2:a]adelay=delays=0s:all=1[6];[0:v][4]overlay=eof_action=pass[5];[5][2]overlay=eof_action=pass[out_v];[0:a][3][6]amix=inputs=3[out_a]" -map "[out_a]" -map "[out_v]" out.mp4
-
-    //  change the flags to be dynamic
-    // flags.push(
-    //     '-filter_complex',
-    //     `[0:v]setpts=expr=PTS+10/TB[1];
-    //     [0:a]adelay=delays=10s:all=1[2];
-    //     [1:a]adelay=delays=0s:all=1[5];
-    //     [1:v]setpts=expr=PTS+0/TB[4];
-    //     [4][1]overlay=eof_action=repeat[out_v];[2][5]amix[out_a]`, // change eof_action to try what works
-    //     '-map', '[out_v]',
-    //     '-map', '[out_a]',
-    //     '-y', // overwrite output files without asking
-    //     '-fps_mode', 'vfr',
-    //     outputFileName)
-
-    // [1:v]setpts=expr=PTS-STARTPTS,tpad=start_duration=10[4];
-
-
-    // ffmpeg -i testvideo1.mp4 -i testvideo2.mp4 -filter_complex "[0:v]setpts=expr=PTS+0/TB[1];[0:a]adelay=delays=0s:all=1[2];[1:a]adelay=delays=10s:all=1[5];[1:v]setpts=expr=PTS-STARTPTS,tpad=start_duration=10[4];[4][1]overlay=eof_action=pass[out_v];[2][5]amix[out_a]" -map "[out_a]" -map "[out_v]" out.mp4
 
     return flags
 }
@@ -390,8 +281,6 @@ function updateElementVideos(mediaData: IFfmpegElement[], outputMap: OutputMap):
 
         // build the filter string for current element by appending it to the previous element(s)
         trimString += `[${inputIndex}:v]trim=start=${trimFromStart}:duration=${durationInS},setpts=PTS-STARTPTS+${offsetInS}/TB[${outputName}];`
-
-        console.log("createFfmpegFlags updateElementVideos -> in for loop:", i, "curEl:", curEl, "offsetInS:", offsetInS, "durationInS:", durationInS, "trimFromStart:", trimFromStart, "trimFromEnd:", trimFromEnd, "inputIndex:", inputIndex, "string:", trimString);
 
         // get the previous array
         const prevMapValue = outputMap.get(OutputMapKey.TRIM) ?? ''
@@ -492,8 +381,6 @@ function updateElementAudios(mediaData: IFfmpegElement[], outputMap: OutputMap):
         // build the filter string for current element by appending it to the previous element(s)
         atrimString += `[${inputIndex}:a]atrim=start=${trimFromStart}:duration=${durationInS},asetpts=PTS-STARTPTS,adelay=${curEl.offset}:all=1[${outputName}];`
 
-        console.log("createFfmpegFlags updateElementAudios -> in for loop:", i, "curEl:", curEl, "offsetInS:", offsetInS, "durationInS:", durationInS, "trimFromStart:", trimFromStart, "trimFromEnd:", trimFromEnd, "inputIndex:", inputIndex, "string:", atrimString);
-
         // get the previous array
         const prevMapValue = outputMap.get(OutputMapKey.ATRIM) ?? ''
         // add the output name of created filter into map value
@@ -556,8 +443,6 @@ export function downloadOutput() {
 // #region clean up
 // clean up everything and reset store variables
 export async function terminateFfmpegExecution() {
-    console.log("terminateFfmpegExecution called")
-
     // terminate all api calls and web worker
     ffmpeg.terminate()
 

@@ -32,19 +32,6 @@
 
 		// calculate how many ticks can fit into the current max width using the scale as the width of each tick
 		amountOfTicks = Math.ceil(biggerValue / scale);
-
-		console.log(
-			'updateAmountOfTicks -> scale:',
-			scale,
-			'width in px:',
-			widthInPx,
-			'max playback:',
-			maxPlaybackInPx,
-			'amount of ticks:',
-			amountOfTicks,
-			'element being resized:',
-			$isTimelineElementBeingResized
-		);
 	}
 
 	// ignore the hovered element

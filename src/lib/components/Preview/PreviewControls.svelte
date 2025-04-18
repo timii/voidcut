@@ -41,7 +41,6 @@
 	}
 
 	function onSkipStartClick() {
-		console.log('onSkipStartClick clicked!');
 		// pause playback to clear current playback interval
 		pausePlayback();
 		// reset current playback to 0 after a short delay
@@ -49,7 +48,6 @@
 	}
 
 	function onFrameBeforeClick() {
-		console.log('onFrameBeforeClick clicked!');
 		// pause playback to clear current playback interval
 		pausePlayback();
 		// decrease current playback time by one interval timeout
@@ -58,7 +56,6 @@
 
 	// play/pause current playback
 	function onPlayPauseClick() {
-		console.log('handlePlayPause clicked!');
 		previewPlaying.update((value) => {
 			value ? pausePlayback() : resumePlayback();
 			return !value;
@@ -66,7 +63,6 @@
 	}
 
 	function onFrameAfterClick() {
-		console.log('onFrameAfterClick clicked!');
 		// pause playback to clear current playback interval
 		pausePlayback();
 		// increase current playback time by one interval timeout
@@ -74,7 +70,6 @@
 	}
 
 	function onSkipEndClick() {
-		console.log('onSkipEndClick clicked!');
 		// pause playback to clear current playback interval
 		pausePlayback();
 		// set current playback to max playback time after a short delay

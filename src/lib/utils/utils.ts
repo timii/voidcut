@@ -50,9 +50,6 @@ let timelineScrollContainer: Element | null
 export function saveFilesToStore(files: IMedia[]) {
     // add given array of file(s) into store
     availableMedia.update((arr) => [...arr, ...files]);
-
-    console.log('saveFilesToStore -> files', files);
-    // availableMedia.subscribe(value => console.log("saveFilesToStore -> availableMedia:", value))
 }
 
 // #region file upload
@@ -181,8 +178,6 @@ async function getTimelineElementImage(file: File, duration: number): Promise<st
 
 // handle given media when it's dropped into the timeline
 export function handleTimelineMediaDrop(media: IMedia, dropArea: TimelineDropArea, rowIndex?: number, startTime?: number) {
-    console.log("timeline -> handleTimelineMediaDrop -> rowIndex:", rowIndex, "startTime:", startTime)
-
     let maxDuration: number | undefined
 
     // for images we need to handle a few properties differently
@@ -457,37 +452,18 @@ export function convertDataUrlToUIntArray(dataUrl: string) {
 //#endregion
 
 // #region playback
-// remove interval that handles the current playback time
+// stop interval that handles the current playback time
 export function pausePlayback() {
-    console.log("pausePlayback")
     previewPlaying.set(false)
     if (interval) {
         interval.stop()
     }
-    // playbackIntervalId.update((id) => {
-    //     // use current interval id to clear the interval
-    //     clearInterval(id)
-    //     // test.cancel()
-    //     interval.stop()
-    //     // set the store value back to zero
-    //     return 0;
-    // })
 }
 
 // create interval that increases current playback time
 export function resumePlayback() {
     previewPlaying.set(true)
-    // const startTime = new Date().valueOf();
-    // TODO: remove old testing stuff
-    const startTime = new Date().getTime();;
-    // console.time('Execution time');
-    // currentPlaybackTime.subscribe(el => console.log("playback interval -> currentPlaybackTime:", el))
-
-    // TODO: only update current playback time if current playback time is less or equal to max playback time
     const intervallCallback = () => {
-        // var diff = new Date().getTime() - startTime;
-        // var drift = diff % 1000;
-
         const previousValue = get(currentPlaybackTime)
         const nextValue = previousValue + CONSTS.playbackIntervalTimer
 
@@ -498,27 +474,17 @@ export function resumePlayback() {
             // increase the current playback time in store by timeout amount
             currentPlaybackTime.update(value => value + CONSTS.playbackIntervalTimer)
         }
-
-        // console.log("interval drift:", (new Date().valueOf() - startTime) % 1000);
-        // console.log("interval drift:", drift, "%");
-        // console.timeEnd('Execution time');
-        // console.time('Execution time');
-        // console.log("interval drift:", (new Date().getTime() - startTime) % 1000);
     }
 
     const doError = () => {
         console.warn('The drift exceeded the interval.');
     };
 
-    // ticker = AdjustingInterval(intervallCallback, CONSTS.playbackIntervalTimer, doError);
+    // create new interval with callbacks
     interval = adjustingInterval(intervallCallback, CONSTS.playbackIntervalTimer, doError);
+
+    // manually start the intervals
     interval.start()
-
-    // const intervalId = setInterval(intervallCallback, CONSTS.playbackIntervalTimer)
-    // test = accurateInterval(() => intervallCallback, CONSTS.playbackIntervalTimer)
-
-    // write the interval id into store
-    // playbackIntervalId.set(intervalId)
 }
 
 // check if the current playback time is inside given element bounds  
@@ -850,9 +816,6 @@ export function moveTimelineThumb(e: MouseEvent, keepSelectedElement = false) {
     // convert the new position into ms, but include the horizontal scroll (in ms)
     const playbackTime = convertPxToMs(newPos + hs);
 
-    console.log("moveThumb -> e:", e);
-    console.log("moveThumb -> newPos:", newPos, "offset:", CONSTS.timelineRowOffset, "horizontalScroll:", hs, "playbackTime:", playbackTime)
-
     // avoid the thumb to be moved further left than the tracks and further to the right than the max playback time 
     if ((newPos < 0 && hs <= CONSTS.timelineRowOffset) || playbackTime > get(maxPlaybackTime)) {
         return
@@ -862,7 +825,6 @@ export function moveTimelineThumb(e: MouseEvent, keepSelectedElement = false) {
     currentThumbPosition.set(newPos);
 
     if (!get(isThumbBeingDragged)) {
-        // console.log('isThumbBeingDragged?:', JSON.parse(JSON.stringify(get(isThumbBeingDragged))));
         isThumbBeingDragged.set(true);
     }
 }
@@ -1026,18 +988,12 @@ export function handleOverlapping(newElBounds: ITimelineElementBounds, trackEls:
         index
     );
 
-    console.log('Timeline -> handleOverlapping -> isOverlapping:', isOverlapping);
-
     // if the element overlaps with any other element we move the elements accordingly so the element can fit on the track
     if (isOverlapping) {
         trackEls = moveElementsOnTrack(
             newElBounds,
             trackEls,
             index
-        );
-        console.error(
-            'Timeline -> handleOverlapping -> elements overlaps after track:',
-            [...trackEls]
         );
     }
 
@@ -1246,10 +1202,6 @@ export function handleElementIndeces(newEl: ITimelineElement, newElStartTime: nu
 // move a given list of timeline elements according to given element bounds so they don't overlap
 export function moveElementsOnTrack(elBounds: ITimelineElementBounds, trackEls: ITimelineElement[], sameTrackElIndex?: number) {
     let moveAmount: number | undefined = undefined
-    console.log(
-        'element dropped on track [moveElementsOnTrack] -> in start:',
-        JSON.parse(JSON.stringify(trackEls)), "elBounds:", elBounds
-    );
 
     // keep track if we already moved the first overlapping element
     let firstElementAdjusted = false
@@ -1264,17 +1216,10 @@ export function moveElementsOnTrack(elBounds: ITimelineElementBounds, trackEls: 
         const trackElBounds: ITimelineElementBounds = { start: trackEl.playbackStartTime, end: trackEl.playbackStartTime + trackEl.duration }
 
         const sameTrackAndSameIndex = sameTrackElIndex !== undefined && i === sameTrackElIndex
-        console.log(
-            'element dropped on track [moveElementsOnTrack] -> in map 1 trackElBounds:',
-            JSON.parse(JSON.stringify(trackElBounds)), "sameTrackAndSameIndex:", sameTrackAndSameIndex,
-        );
 
         // check for the first element the dropped element overlaps and get the amount the overlapped element needs to be moved to the right
         if (isElementOverlapping(elBounds, [trackEl]) && moveAmount === undefined && !sameTrackAndSameIndex) {
             moveAmount = elBounds.end - trackElBounds.start;
-            console.log(
-                'element dropped on track [moveElementsOnTrack] -> in if moveAmount:', moveAmount, "first element adjusted:", firstElementAdjusted
-            );
         }
 
         // now that the first element has been adjusted we also want to check if and, if yes, by how much we need to move the following elements
@@ -1290,11 +1235,6 @@ export function moveElementsOnTrack(elBounds: ITimelineElementBounds, trackEls: 
             if (elementOverlapping) {
                 trackEl.playbackStartTime = newPrevElEndTime
             }
-
-            console.log(
-                'element dropped on track [moveElementsOnTrack] -> in if element has been adjusted trackEls:',
-                JSON.parse(JSON.stringify(trackEls)), "previous element overlapping:", elementOverlapping
-            );
         }
 
         // if moveAmount is defined and no element has been adjusted yet, move the current element by that amount
@@ -1303,25 +1243,11 @@ export function moveElementsOnTrack(elBounds: ITimelineElementBounds, trackEls: 
 
             // we now adjusted the first overlapping element so we keep track of that
             firstElementAdjusted = true
-            console.log(
-                'element dropped on track [moveElementsOnTrack] -> in if no element adjusted trackEls:',
-                JSON.parse(JSON.stringify(trackEls)),
-            );
         }
 
-
-
-        console.log(
-            'element dropped on track [moveElementsOnTrack] -> in map 2 trackEl:',
-            JSON.parse(JSON.stringify(trackEls))
-        );
         return trackEl
     })
 
-    console.log(
-        'element dropped on track [moveElementsOnTrack] -> end:',
-        JSON.parse(JSON.stringify(tracks))
-    );
     return tracks
 }
 //#endregion

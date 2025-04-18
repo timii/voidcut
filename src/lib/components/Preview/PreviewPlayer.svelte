@@ -19,7 +19,6 @@
 	$: timelineElements = flattenTimelineTracks($timelineTracks);
 
 	// map to hold references to each player element and its properties using its elementId as a key
-	// const playerElementsMap = new Map<string, { el: HTMLElement; properties: HTMLElement }>();
 	let playerElementsMap: IPlayerElementsMap = {};
 	$: filterPlayerElementsMap(playerElementsMap);
 
@@ -67,7 +66,6 @@
 			if (el.properties.type === MediaType.Image) {
 				return;
 			}
-			console.log('in for each map -> el:', el);
 
 			// type the el property to get correct typing
 			const htmlEl = el.el as HTMLMediaElement;
@@ -86,19 +84,6 @@
 				htmlEl.currentTime = currentElTime;
 			}
 
-			console.log(
-				'currentPlaybackTime change in player -> elTimeOutOfSync:',
-				elTimeOutOfSync,
-				'atElTime:',
-				isPlaybackInElement(el.properties),
-				'isMediaPlaying:',
-				isMediaPlaying,
-				'curElTime:',
-				currentElTime,
-				'htmlEl.currentTime:',
-				htmlEl.currentTime
-			);
-
 			// check if the playback time is within the element start and end time on the timeline
 			if (!isPlaybackInElement(el.properties)) {
 				// if the playback time is outside element bounds and the media is still playing we pause it
@@ -114,15 +99,6 @@
 
 	// handles what elements need to be updated when pausing/resuming playback
 	function handlePlayingElements(playing: boolean) {
-		console.log(
-			'handlePlayingElements -> playing:',
-			playing,
-			'map:',
-			playerElementsMap,
-			'$currentPlaybackTime:',
-			$currentPlaybackTime
-		);
-
 		// everytime the playback is being started/paused, go through the whole map and check what elements
 		// needs to be played or paused
 		Object.values(playerElementsMap).forEach((el) => {
@@ -150,27 +126,16 @@
 
 	// filter the given map by removing keys where the "el" property in the value is null
 	function filterPlayerElementsMap(map: IPlayerElementsMap) {
-		// console.log(
-		// 	'filterPlayerElementsMap -> playerElementsMap changes before:',
-		// 	JSON.parse(JSON.stringify(playerElementsMap))
-		// );
 		// loop through map and filter out elements where the element is null
 		for (const [key, value] of Object.entries(map)) {
-			console.log('in for loop -> key:', key, 'value:', value, 'el is null?:', value.el === null);
 			if (value.el === null) {
 				delete playerElementsMap[key];
 			}
 		}
-		console.log(
-			'filterPlayerElementsMap -> playerElementsMap changes after:',
-			JSON.parse(JSON.stringify(playerElementsMap))
-		);
 	}
 
 	// create a flattened array of timeline elements from a given array of tracks
 	function flattenTimelineTracks(arr: ITimelineTrack[]): IPlayerElement[] {
-		// console.log('flattenTimelineTracks -> arr before:', arr);
-
 		// go through each track, return the flattened elements array and flatten the end result after all tracks have been iterated through so we end up with a flat array of all elements in all tracks
 		const flatArr = arr.flatMap((track) =>
 			track.elements.flatMap((el) => {
@@ -180,11 +145,6 @@
 					return el;
 				}
 				const playerEl = { src: foundEl.src, ...el } as IPlayerElement;
-				// console.log('flattenTimelineTracks -> playerEl:', playerEl);
-				// console.log(
-				// 	'flattenTimelineTracks -> playerElementsMap before:',
-				// 	JSON.parse(JSON.stringify(playerElementsMap))
-				// );
 
 				// if key with matching element id exists, add the media properties to the value
 				playerElementsMap[playerEl.elementId] = {
@@ -192,14 +152,9 @@
 					properties: playerEl
 				};
 
-				// console.log(
-				// 	'flattenTimelineTracks -> playerElementsMap after:',
-				// 	JSON.parse(JSON.stringify(playerElementsMap))
-				// );
 				return playerEl;
 			})
 		);
-		console.log('flattenTimelineTracks -> arr after:', flatArr);
 
 		return flatArr.length > 0 ? flatArr : [];
 	}

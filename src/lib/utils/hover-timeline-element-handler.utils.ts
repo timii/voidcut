@@ -69,14 +69,10 @@ export const hoverTimelineElementHandler = (position: ITimelineDraggedElementPos
                 currentDropArea = TimelineDropArea.DIVIDER
                 hoverRowIndex += 1
             }
-
-            // console.log("hoverTimelineElementHandler while -> tempY:", tempY, "hoverDividerIndex:", hoverDividerIndex, "hoverRowIndex:", hoverRowIndex);
         }
     } else {
         hoverArea = TimelineDropArea.TIMELINE
     }
-
-    // console.log("hoverTimelineElementHandler called -> position:", position, "amountOfDividers/amountOfTracks:", amountOfDividers, "/", amountOfTracks, "totalHeight:", totalHeight, "hoverArea:", hoverArea, "hoverIndex:", hoverArea === TimelineDropArea.DIVIDER ? hoverDividerIndex : hoverRowIndex, "hoverAboveElements:", hoverAboveElements);
 
     // handle the element drop differently depending on where the element was is hovered (timeline, divider or track)
     switch (hoverArea) {

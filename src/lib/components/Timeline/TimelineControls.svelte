@@ -50,8 +50,6 @@
 	let disableRightButtons = false;
 
 	function updateControls() {
-		// console.log('updateControls called');
-
 		const playbackRunning = $previewPlaying;
 
 		// disable the delete button if no element is selected, the playback is running or no element is in timeline
@@ -66,13 +64,6 @@
 		disableRightButtons = !doesElementExistInTimeline();
 		// disable left buttons if no element is selected or not elemens exists in timeline
 		disableLeftButtons = !isAnElementSelected() || !doesElementExistInTimeline();
-
-		// console.log(
-		// 	'updateControls -> is an element selected',
-		// 	isAnElementSelected(),
-		// 	'thumbOverSelectedElement',
-		// 	thumbOverSelectedElement()
-		// );
 	}
 
 	function increaseTimelineScale() {
@@ -83,12 +74,6 @@
 		} else {
 			currentTimelineScale.update((value) => value * 2);
 		}
-		console.log(
-			'fit increse new scale:',
-			$currentTimelineScale,
-			'scaleFitToScreen:',
-			$scaleFitToScreen
-		);
 	}
 
 	function decreaseTimelineScale() {
@@ -99,12 +84,6 @@
 		} else {
 			currentTimelineScale.update((value) => value / 2);
 		}
-		console.log(
-			'fit decrease new scale:',
-			$currentTimelineScale,
-			'scaleFitToScreen:',
-			$scaleFitToScreen
-		);
 	}
 
 	function fitScaleToScreen() {
@@ -116,14 +95,7 @@
 
 		// calculate the new scale by checking how often the max playback (in seconds) can fit into the current window width
 		const newScale = Math.floor(width / maxPlaybackInS);
-		console.log(
-			'fitScaleToScreen called -> max playback',
-			maxPlaybackInS,
-			'window width:',
-			width,
-			'new scale:',
-			newScale
-		);
+
 		currentTimelineScale.set(newScale);
 		scaleFitToScreen.set(true);
 	}
@@ -131,7 +103,6 @@
 	function splitSelectedElement() {
 		// get the time where the thumb is over the element
 		const timeOverElement = thumbOverSelectedElement();
-		console.log('splitSelectedElement called -> timeOverElement:', timeOverElement);
 
 		// get index of row and element in the tracks
 		const indeces = getIndexOfSelectedElementInTracks();
@@ -145,16 +116,8 @@
 			// create a duplicate element but with new element id
 			const newElement: ITimelineElement = { ...element, elementId: generateId() };
 
-			// console.log('splitSelectedElement before new element added:', [
-			// 	...tracks[indeces.rowIndex].elements
-			// ]);
-
 			// put duplicate element directly after the old one
 			tracks[indeces.rowIndex].elements.splice(indeces.elementIndex + 1, 0, newElement);
-
-			// console.log('splitSelectedElement after element added:', [
-			// 	...tracks[indeces.rowIndex].elements
-			// ]);
 
 			let newTrimFromStart = element.trimFromStart;
 			let newTrimFromEnd = element.trimFromEnd;
@@ -172,10 +135,6 @@
 				trimFromEnd: newTrimFromEnd // new trim from end is everything to the right of split position including the previous trim on the right
 			};
 
-			// console.log('splitSelectedElement after original element updated:', [
-			// 	...tracks[indeces.rowIndex].elements
-			// ]);
-
 			// update the new element
 			tracks[indeces.rowIndex].elements[indeces.elementIndex + 1] = {
 				...newElement,
@@ -183,10 +142,6 @@
 				playbackStartTime: element.playbackStartTime + timeOverElement, // playback start time is at the same time as the original element including everythinh up to the split point
 				trimFromStart: newTrimFromStart // include original leftTrim to new one
 			};
-
-			// console.log('splitSelectedElement after new element updated:', [
-			// 	...tracks[indeces.rowIndex].elements
-			// ]);
 
 			return tracks;
 		});
@@ -248,12 +203,6 @@
 	}
 
 	function deleteSelectedElement() {
-		console.log(
-			'deleteSelectedElement clicked -> selectedElement:',
-			$selectedElement,
-			'timelineTracks:',
-			$timelineTracks
-		);
 		const indeces = getIndexOfSelectedElementInTracks();
 
 		// if we couldn't find the indeces of the selected element we return directly
@@ -261,7 +210,6 @@
 			return;
 		}
 
-		console.log('deleteSelectedElement -> indeces found:', indeces);
 		const firstIndex = indeces.rowIndex;
 		const secondIndex = indeces.elementIndex;
 		timelineTracks.update((tracks) => {

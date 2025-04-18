@@ -81,8 +81,6 @@
 		await setupBackupInterval();
 
 		const stateAvailable = await isLastStateAvailableInStorage();
-		console.log('[BACKUP] stateAvailable:', stateAvailable);
-
 		// if there is a saved state in local storage, restore it
 		if (stateAvailable) {
 			// show dialog while last state is being restored
@@ -110,7 +108,6 @@
 
 		windowWidth.set(windowSizeMinusOffset);
 		windowHeight.set(height);
-		console.log('fitTo window resize:', windowSizeMinusOffset, 'width:', width, 'height:', height);
 	}
 </script>
 

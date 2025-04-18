@@ -21,24 +21,20 @@
 
 	function onClickBackdrop(e: Event) {
 		e.stopPropagation();
-		console.log('onClickBackdrop');
 	}
 
 	async function onCancelClick(e: Event) {
 		e.stopPropagation();
-		console.log('onCancelClick');
 		await terminateFfmpegExecution();
 	}
 
 	function onSaveClick(e: Event) {
 		e.stopPropagation();
-		console.log('onSaveClick');
 		downloadOutput();
 	}
 
 	function onCloseClick(e: Event) {
 		e.stopPropagation();
-		console.log('onCloseClick');
 		exportOverlayOpen.set(false);
 	}
 </script>

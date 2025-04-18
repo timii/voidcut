@@ -23,7 +23,6 @@
 
 	export let track: ITimelineTrack;
 	export let index: number;
-	console.log('TimelineRow -> track:', track);
 
 	// check if the dragged element is hovered over current row
 	$: isTimelineElementHovered($draggedElementHover);
@@ -62,7 +61,6 @@
 
 	// check if a media element is hovered over current row
 	function onHoverElement(e: DragEvent) {
-		console.log('hover media element over row -> e:', e);
 		// prevent default behavior
 		e.preventDefault();
 		e.stopPropagation();
@@ -124,14 +122,11 @@
 
 		// parse it back to be an object again
 		const mediaData: IMedia = JSON.parse(mediaDataString);
-		console.log('drop element -> mediaData:', mediaData);
 
 		// only handle files when actually dropped
 		if (!mediaData || e.type === 'dragleave') {
 			return;
 		}
-
-		console.log('drop element -> left:', dropZonePositionLeft, dropZonePositionLeft - $thumbOffset);
 
 		// get the left offset where the element was dropped
 		const startTimeInPx = dropZonePositionLeft - CONSTS.timelineRowOffset;

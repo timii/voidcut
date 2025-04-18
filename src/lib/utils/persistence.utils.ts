@@ -22,7 +22,6 @@ const storeNamesMap = new Map<string, Writable<unknown>>(
 
 // initialize the persistence webworker
 export async function initPersistenceWorker() {
-    console.log("[BACKUP] init worker");
     // create the worker and properly resolve worker in a production build for vite. This ensures that the correct path is used after the build
     new Worker(new URL('./persistence.worker.js', import.meta.url), { type: 'module' });
 }
@@ -30,7 +29,6 @@ export async function initPersistenceWorker() {
 // setup interval when to update the last state in storage 
 export async function setupBackupInterval() {
     interval = setInterval(async () => {
-        console.log("[BACKUP] in interval -> restoreStateOverlayOpen:", get(restoreStateOverlayOpen), " exportOverlayOpen:", get(exportOverlayOpen));
 
         // don't write current state into local storage in specific cases 
         if (get(restoreStateOverlayOpen) || get(exportOverlayOpen)) {
@@ -50,12 +48,9 @@ export async function setupBackupInterval() {
 
 // write current state into local storage
 export async function updateState() {
-    console.log("[BACKUP] updateState map:", storeNamesMap);
-
     // get store value for each map element and write it into local storage using the map key
     for (const [key, value] of storeNamesMap.entries()) {
         const storeValue = get(value)
-        console.log("[BACKUP] update in for each map -> key:", key, "value:", storeValue);
 
         // read value from current key
         const valueExist = await readItem(key);
@@ -75,17 +70,12 @@ export async function updateState() {
 // get last saved state from storage and log it into console
 export async function getState() {
     const storageValues = await readManyItems([...storeNamesMap.keys()])
-    console.log("[BACKUP] get last saved state:", storageValues);
 }
 
 // restore last state from local storage and update the store variables 
 export async function restoreLastState() {
-    console.log("[BACKUP] restore map:", storeNamesMap);
-
     // get all storage values
     const storageValues = await readManyItems([...storeNamesMap.keys()])
-
-    console.log("[BACKUP] storage values:", storageValues)
 
     // write storage value into corresponding store
     Array.from(storeNamesMap.values()).forEach((store: Writable<unknown>, i: number) => {
@@ -103,9 +93,7 @@ export async function isLastStateAvailableInStorage(): Promise<boolean> {
     // check if any value is undefined
     let noUndefinedValue = true
     for (const key of storeNamesMap.keys()) {
-        console.log("[BACKUP] is last state available in for loop before");
         const storageValue = await readItem(key)
-        console.log("[BACKUP] is last state available in for loop after ->", key, ": ", storageValue);
 
         if (storageValue === undefined) {
             noUndefinedValue = false
