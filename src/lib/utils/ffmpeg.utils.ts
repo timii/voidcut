@@ -1,7 +1,7 @@
 import { FFmpeg } from "@ffmpeg/ffmpeg";
 import { availableMedia, exportOverlayOpen, exportState, ffmpegLoaded, ffmpegProgress, ffmpegProgressElapsedTime, ffmpegProgressPrevValue, maxPlaybackTime, previewAspectRatio, processedFile, processedFileSize, timelineTracks } from "../../stores/store";
 import { get } from "svelte/store";
-import { convertDataUrlToUIntArray, convertFileToDataUrl, resizeFilePreview, msToS } from "./utils";
+import { debugLog, msToS } from "./utils";
 import { ExportState, type OutputMap, OutputMapKey, type IFfmpegElement } from "$lib/interfaces/Ffmpeg";
 import { adjustingInterval } from "./adjusting-interval";
 import { CONSTS } from "./consts";
@@ -26,7 +26,7 @@ export async function initializeFfmpeg() {
 
     // listen to log events and print them into the console
     ffmpeg.on('log', ({ type, message }) => {
-        console.log('[LOG] type:', type, 'message:', message);
+        debugLog(`[LOG] type: ${type}, message: ${message}`)
     });
 
     // listen to progress events and print them into the console
@@ -34,7 +34,7 @@ export async function initializeFfmpeg() {
         const progressPercent = progress * 100
         const progressRounded = Math.round(progressPercent)
         const timeInS = time / 1000000
-        console.log('[PROGRESS] progress:', progressPercent, 'time:', timeInS);
+        debugLog(`[PROGRESS] progress: ${progressPercent} time: ${timeInS}`)
 
         // handle weird progress values 
         const prevProgessValue = get(ffmpegProgressPrevValue)
@@ -56,7 +56,7 @@ export async function initializeFfmpeg() {
     });
 
     ffmpegLoaded.set(true)
-    console.log('[FFMPEG] Ffmpeg core packages loaded');
+    debugLog('[FFMPEG] Ffmpeg core packages loaded')
 }
 
 // #region entry point
@@ -110,7 +110,7 @@ export async function callFfmpeg() {
 
     // write processed file into store
     processedFile.set(outputData)
-    console.log('[FFMPEG] writing processed file into store successful');
+    debugLog(`[FFMPEG] writing processed file into store successful`)
 }
 
 // #region mapping timeline

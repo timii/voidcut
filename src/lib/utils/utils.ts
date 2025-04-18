@@ -622,6 +622,13 @@ export function stopPropagation(e: Event) {
     e.stopPropagation();
 }
 
+// prints a given message only in development build
+export function debugLog(message: string) {
+    if (!isProduction()) {
+        console.log(message)
+    }
+}
+
 //#endregion
 
 // #region scrolling utils
