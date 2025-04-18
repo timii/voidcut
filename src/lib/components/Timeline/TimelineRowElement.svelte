@@ -11,8 +11,6 @@
 		convertMsToPx,
 		convertPxToMs,
 		elementIsAnImage,
-		getNextLeftElementEndTime,
-		getNextRightElementStartTime,
 		getRelativeMousePosition,
 		getTailwindVariables,
 		isCurrentElementBeingResized,
@@ -34,6 +32,10 @@
 	import { draggable } from '@neodrag/svelte';
 	import type { DragEventData } from '@neodrag/svelte';
 	import { MediaType } from '$lib/interfaces/Media';
+	import {
+		getNextLeftElementEndTime,
+		getNextRightElementStartTime
+	} from '$lib/utils/timeline-utils';
 
 	export let element: ITimelineElement = {} as ITimelineElement;
 	export let elementIndex: number;

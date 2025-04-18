@@ -1,17 +1,8 @@
 <script lang="ts">
 	import { CONSTS } from '$lib/utils/consts';
-	import {
-		convertMsToPx,
-		formatTime,
-		getTailwindVariables,
-		moveTimelineThumb
-	} from '$lib/utils/utils';
-	import {
-		currentTimelineScale,
-		isTimelineElementBeingResized,
-		maxPlaybackTime,
-		windowWidth
-	} from '../../../stores/store';
+	import { moveTimelineThumb } from '$lib/utils/timeline-utils';
+	import { convertMsToPx, formatTime, getTailwindVariables } from '$lib/utils/utils';
+	import { currentTimelineScale, maxPlaybackTime, windowWidth } from '../../../stores/store';
 
 	export let amountOfTicks = 30;
 

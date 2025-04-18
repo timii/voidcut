@@ -3,7 +3,13 @@ import { type ITimelineDraggedElementData, type ITimelineElement, type ITimeline
 import { get } from "svelte/store";
 import { draggedElementHover, draggedElementPosition, timelineTracks } from "../../stores/store";
 import { CONSTS } from "./consts";
-import { cleanUpEmptyTracks, convertPxToMs, createTrackWithElement, handleElementIndeces, handleOverlapping } from "./utils";
+import { convertPxToMs } from "./utils";
+import {
+    handleOverlapping,
+    handleElementIndeces,
+    cleanUpEmptyTracks,
+    createTrackWithElement
+} from "./timeline-utils";
 
 /**
  * this function is registered on page mount as a callback to the timeline element drop event and handles the dropped element depending on where it got dropped

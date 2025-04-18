@@ -8,7 +8,6 @@
 		hasHorizontalScrollbar,
 		hasVerticalScrollbar,
 		isDraggedElementAFile,
-		moveTimelineThumb,
 		onlyPrimaryButtonClicked,
 		resetAllBeingDragged,
 		resetOverUnderDividers
@@ -44,6 +43,7 @@
 	import TimelineEmpty from './TimelineEmpty.svelte';
 	import { dropTimelineElementHandler } from '$lib/utils/drop-timeline-element-handler.utils';
 	import { hoverTimelineElementHandler } from '$lib/utils/hover-timeline-element-handler.utils';
+	import { moveTimelineThumb } from '$lib/utils/timeline-utils';
 
 	let scrollContainerEl: HTMLDivElement;
 	let isOverflowingX = false;

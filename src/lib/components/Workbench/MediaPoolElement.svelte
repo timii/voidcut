@@ -1,10 +1,11 @@
 <script lang="ts">
 	import { MediaType, type IMedia } from '$lib/interfaces/Media';
 	import { CONSTS } from '$lib/utils/consts';
-	import { cleanUpEmptyTracks, formatTime } from '$lib/utils/utils';
+	import { formatTime } from '$lib/utils/utils';
 	import DeleteIcon from '$lib/assets/workbench/delete.png';
 	import { fade } from 'svelte/transition';
 	import { availableMedia, timelineTracks } from '../../../stores/store';
+	import { cleanUpEmptyTracks } from '$lib/utils/timeline-utils';
 
 	export let file: IMedia;
 	export let index: number;
@@ -35,6 +36,8 @@
 	function deleteElement() {
 		// delete current element in the store
 		availableMedia.update((media) => media.toSpliced(index, 1));
+
+		// TODO: show a dialog before deleting it with a warning that the timeline elements will also be deleted
 
 		// update timeline tracks in store after deleting elements
 		timelineTracks.update((tracks) => {
