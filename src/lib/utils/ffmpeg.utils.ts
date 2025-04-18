@@ -1,13 +1,14 @@
 import { FFmpeg } from "@ffmpeg/ffmpeg";
 import { availableMedia, exportOverlayOpen, exportState, ffmpegLoaded, ffmpegProgress, ffmpegProgressElapsedTime, ffmpegProgressPrevValue, maxPlaybackTime, previewAspectRatio, processedFile, processedFileSize, timelineTracks } from "../../stores/store";
 import { get } from "svelte/store";
-import { debugLog, msToS } from "./utils";
+import { debugLog } from "./utils";
 import { ExportState, type OutputMap, OutputMapKey, type IFfmpegElement } from "$lib/interfaces/Ffmpeg";
 import { adjustingInterval } from "./adjusting-interval";
 import { CONSTS } from "./consts";
 import { MediaType } from "$lib/interfaces/Media";
 import { aspectRatio1080pMap } from "$lib/interfaces/Player";
 import { convertDataUrlToUIntArray, convertFileToDataUrl } from "./file.utils";
+import { msToS } from "./time.utils";
 
 let ffmpeg: FFmpeg
 let elapsedTimeInterval: {

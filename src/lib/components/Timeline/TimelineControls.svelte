@@ -16,7 +16,7 @@
 	import FitToScaleIcon from '$lib/assets/timeline/fit.png';
 	import SplitIcon from '$lib/assets/timeline/split.png';
 	import DuplicateIcon from '$lib/assets/timeline/duplicate.png';
-	import { elementIsAnImage, formatPlaybackTime, generateId, msToS } from '$lib/utils/utils';
+	import { elementIsAnImage, generateId } from '$lib/utils/utils';
 	import { CONSTS } from '$lib/utils/consts';
 	import type { ITimelineElement } from '$lib/interfaces/Timeline';
 	import {
@@ -31,6 +31,7 @@
 		isAtMinTimelineScale,
 		thumbOverSelectedElement
 	} from '$lib/utils/timeline.utils';
+	import { msToS, formatPlaybackTime } from '$lib/utils/time.utils';
 
 	// update controls when different store values change
 	$: $selectedElement, updateControls();

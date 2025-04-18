@@ -15,7 +15,7 @@
 	} from '../../../stores/store';
 	import { ExportState } from '$lib/interfaces/Ffmpeg';
 	import { downloadOutput, terminateFfmpegExecution } from '$lib/utils/ffmpeg.utils';
-	import { formatTime } from '$lib/utils/utils';
+	import { formatTime } from '$lib/utils/time.utils';
 
 	export let open = false;
 

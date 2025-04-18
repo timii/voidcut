@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { MediaType, type IMedia } from '$lib/interfaces/Media';
 	import { CONSTS } from '$lib/utils/consts';
-	import { formatTime } from '$lib/utils/utils';
 	import DeleteIcon from '$lib/assets/workbench/delete.png';
 	import { fade } from 'svelte/transition';
 	import { availableMedia, timelineTracks } from '../../../stores/store';
 	import { cleanUpEmptyTracks } from '$lib/utils/timeline.utils';
+	import { formatTime } from '$lib/utils/time.utils';
 
 	export let file: IMedia;
 	export let index: number;
