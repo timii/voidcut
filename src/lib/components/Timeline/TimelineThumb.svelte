@@ -92,14 +92,6 @@
 			scrollContainerBoundingRect.width - thumbBoundingRect.x < 0 &&
 			$previewPlaying === true
 		) {
-			console.warn(
-				'in if -> timelineFullyScrolled:',
-				timelineFullyScrolled,
-				'scrollContainerBoundingRect.width - thumbBoundingRect.x < 0:',
-				scrollContainerBoundingRect.width - thumbBoundingRect.x < 0,
-				'$previewPlaying:',
-				$previewPlaying
-			);
 			pausePlayback();
 		}
 	}

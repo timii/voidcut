@@ -69,11 +69,9 @@ export async function callFfmpeg() {
 
     // map timeline elements so they include all necessary information and can be used in ffmpeg
     const mediaData = mapTimelineElements()
-    console.log('[FFMPEG] mapping of timeline elements successful');
 
     // create blank video with only black screen
     const blankVideoReturn = await createBlankVideo()
-    console.log('[FFMPEG] creation of blank video successful');
 
     // handle error cases when executing ffmpeg and stop execution
     if (blankVideoReturn !== 0) {
@@ -84,15 +82,12 @@ export async function callFfmpeg() {
 
     // map elements into ffmpeg flags and parameters
     const flags = createFfmpegFlags(mediaData)
-    console.log('[FFMPEG] creating ffmpeg flags successful');
 
     // write necessary elements into ffmpeg.wasm filesystem
     await writeFilesToFfmpeg(mediaData)
-    console.log('[FFMPEG] writing into ffmpeg filesystem successful');
 
     // execute ffmpeg with the created flags
     const execReturn = await ffmpeg.exec(flags)
-    console.log('[FFMPEG] executing ffmpeg commands successful');
 
     // handle error cases when executing ffmpeg and stop execution
     if (execReturn !== 0) {
@@ -103,7 +98,6 @@ export async function callFfmpeg() {
 
     // read output file from ffmpeg.wasm
     const outputData = await ffmpeg.readFile(outputFileName) as Uint8Array;
-    console.log('[FFMPEG] reading created output file successful');
 
     // set export state to be successful if we reached this point
     exportState.set(ExportState.COMPLETE)
@@ -116,7 +110,7 @@ export async function callFfmpeg() {
 
     // write processed file into store
     processedFile.set(outputData)
-    console.log('[FFMPEG] writing processed into store successful');
+    console.log('[FFMPEG] writing processed file into store successful');
 }
 
 // #region mapping timeline
@@ -465,7 +459,7 @@ function startTimer(): void {
     }
 
     const doError = () => {
-        console.warn('The drift exceeded the interval.');
+        // console.warn('The drift exceeded the interval.');
     };
 
     // set up and start self adjusting interval

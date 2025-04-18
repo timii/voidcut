@@ -477,7 +477,7 @@ export function resumePlayback() {
     }
 
     const doError = () => {
-        console.warn('The drift exceeded the interval.');
+        // console.warn('The drift exceeded the interval.');
     };
 
     // create new interval with callbacks
@@ -1027,8 +1027,6 @@ export function getNextLeftElementEndTime(trackIndex: number, elementIndex: numb
 
 // get the element start time for the next element on the right side of a given element on a given track
 export function getNextRightElementStartTime(trackIndex: number, elementIndex: number): number | undefined {
-    console.error("getNextRightElementStartTime -> trackIndex:", trackIndex, "elementIndex:", elementIndex)
-
     const tracks = get(timelineTracks)
 
     // handle the case where we pass a track or element index that is out of bounds 
@@ -1134,12 +1132,10 @@ export function moveElementToCorrectIndex(el: ITimelineElement, index: number, t
 
     // remove element from array using its previous index
     trackEls.splice(index, 1)
-    console.error('Timeline -> moveElementToCorrectIndex -> after remove:', [...trackEls]);
 
     for (let i = 0; i < trackEls.length; i++) {
         // keep track if the current element start time is after the element start time
         const curStartTimeAfterElement = trackEls[i].playbackStartTime > el.playbackStartTime
-        console.error('Timeline -> moveElementToCorrectIndex -> in for loop i:', i, "curStartTimeAfterElement:", curStartTimeAfterElement);
 
         // if the start time of the current element is before the element we can directly jump to the next iteration in the loop
         if (!curStartTimeAfterElement) {
@@ -1153,8 +1149,6 @@ export function moveElementToCorrectIndex(el: ITimelineElement, index: number, t
         // add the element at the current index since the current element will be pushed after the element has been added
         trackEls.splice(i, 0, el)
 
-        console.error('Timeline -> moveElementToCorrectIndex -> after add in loop:', [...trackEls]);
-
         // we moved the element so we can break out of the loop
         break;
     }
@@ -1162,10 +1156,8 @@ export function moveElementToCorrectIndex(el: ITimelineElement, index: number, t
     // if no element had a start time after the given element we just push it to the back
     if (trackEls.length < startingTrackLength) {
         trackEls.push(el)
-        console.error('Timeline -> moveElementToCorrectIndex -> after push after loop:', [...trackEls]);
     }
 
-    console.error('Timeline -> moveElementToCorrectIndex -> trackEls end:', [...trackEls]);
     return trackEls
 }
 
@@ -1181,14 +1173,6 @@ export function handleElementIndeces(newEl: ITimelineElement, newElStartTime: nu
 
     // check if the index of the element inside the track is still correct after changing the playbackStartTime, if not we need to update it
     if (!isElementAtCorrectIndex(newEl, index, trackEls)) {
-        console.error(
-            'Timeline -> row drop-timeline-element -> element is not at the correct index anymore -> track:',
-            [...trackEls],
-            'foundEl',
-            Object.assign({}, newEl),
-            'prevElementIndex:',
-            index
-        );
         //  update the element index inside the track
         trackEls = moveElementToCorrectIndex(
             newEl,
