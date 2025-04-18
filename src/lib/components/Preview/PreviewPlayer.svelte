@@ -2,7 +2,8 @@
 	import { MediaType } from '$lib/interfaces/Media';
 	import type { IPlayerElement, IPlayerElementsMap } from '$lib/interfaces/Player';
 	import type { ITimelineTrack } from '$lib/interfaces/Timeline';
-	import { getCurrentMediaTime, isPlaybackInElement, isSameAspectRatio } from '$lib/utils/utils';
+	import { getCurrentMediaTime, isPlaybackInElement } from '$lib/utils/playback.utils';
+	import { isSameAspectRatio } from '$lib/utils/utils';
 	import {
 		availableMedia,
 		currentPlaybackTime,

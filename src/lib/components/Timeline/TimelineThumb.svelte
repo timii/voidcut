@@ -9,9 +9,10 @@
 		currentTimelineScale,
 		horizontalScroll
 	} from '../../../stores/store';
-	import { convertMsToPx, isElementFullyScrolled, pausePlayback } from '$lib/utils/utils';
+	import { convertMsToPx, isElementFullyScrolled } from '$lib/utils/utils';
 	import { CONSTS } from '$lib/utils/consts';
 	import { getTimelineScrollAmount, moveTimelineThumb } from '$lib/utils/timeline.utils';
+	import { pausePlayback } from '$lib/utils/playback.utils';
 
 	let thumbOffsetLeft = 0;
 	let thumbElementRef: HTMLElement;

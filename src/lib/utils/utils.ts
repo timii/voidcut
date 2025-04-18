@@ -1,91 +1,21 @@
 import { MediaType, type IMedia } from "$lib/interfaces/Media";
 import {
     type ITimelineElement,
-    type ITimelineElementBounds,
 } from "$lib/interfaces/Timeline";
 import {
     isTimelineElementBeingDragged,
     isThumbBeingDragged,
-    currentPlaybackTime,
     currentTimelineScale,
     draggedElement,
-    previewPlaying,
     isTimelineElementBeingResized,
-    maxPlaybackTime,
     draggedOverFirstDivider,
     draggedUnderLastDivider,
     previewAspectRatio,
 } from "../../stores/store";
 import { CONSTS } from "./consts";
-import { adjustingInterval } from "./adjusting-interval";
 import { get } from "svelte/store";
 import resolveConfig from 'tailwindcss/resolveConfig'
 import tailwindConfig from '../../../tailwind.config.js'
-import type { IPlayerElement } from "$lib/interfaces/Player";
-import type { Time } from "$lib/interfaces/Time";
-
-let interval: {
-    start: () => void;
-    stop: () => void;
-}
-
-// #region playback
-// stop interval that handles the current playback time
-export function pausePlayback() {
-    previewPlaying.set(false)
-    if (interval) {
-        interval.stop()
-    }
-}
-
-// create interval that increases current playback time
-export function resumePlayback() {
-    previewPlaying.set(true)
-    const intervallCallback = () => {
-        const previousValue = get(currentPlaybackTime)
-        const nextValue = previousValue + CONSTS.playbackIntervalTimer
-
-        // pause playback if its after the max playback time
-        if (nextValue > get(maxPlaybackTime)) {
-            pausePlayback()
-        } else {
-            // increase the current playback time in store by timeout amount
-            currentPlaybackTime.update(value => value + CONSTS.playbackIntervalTimer)
-        }
-    }
-
-    const doError = () => {
-        // console.warn('The drift exceeded the interval.');
-    };
-
-    // create new interval with callbacks
-    interval = adjustingInterval(intervallCallback, CONSTS.playbackIntervalTimer, doError);
-
-    // manually start the intervals
-    interval.start()
-}
-
-// check if the current playback time is inside given element bounds  
-export function isPlaybackInElement(el: IPlayerElement): boolean {
-    // calculate element bounds using the playback start time and the duration
-    const elBounds: ITimelineElementBounds = { start: el.playbackStartTime, end: el.playbackStartTime + el.duration }
-
-    const playbackTime = get(currentPlaybackTime)
-
-    // return if the current playback time is between the start and end time of the element 
-    return playbackTime >= elBounds.start && playbackTime < elBounds.end
-}
-
-// get the current element time for a given media element 
-export function getCurrentMediaTime(el: IPlayerElement): number {
-    // get the start time of the element considering the playback start time and the left trim
-    const elStartTime = el.playbackStartTime - el.trimFromStart;
-
-    // calculate the time where from where the media element should be played
-    return (get(currentPlaybackTime) - elStartTime) / CONSTS.secondsMultiplier;
-}
-
-//#endregion
 
 // #region general utils
 // convert a given pixel value into a milliseconds value using the current timeline scale

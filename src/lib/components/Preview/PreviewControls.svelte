@@ -12,9 +12,9 @@
 	import SkipEndIcon from '$lib/assets/preview/skip-end.png';
 	import FrameBeforeIcon from '$lib/assets/preview/frame-before.png';
 	import FrameAfterIcon from '$lib/assets/preview/frame-after.png';
-	import { pausePlayback, resumePlayback } from '$lib/utils/utils';
 	import { CONSTS } from '$lib/utils/consts';
 	import { doesElementExistInTimeline } from '$lib/utils/timeline.utils';
+	import { pausePlayback, resumePlayback } from '$lib/utils/playback.utils';
 
 	$: $timelineTracks, updateControls();
 	$: $currentPlaybackTime, updateControls();
