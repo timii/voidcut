@@ -30,7 +30,7 @@ import {
     previewAspectRatio,
 } from "../../stores/store";
 import { CONSTS } from "./consts";
-import { adjustingInterval } from "./betterInterval";
+import { adjustingInterval } from "./adjusting-interval";
 import { get } from "svelte/store";
 import resolveConfig from 'tailwindcss/resolveConfig'
 import tailwindConfig from '../../../tailwind.config.js'

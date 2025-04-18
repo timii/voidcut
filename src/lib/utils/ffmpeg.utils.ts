@@ -3,7 +3,7 @@ import { availableMedia, exportOverlayOpen, exportState, ffmpegLoaded, ffmpegPro
 import { get } from "svelte/store";
 import { convertDataUrlToUIntArray, convertFileToDataUrl, resizeFilePreview, msToS } from "./utils";
 import { ExportState, type OutputMap, OutputMapKey, type IFfmpegElement } from "$lib/interfaces/Ffmpeg";
-import { adjustingInterval } from "./betterInterval";
+import { adjustingInterval } from "./adjusting-interval";
 import { CONSTS } from "./consts";
 import { MediaType } from "$lib/interfaces/Media";
 import { aspectRatio1080pMap } from "$lib/interfaces/Player";
