@@ -40,6 +40,7 @@ The goal of voidcut was to create a simple tool that I can use myself without ne
 - **Filmstrips**: Show "filmstrips" for image and video elements in the timeline
 - **Local Backup**: Current state is regularly saved in local storage to be able to reload page and keep the changes
 - **Manage Different Projects**: Add a start window to manage different projects
+- **Responsive Layout**: Add styling for mobile devices
 
 ## Getting started
 
