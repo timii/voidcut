@@ -21,7 +21,7 @@
 		isLastStateAvailableInStorage,
 		restoreLastState,
 		setupBackupInterval
-	} from '$lib/utils/persistence.utils';
+	} from '$lib/utils/persistence/persistence.utils';
 	import RestoreStateDialog from '$lib/components/persistence/RestoreStateDialog.svelte';
 
 	// import icons directly so the path is resolved correctly after building

@@ -11,7 +11,7 @@
 	import AboutIcon from '$lib/assets/header/about.png';
 	import ExportIcon from '$lib/assets/header/export.png';
 	import IconButton from '../shared/IconButton.svelte';
-	import { clearStorage, getState, updateState } from '$lib/utils/persistence.utils';
+	import { clearStorage, getState, updateState } from '$lib/utils/persistence/persistence.utils';
 	import { isProduction } from '$lib/utils/utils';
 
 	async function openExportDialog() {

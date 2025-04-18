@@ -3,8 +3,8 @@
  */
 
 import { get, type Writable } from "svelte/store";
-import { availableMedia, currentTimelineScale, exportOverlayOpen, lastSaveTime, previewAspectRatio, restoreStateOverlayOpen, timelineTracks } from "../../stores/store";
-import { CONSTS } from "./consts";
+import { availableMedia, currentTimelineScale, exportOverlayOpen, lastSaveTime, previewAspectRatio, restoreStateOverlayOpen, timelineTracks } from "../../../stores/store";
+import { CONSTS } from "../consts";
 import { readItem, updateItem, writeItem, readManyItems, clearItems } from "./persistence.worker.js";
 
 let interval
