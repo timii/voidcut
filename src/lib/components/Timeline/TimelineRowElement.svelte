@@ -13,7 +13,6 @@
 		elementIsAnImage,
 		getRelativeMousePosition,
 		getTailwindVariables,
-		isCurrentElementBeingResized,
 		onlyPrimaryButtonClicked
 	} from '$lib/utils/utils';
 	import { onMount } from 'svelte';
@@ -34,8 +33,9 @@
 	import { MediaType } from '$lib/interfaces/Media';
 	import {
 		getNextLeftElementEndTime,
-		getNextRightElementStartTime
-	} from '$lib/utils/timeline-utils';
+		getNextRightElementStartTime,
+		isCurrentElementBeingResized
+	} from '$lib/utils/timeline.utils';
 
 	export let element: ITimelineElement = {} as ITimelineElement;
 	export let elementIndex: number;

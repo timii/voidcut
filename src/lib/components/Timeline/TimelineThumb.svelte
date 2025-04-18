@@ -11,7 +11,7 @@
 	} from '../../../stores/store';
 	import { convertMsToPx, isElementFullyScrolled, pausePlayback } from '$lib/utils/utils';
 	import { CONSTS } from '$lib/utils/consts';
-	import { getTimelineScrollAmount, moveTimelineThumb } from '$lib/utils/timeline-utils';
+	import { getTimelineScrollAmount, moveTimelineThumb } from '$lib/utils/timeline.utils';
 
 	let thumbOffsetLeft = 0;
 	let thumbElementRef: HTMLElement;

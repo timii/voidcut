@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { CONSTS } from '$lib/utils/consts';
-	import { moveTimelineThumb } from '$lib/utils/timeline-utils';
+	import { moveTimelineThumb } from '$lib/utils/timeline.utils';
 	import { convertMsToPx, formatTime, getTailwindVariables } from '$lib/utils/utils';
 	import { currentTimelineScale, maxPlaybackTime, windowWidth } from '../../../stores/store';
 

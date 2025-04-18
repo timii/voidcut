@@ -14,7 +14,7 @@
 	import FrameAfterIcon from '$lib/assets/preview/frame-after.png';
 	import { pausePlayback, resumePlayback } from '$lib/utils/utils';
 	import { CONSTS } from '$lib/utils/consts';
-	import { doesElementExistInTimeline } from '$lib/utils/timeline-utils';
+	import { doesElementExistInTimeline } from '$lib/utils/timeline.utils';
 
 	$: $timelineTracks, updateControls();
 	$: $currentPlaybackTime, updateControls();

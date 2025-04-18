@@ -9,7 +9,7 @@ import {
     handleElementIndeces,
     cleanUpEmptyTracks,
     createTrackWithElement
-} from "./timeline-utils";
+} from "./timeline.utils";
 
 /**
  * this function is registered on page mount as a callback to the timeline element drop event and handles the dropped element depending on where it got dropped

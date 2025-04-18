@@ -5,7 +5,7 @@
 	import DeleteIcon from '$lib/assets/workbench/delete.png';
 	import { fade } from 'svelte/transition';
 	import { availableMedia, timelineTracks } from '../../../stores/store';
-	import { cleanUpEmptyTracks } from '$lib/utils/timeline-utils';
+	import { cleanUpEmptyTracks } from '$lib/utils/timeline.utils';
 
 	export let file: IMedia;
 	export let index: number;

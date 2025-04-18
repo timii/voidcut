@@ -2,7 +2,8 @@ import {
     type ITimelineElementIndeces,
     type ITimelineElement,
     type ITimelineElementBounds,
-    type ITimelineTrack
+    type ITimelineTrack,
+    TimelineElementResizeSide
 } from "$lib/interfaces/Timeline";
 import { get } from "svelte/store";
 import {
@@ -18,12 +19,67 @@ import {
     timelineTracks,
     maxTimelineScale,
     minTimelineScale,
-    possibleScaleValues
+    possibleScaleValues,
+    elementResizeData
 } from "../../stores/store";
 import { CONSTS } from "./consts";
 import { onlyPrimaryButtonClicked, convertPxToMs, generateId } from "./utils";
 
 let timelineScrollContainer: Element | null
+
+// checks whether to resize on the left or right side of the element  
+export function handleElementResizing(e: MouseEvent) {
+    // avoid the thumb being also moved to where the handle is
+    e.stopPropagation();
+    e.stopImmediatePropagation();
+
+    // if another element or thumg being dragged don't resize
+    if (get(isTimelineElementBeingDragged) || get(isThumbBeingDragged)) {
+        return;
+    }
+
+    // don't resize if not only primary button is clicked
+    if (!onlyPrimaryButtonClicked(e)) {
+        return;
+    }
+
+    const elResizeData = get(elementResizeData)
+
+    // if no resize side is given we can't decide what side to handle
+    if (!elResizeData) {
+        return
+    }
+
+    const eventDetail = { detail: { event: e, elementId: elResizeData.timelineElementId } }
+
+    // handle left side resizing
+    if (elResizeData.side === TimelineElementResizeSide.LEFT) {
+        // create and dispatch custom event with the mouse event in the detail. The TimelineRowElement component listens to the event and handles the resizing
+        const event = new CustomEvent(CONSTS.customEventNameElementResizeLeft, eventDetail);
+        window.dispatchEvent(event);
+    }
+
+    // handle right side resizing
+    if (elResizeData.side === TimelineElementResizeSide.RIGHT) {
+        // create and dispatch custom event with the mouse event in the detail. The TimelineRowElement component listens to the event and handles the resizing
+        const event = new CustomEvent(CONSTS.customEventNameElementResizeRight, eventDetail);
+        window.dispatchEvent(event);
+
+    }
+}
+
+// check if given element id matches resized element id
+export function isCurrentElementBeingResized(el: ITimelineElement): boolean {
+    const elResizeData = get(elementResizeData)
+
+    // if no resize data is given there is no element being resized right now so we return false
+    if (!elResizeData) {
+        return false
+    }
+
+    // return if the id in the store matches the given id
+    return elResizeData.timelineElementId === el.elementId
+}
 
 // calculate amount the timeline needs to be scrolled by when the thumb reaches the edge (i.e. during playback)
 export function getTimelineScrollAmount(): number {

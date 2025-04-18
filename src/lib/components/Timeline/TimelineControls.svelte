@@ -30,7 +30,7 @@
 		isAtMaxTimelineScale,
 		isAtMinTimelineScale,
 		thumbOverSelectedElement
-	} from '$lib/utils/timeline-utils';
+	} from '$lib/utils/timeline.utils';
 
 	// update controls when different store values change
 	$: $selectedElement, updateControls();
