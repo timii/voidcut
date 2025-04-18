@@ -13,12 +13,9 @@
 		timelineTracks
 	} from '../../../stores/store';
 	import { CONSTS } from '$lib/utils/consts';
-	import {
-		handleTimelineMediaDrop,
-		isDraggedElementAFile,
-		resetOverUnderDividers
-	} from '$lib/utils/utils';
+	import { isDraggedElementAFile, resetOverUnderDividers } from '$lib/utils/utils';
 	import type { IMedia } from '$lib/interfaces/Media';
+	import { handleTimelineMediaDrop } from '$lib/utils/file.utils';
 
 	export let index: number;
 

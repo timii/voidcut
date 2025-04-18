@@ -13,13 +13,9 @@
 	} from '../../../stores/store';
 	import TimelineRowElement from './TimelineRowElement.svelte';
 	import { CONSTS } from '$lib/utils/consts';
-	import {
-		convertMsToPx,
-		handleTimelineMediaDrop,
-		isDraggedElementAFile,
-		resetOverUnderDividers
-	} from '$lib/utils/utils';
+	import { convertMsToPx, isDraggedElementAFile, resetOverUnderDividers } from '$lib/utils/utils';
 	import type { IMedia } from '$lib/interfaces/Media';
+	import { handleTimelineMediaDrop } from '$lib/utils/file.utils';
 
 	export let track: ITimelineTrack;
 	export let index: number;

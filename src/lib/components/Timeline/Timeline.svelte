@@ -3,7 +3,6 @@
 	import {
 		allBoundingRectValuesZero,
 		convertMsToPx,
-		handleTimelineMediaDrop,
 		hasHorizontalScrollbar,
 		hasVerticalScrollbar,
 		isDraggedElementAFile,
@@ -42,6 +41,7 @@
 	import { dropTimelineElementHandler } from '$lib/utils/drop-timeline-element-handler.utils';
 	import { hoverTimelineElementHandler } from '$lib/utils/hover-timeline-element-handler.utils';
 	import { handleElementResizing, moveTimelineThumb } from '$lib/utils/timeline.utils';
+	import { handleTimelineMediaDrop } from '$lib/utils/file.utils';
 
 	let scrollContainerEl: HTMLDivElement;
 	let isOverflowingX = false;

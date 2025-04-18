@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { handleFileUpload, saveFilesToStore } from '$lib/utils/utils';
 	import MediaUploadImage from '$lib/assets/workbench/media-upload.png';
 	import Button from '../shared/Button.svelte';
 	import UploadIcon from '$lib/assets/workbench/upload.png';
+	import { handleFileUpload } from '$lib/utils/file.utils';
 
 	let inputElementRef: HTMLInputElement;
 

@@ -7,6 +7,7 @@ import { adjustingInterval } from "./adjusting-interval";
 import { CONSTS } from "./consts";
 import { MediaType } from "$lib/interfaces/Media";
 import { aspectRatio1080pMap } from "$lib/interfaces/Player";
+import { convertDataUrlToUIntArray, convertFileToDataUrl } from "./file.utils";
 
 let ffmpeg: FFmpeg
 let elapsedTimeInterval: {
@@ -496,12 +497,10 @@ export async function generateAudioWaveform(file: File, size?: string) {
     const outputName = 'audioOutput.png'
     // write audio in ffmpeg.wasm filesystem
     await ffmpeg.writeFile(inputName, audioUIntArray);
-    console.log('[FFMPEG] writing into ffmpeg filesystem successful');
 
     const flags = ['-i', inputName, '-filter_complex', `aformat=channel_layouts=mono,compand=gain=7:soft-knee=1,showwavespic=s=${imageSize}:colors=#ff981a`, '-frames:v', '1', outputName]
     // execute ffmpeg with the created flags
     const execReturn = await ffmpeg.exec(flags)
-    console.log('[FFMPEG] executing ffmpeg commands successful');
 
     // handle error cases when executing ffmpeg and stop execution
     if (execReturn !== 0) {
@@ -510,7 +509,6 @@ export async function generateAudioWaveform(file: File, size?: string) {
 
     // read output file from ffmpeg.wasm
     const outputData = await ffmpeg.readFile(outputName) as Uint8Array;
-    console.log('[FFMPEG] reading created output file successful');
 
     // turn outpout UIntArray into dataUrl
     const blob = new Blob([outputData.buffer as ArrayBuffer], { type: 'image/png' })

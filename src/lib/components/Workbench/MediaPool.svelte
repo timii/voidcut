@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { handleFileUpload, isDraggedElementFromMediaPool } from '$lib/utils/utils';
+	import { handleFileUpload } from '$lib/utils/file.utils';
+	import { isDraggedElementFromMediaPool } from '$lib/utils/utils';
 	import { availableMedia } from '../../../stores/store';
 	import MediaPoolElement from './MediaPoolElement.svelte';
 	import MediaUpload from './MediaUpload.svelte';
