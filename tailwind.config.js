@@ -39,8 +39,9 @@ export default {
         "background-icon-button": "#434346",
         "background-tooltip": "#434346",
         "background-timeline-row": "#2c2c35",
+        "background-timeline-row-element": "#414149",
         "background-timeline-row-element-hover": "#0369a1", // dark accent color
-        "background-timeline-row-element": "#cc7000", // complementary accent color
+        "background-timeline-row-element-audio": "#cc7000", // complementary accent color
         "background-timeline-divider": "#0369a1", // dark accent color
         "background-media-pool-element": "#cc7000", // complementary accent color
         "background-media-pool-time": "#151519",

@@ -551,7 +551,7 @@
 		height: {CONSTS.timelineRowElementHeight}px;
 		width: {elementWidth}px;
 		z-index: {dragging ? '50' : 'auto'};
-		background-color: {element.type === MediaType.Audio ? '#cc7000' : ''};
+		background-color: {element.type === MediaType.Audio ? '#cc7000' : '#414149'};
 
 	"
 	data-element-el-index={elementIndex}
