@@ -35,6 +35,7 @@
 	import PauseIcon from '$lib/assets/preview/pause.png';
 	import DeleteIcon from '$lib/assets/workbench/delete.png';
 	import UploadIcon from '$lib/assets/workbench/upload.png';
+	import { CONSTS } from '$lib/utils/consts';
 
 	// list of images/icons that should be preloaded
 	const preloadImageUrls = [
@@ -120,7 +121,15 @@
 		</div>
 		<!-- max height is the full height minus the height of the preview controls (+ padding) -->
 		<div class="flex flex-1 shrink-0 max-h-[calc(100%-64px)]">
-			<div class="flex-1 py-4 pr-4 workbench basis-1/3">
+			<div
+				class="flex-1 py-4 pr-4 workbench basis-1/3"
+				style="
+					--extraSmallScreen: {CONSTS.workbenchWidthXS}px;
+					--smallScreen: {CONSTS.workbenchWidthS}px;
+					--mediumScreen: {CONSTS.workbenchWidthM}px; 
+					--largeScreen: {CONSTS.workbenchWidthL}px;
+				"
+			>
 				<MediaPool></MediaPool>
 			</div>
 			<!-- max height is the full height minus the height of the preview controls -->
@@ -155,3 +164,37 @@
 		<link rel="preload" as="image" href={image} />
 	{/each}
 </svelte:head>
+
+<style lang="postcss">
+	/* extra small screens */
+	@media only screen and (max-width: 700px) {
+		.workbench {
+			min-width: var(--extraSmallScreen);
+			max-width: var(--extraSmallScreen);
+		}
+	}
+
+	/* small screens */
+	@media only screen and (min-width: 700px) and (max-width: 1300px) {
+		.workbench {
+			min-width: var(--smallScreen);
+			max-width: var(--smallScreen);
+		}
+	}
+
+	/* medium screens */
+	@media only screen and (min-width: 1300px) and (max-width: 1600px) {
+		.workbench {
+			min-width: var(--mediumScreen);
+			max-width: var(--mediumScreen);
+		}
+	}
+
+	/* large screens */
+	@media only screen and (min-width: 1600px) {
+		.workbench {
+			min-width: var(--largeScreen);
+			max-width: var(--largeScreen);
+		}
+	}
+</style>

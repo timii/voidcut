@@ -45,6 +45,29 @@ export const CONSTS = {
      */
     mediaPoolElementHeight: 84,
 
+    // ---------------------------------------------
+    // Workbench
+    // ---------------------------------------------
+
+    /**
+     * Workbench width for extra small screens (1 element per row) 
+     */
+    workbenchWidthXS: 176,
+
+    /**
+     * Workbench width for small screens (2 elements per row)
+     */
+    workbenchWidthS: 320,
+
+    /**
+     * Workbench width for medium screens (3 elements per row)
+     */
+    workbenchWidthM: 464,
+
+    /**
+     * Workbench width for large screens (4 elements per row)
+     */
+    workbenchWidthL: 608,
 
     // ---------------------------------------------
     // Timeline
