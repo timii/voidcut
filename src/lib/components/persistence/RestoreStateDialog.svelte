@@ -1,8 +1,18 @@
 <script lang="ts">
+	import { clearStorage } from '$lib/utils/persistence/persistence.utils';
 	import { stopPropagation } from '$lib/utils/utils';
+	import Button from '../shared/Button.svelte';
 	import LoadingIndicator from '../shared/LoadingIndicator.svelte';
 
 	export let open = false;
+
+	// clear local storage, mainly used for testing
+	async function onClearStorage() {
+		clearStorage();
+
+		// reload page after clearing storage
+		location.reload();
+	}
 </script>
 
 {#if open}
@@ -17,6 +27,10 @@
 			<LoadingIndicator></LoadingIndicator>
 
 			<div>Restoring last state...</div>
+
+			<div class="mt-4">
+				<Button text={'Delete last save and reload'} onClickCallback={onClearStorage}></Button>
+			</div>
 		</div>
 	</div>
 {/if}
