@@ -14,9 +14,7 @@
 	} from '../../../stores/store';
 	import { CONSTS } from '$lib/utils/consts';
 	import { isDraggedElementAFile, resetOverUnderDividers } from '$lib/utils/utils';
-	import type { IMedia } from '$lib/interfaces/Media';
-	import { handleTimelineMediaDrop } from '$lib/utils/file.utils';
-	import { mediaDropOnTimeline } from '$lib/utils/timeline.utils';
+	import { getTimelineTracksBoundingRect, mediaDropOnTimeline } from '$lib/utils/timeline.utils';
 
 	export let index: number;
 
@@ -35,8 +33,8 @@
 	let hoverElementOverUnder = false;
 
 	onMount(() => {
-		const tracksEl = document.getElementsByClassName('timeline-tracks')[0];
-		tracksElBoundRect = tracksEl.getBoundingClientRect();
+		tracksElBoundRect = getTimelineTracksBoundingRect();
+
 		dividerElBoundRect = dividerRef.getBoundingClientRect();
 
 		offsetInParent = {

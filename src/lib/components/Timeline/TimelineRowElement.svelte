@@ -34,6 +34,7 @@
 	import {
 		getNextLeftElementEndTime,
 		getNextRightElementStartTime,
+		getTimelineTracksBoundingRect,
 		isCurrentElementBeingResized
 	} from '$lib/utils/timeline.utils';
 
@@ -82,16 +83,7 @@
 	let svgFullWidth: number = getFullWidth();
 	let svgLeftTrim: number = element.trimFromStart;
 
-	// #region onMount
 	onMount(() => {
-		// TODO: refactor these event listeners out into timeline component, so we don't keep adding new event listeners when a new element is created
-		window.addEventListener('dragover', (e: DragEvent) => {
-			if ($isTimelineElementBeingDragged) {
-				e.preventDefault();
-				e.stopPropagation();
-			}
-		});
-
 		// listen to the left resize event and handle resize on call
 		window.addEventListener(CONSTS.customEventNameElementResizeLeft, (e: Event) => {
 			const eventDetail = (e as CustomEvent).detail;
@@ -141,9 +133,7 @@
 
 		if (!mouseStartPosition) {
 			if (!tracksElBoundRect) {
-				// TODO: refactor this out into a util function since we use these two lines quite often
-				const tracksEl = document.getElementsByClassName('timeline-tracks')[0];
-				tracksElBoundRect = tracksEl.getBoundingClientRect();
+				tracksElBoundRect = getTimelineTracksBoundingRect();
 			}
 			const mousePosInEl = getRelativeMousePosition(e, tracksElBoundRect);
 			if (!elStartPosition) return;
@@ -188,8 +178,7 @@
 
 		const curEl = e.detail.currentNode;
 		const elDomRect = curEl.getBoundingClientRect();
-		const tracksEl = document.getElementsByClassName('timeline-tracks')[0];
-		tracksElBoundRect = tracksEl.getBoundingClientRect();
+		tracksElBoundRect = getTimelineTracksBoundingRect();
 
 		elStartPosition = {
 			left: elDomRect.left - tracksElBoundRect.left,

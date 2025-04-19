@@ -30,6 +30,7 @@ import { handleTimelineMediaDrop } from "./file.utils";
 
 let timelineScrollContainer: Element | null
 
+// read media data from dropped element and prepare it to pass it on 
 export function mediaDropOnTimeline(e: DragEvent, dropArea: TimelineDropArea, rowIndex?: number, startTime?: number) {
     // prevent default behavior
     e.preventDefault();
@@ -561,4 +562,10 @@ export function moveElementsOnTrack(elBounds: ITimelineElementBounds, trackEls: 
     })
 
     return tracks
+}
+
+// get timeline track from the DOM and return its bounding rect
+export function getTimelineTracksBoundingRect(): DOMRect {
+    const tracksEl = document.getElementsByClassName('timeline-tracks')[0];
+    return tracksEl.getBoundingClientRect();
 }

@@ -68,6 +68,13 @@
 			});
 		});
 
+		window.addEventListener('dragover', (e: DragEvent) => {
+			if ($isTimelineElementBeingDragged) {
+				e.preventDefault();
+				e.stopPropagation();
+			}
+		});
+
 		// calculate the range of possible scale values we can have and write it into the store
 		const min = $minTimelineScale;
 		const max = $maxTimelineScale;

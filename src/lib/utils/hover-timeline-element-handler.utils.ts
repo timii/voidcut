@@ -8,7 +8,6 @@ import { CONSTS } from "./consts";
  */
 export const hoverTimelineElementHandler = (position: ITimelineDraggedElementPosition | null, timelineScrollContainer: HTMLDivElement) => {
     const draggedData = get(draggedElementData)
-    // const timelineScrollContainer = document.getElementById('timeline-scroll-container')
 
     if (!position ||
         !timelineScrollContainer ||
