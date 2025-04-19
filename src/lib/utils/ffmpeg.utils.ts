@@ -428,7 +428,7 @@ function createFileName(index: number, mediaElement: IFfmpegElement) {
 export function downloadOutput() {
     const data = get(processedFile)
     const a = document.createElement('a');
-    // TODO: dynamic output file type instead of hardcoding 'video/mp4' after we added logic for setting custom output name and file type
+    // TODO: dynamic output file type instead of hardcoding 'video/mp4' after logic for setting custom output name and file type is implemented
     a.href = URL.createObjectURL(new Blob([data.buffer as ArrayBuffer], { type: 'video/mp4' }));
     a.download = get(outputFileName);
 

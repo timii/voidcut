@@ -139,7 +139,6 @@
 	</div>
 </main>
 
-<!-- TODO: check if its worth to refactor into a function that adds the overlay and the component in it dynamically -->
 <Overlay>
 	<ExportDialog open={$exportOverlayOpen} />
 </Overlay>
