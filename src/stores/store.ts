@@ -23,6 +23,8 @@ export const ffmpegProgressElapsedTime = writable(0) // track the elapsed time s
 export const exportState = writable(ExportState.NOT_STARTED) // track the current state of the export
 export const processedFile = writable<Uint8Array>() // track the current state of the export
 export const processedFileSize = writable(0) // track the current state of the export
+// TODO: dynamically set an output file type and name
+export const outputFileName = writable('output.mp4') // name of the processed file
 
 // Timeline
 export const currentTimelineScale = writable(CONSTS.timelineStartingScale); // default timeline scale (40 * 1px = 1 sec)

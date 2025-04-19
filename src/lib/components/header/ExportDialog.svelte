@@ -11,6 +11,7 @@
 		exportState,
 		ffmpegProgress,
 		ffmpegProgressElapsedTime,
+		outputFileName,
 		processedFileSize
 	} from '../../../stores/store';
 	import { ExportState } from '$lib/interfaces/Ffmpeg';
@@ -71,13 +72,12 @@
 				</div>
 				<img class="mb-4" src={SuccessIcon} alt="complete" />
 				<div class="text-xl">Exporting complete</div>
-				<!-- TODO: add file infos -->
 				<div class="text-sm text-center text-text-info">
 					<div>File size: {$processedFileSize} MB</div>
 					<div>Elapsed time: {formatTime($ffmpegProgressElapsedTime)}</div>
+					<div>Output file: {$outputFileName}</div>
 				</div>
 				<div class="mt-6">
-					<!-- TODO: add icon -->
 					<Button onClickCallback={onSaveClick} text={'Download'} icon={DownloadIcon}></Button>
 				</div>
 

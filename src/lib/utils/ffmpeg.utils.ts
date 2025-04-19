@@ -1,5 +1,5 @@
 import { FFmpeg } from "@ffmpeg/ffmpeg";
-import { availableMedia, exportOverlayOpen, exportState, ffmpegLoaded, ffmpegProgress, ffmpegProgressElapsedTime, ffmpegProgressPrevValue, maxPlaybackTime, previewAspectRatio, processedFile, processedFileSize, timelineTracks } from "../../stores/store";
+import { availableMedia, exportOverlayOpen, exportState, ffmpegLoaded, ffmpegProgress, ffmpegProgressElapsedTime, ffmpegProgressPrevValue, maxPlaybackTime, outputFileName, previewAspectRatio, processedFile, processedFileSize, timelineTracks } from "../../stores/store";
 import { get } from "svelte/store";
 import { debugLog } from "./utils";
 import { ExportState, type OutputMap, OutputMapKey, type IFfmpegElement } from "$lib/interfaces/Ffmpeg";
@@ -16,9 +16,6 @@ let elapsedTimeInterval: {
     stop: () => void;
 }
 
-// TODO: dynamically set an output file type and name
-const outputFileName = 'output.mp4';
-
 // #region initliaze ffmpeg
 // initialize FFmpeg, setup logging and load necessary packages
 export async function initializeFfmpeg() {
@@ -29,6 +26,7 @@ export async function initializeFfmpeg() {
     // listen to log events and print them into the console
     ffmpeg.on('log', ({ type, message }) => {
         debugLog(`[LOG] type: ${type}, message: ${message}`)
+        console.log(`[LOG] type: ${type}, message: ${message}`)
     });
 
     // listen to progress events and print them into the console
@@ -98,8 +96,10 @@ export async function callFfmpeg() {
         return;
     }
 
+    const fileName = get(outputFileName)
+
     // read output file from ffmpeg.wasm
-    const outputData = await ffmpeg.readFile(outputFileName) as Uint8Array;
+    const outputData = await ffmpeg.readFile(fileName) as Uint8Array;
 
     // set export state to be successful if we reached this point
     exportState.set(ExportState.COMPLETE)
@@ -238,7 +238,9 @@ function createFfmpegFlags(mediaData: IFfmpegElement[]): string[] {
     // map final audio stream to ouput file
     flags.push('-map', `[${finalAudioStream}]`)
 
-    flags.push(`${outputFileName}`)
+    flags.push(`${get(outputFileName)}`)
+
+    debugLog(`[FFMPEG] flags: ${flags}`)
 
     return flags
 }
@@ -429,7 +431,7 @@ export function downloadOutput() {
     const a = document.createElement('a');
     // TODO: dynamic output file type instead of hardcoding 'video/mp4' after we added logic for setting custom output name and file type
     a.href = URL.createObjectURL(new Blob([data.buffer as ArrayBuffer], { type: 'video/mp4' }));
-    a.download = outputFileName;
+    a.download = get(outputFileName);
 
     setTimeout(() => {
         a.click();

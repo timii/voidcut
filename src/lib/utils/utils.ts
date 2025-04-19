@@ -17,7 +17,6 @@ import { get } from "svelte/store";
 import resolveConfig from 'tailwindcss/resolveConfig'
 import tailwindConfig from '../../../tailwind.config.js'
 
-// #region general utils
 // convert a given pixel value into a milliseconds value using the current timeline scale
 export function convertPxToMs(value: number) {
     return Math.round((value / get(currentTimelineScale)) * CONSTS.secondsMultiplier) || 0
@@ -146,9 +145,6 @@ export function debugLog(message: string) {
     }
 }
 
-//#endregion
-
-// #region scrolling utils
 // calculate if a given html element has a horizontal scrollbar
 export function hasHorizontalScrollbar(el: HTMLElement) {
     return el.scrollWidth > el.clientWidth;
@@ -163,5 +159,3 @@ export function hasVerticalScrollbar(el: HTMLElement) {
 export function isElementFullyScrolled(el: HTMLElement): boolean {
     return el.scrollWidth - el.scrollLeft === el.clientWidth
 }
-
-//#endregion
