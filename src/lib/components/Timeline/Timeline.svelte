@@ -75,7 +75,6 @@
 		}
 		possibleScaleValues.set(values);
 
-		// TODO: change that so check both scrollbars everytime something in the timeline changes and/or screen sitze changes
 		isOverflowingY = hasVerticalScrollbar(scrollContainerEl);
 		isOverflowingX = hasHorizontalScrollbar(scrollContainerEl);
 
@@ -307,9 +306,6 @@
 			<TimelineEmpty></TimelineEmpty>
 		{:else}
 			<!-- Timeline Content -->
-			<!-- calculate width dynamically and fix width if element overflows -->
-			<!-- if container doesn't overflow -> set width of element to be 100% in px -->
-			<!-- and pass the calcualted width to the ruler to use it in there on the container element -->
 			<div class="relative min-w-full w-max timeline-content">
 				<!-- Timeline Ruler -->
 				<TimelineRuler amountOfTicks={amountOfTicksRounded}></TimelineRuler>

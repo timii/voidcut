@@ -5,7 +5,7 @@
 
 <div class="preview-container h-full w-full flex flex-col gap-4 p-4">
 	<div
-		class="preview-player-container min-h-full max-h-full border flex-1 flex flex-col justify-center items-center"
+		class="preview-player-container min-h-full max-h-full flex-1 flex flex-col justify-center items-center"
 	>
 		<PreviewPlayer></PreviewPlayer>
 	</div>

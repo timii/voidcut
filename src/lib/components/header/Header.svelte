@@ -55,7 +55,7 @@
 			<Button text={'Clear'} onClickCallback={onClearStorage}></Button>
 		{/if}
 		{#if $lastSaveTime}
-			<div class="italic text-xs text-text-info">last save: {$lastSaveTime}</div>
+			<div class="italic text-xs text-text-info">Last Save: {$lastSaveTime}</div>
 		{/if}
 		<IconButton icon={AboutIcon} size={20} onClickCallback={openAboutDialog}></IconButton>
 		<Button

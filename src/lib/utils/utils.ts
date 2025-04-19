@@ -6,7 +6,6 @@ import {
     isTimelineElementBeingDragged,
     isThumbBeingDragged,
     currentTimelineScale,
-    draggedElement,
     isTimelineElementBeingResized,
     draggedOverFirstDivider,
     draggedUnderLastDivider,
@@ -38,7 +37,6 @@ export function resetAllBeingDragged() {
     isThumbBeingDragged.set(false)
     isTimelineElementBeingDragged.set(false)
     isTimelineElementBeingResized.set(false)
-    draggedElement.set(null)
 }
 
 // reset all over/under dividers helper store values

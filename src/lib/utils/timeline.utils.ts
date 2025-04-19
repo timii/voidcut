@@ -505,11 +505,6 @@ export function moveElementsOnTrack(elBounds: ITimelineElementBounds, trackEls: 
     // keep track if we already moved the first overlapping element
     let firstElementAdjusted = false
 
-    // TODO: What we should also try out now is if the element was dropped on the right half of an element we try and move the elements to the left if possible
-    // we can try this checking if the element was dropped either on the left or right side of the element
-    // if it was the right side we can check if there are gaps between elements to the left 
-    // we can keep our current solution for now which should be enough
-
     const tracks = trackEls.map((trackEl, i) => {
         // calculate the bounds of current element 
         const trackElBounds: ITimelineElementBounds = { start: trackEl.playbackStartTime, end: trackEl.playbackStartTime + trackEl.duration }

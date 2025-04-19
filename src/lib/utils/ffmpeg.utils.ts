@@ -201,7 +201,6 @@ function createFfmpegFlags(mediaData: IFfmpegElement[]): string[] {
     // 1. video processing (except for audio elements)
     // --------------------------------------
 
-    // TODO: skip/handle audio elements for trimming and find out how to handle them in the map
     // 1.1 trim element videos and shift their timeline forward accordingly so that they appear at the correct times
     const updateVideosString = updateElementVideos(mediaData, outputMap)
     filterComplexString += updateVideosString
@@ -258,7 +257,7 @@ function updateElementVideos(mediaData: IFfmpegElement[], outputMap: OutputMap):
         // get current element
         const curEl = mediaData[i]
 
-        // if current element is an audio, skip current iteration since there is no video stream to offset or trim
+        // if current element is an audio element, skip current iteration since there is no video stream to offset or trim
         if (curEl.mediaType === MediaType.Audio) {
             // get the previous array
             const prevMapValue = outputMap.get(OutputMapKey.TRIM) ?? ''

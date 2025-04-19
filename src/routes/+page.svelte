@@ -51,7 +51,6 @@
 		UploadIcon
 	];
 
-	// TODO: add onMount hook that resets the dragging store values on mouse up for the whole window
 	onMount(async () => {
 		// initialize all the ffmpeg stuff in the background
 		// using async in this onMount is only fine if we don't

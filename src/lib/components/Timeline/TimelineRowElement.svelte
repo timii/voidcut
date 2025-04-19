@@ -294,12 +294,9 @@
 			prevElementIndex: elementIndex
 		};
 
-		// TODO: add element data to custom event so we can directly access it in the event listeners
 		// create and dispatch custom event with drag data in event detail
 		const event = new CustomEvent(CONSTS.customEventNameDropTimelineElement, { detail: data });
 		window.dispatchEvent(event);
-
-		// TODO: if at the point of mouse release the dragged element is neither over a timeline row or a divider we should check where to drop the element
 	}
 	// #endregion drag stuff
 
@@ -579,22 +576,6 @@
 	<!-- only clicking and dragging on this element will allow the parent to drag, anywhere else on the parent won’t work -->
 	<!-- width of the "drag-area" will be the full element - the handle sizes -->
 	<div class="timeline-row-element-drag-area w-[calc(100%-16px)] h-full absolute left-2"></div>
-
-	<!-- element name shown -->
-	<!-- <div class="timeline-row-element-name text-[12px] text-text-button ml-3 truncate select-none">
-		{element.mediaName}
-	</div> -->
-
-	<!-- TODO: only for debugging -->
-	<!-- {#if !isProduction()}
-		<div class="timeline-row-element-name text-[10px] text-text-button ml-3 truncate select-none">
-			{element.playbackStartTime / CONSTS.secondsMultiplier}s / {element.duration /
-				CONSTS.secondsMultiplier}s
-		</div>
-		<div class="timeline-row-element-name text-[10px] text-text-button ml-3 truncate select-none">
-			elIndex:{elementIndex}/row:{rowIndex}
-		</div>
-	{/if} -->
 
 	<div class="image-container h-full w-full relative pointer-events-none">
 		{#if element.type === MediaType.Audio}

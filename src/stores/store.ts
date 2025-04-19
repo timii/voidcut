@@ -1,7 +1,7 @@
 import { ExportState } from '$lib/interfaces/Ffmpeg';
 import type { IMedia } from '$lib/interfaces/Media';
 import { PreviewAspectRatio } from '$lib/interfaces/Player';
-import type { ITimelineDraggedElementHover, ISelectedElement, ITimelineDraggedElement, ITimelineDraggedElementData, ITimelineDraggedElementPosition, ITimelineElementResizeData, ITimelineTrack } from '$lib/interfaces/Timeline';
+import type { ITimelineDraggedElementHover, ISelectedElement, ITimelineDraggedElementData, ITimelineDraggedElementPosition, ITimelineElementResizeData, ITimelineTrack } from '$lib/interfaces/Timeline';
 import { CONSTS } from '$lib/utils/consts';
 import { writable } from 'svelte/store';
 
@@ -45,8 +45,6 @@ export const isThumbBeingDragged = writable(false);
 export const isTimelineElementBeingDragged = writable(false); // keep track if a timeline element is being dragged
 export const isTimelineElementBeingResized = writable(false); // keep track if a timeline element is being resized
 export const elementResizeData = writable<ITimelineElementResizeData | undefined>(undefined); // keep track of what side the element is being resized
-// TODO: remove old store variable
-export const draggedElement = writable<ITimelineDraggedElement | null>(null); // contains information about the dragged timeline element
 export const draggedElementPosition = writable<ITimelineDraggedElementPosition | null>(null) // keeps track of the dragged element position
 export const draggedElementHover = writable<ITimelineDraggedElementHover | null>(null) // keeps track of what element the dragged element is hovered over
 export const draggedOverThreshold = writable<boolean>(false) // keeps track if the element has been dragged more than the threshold

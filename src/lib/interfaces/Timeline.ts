@@ -22,20 +22,6 @@ export interface ITimelineTrack {
     elements: ITimelineElement[] // array to hold each element on the current track
 }
 
-// TODO: remove if not used anymore
-export interface ITimelineDraggedElement {
-    left: number;  // amount of pixels from the left inside the parent container
-    top: number;  // amount of pixels from the top inside the parent container
-    absoluteLeft: number;  // amount of pixels from the left inside the viewport
-    absoluteTop: number;  // amount of pixels from the top inside the viewport
-    width: number;
-    height: number;
-    elementId: string; // timline element id
-    clickedX: number;  // where in the element the mouse clicked
-    clickedY: number;  // where in the element the mouse clicked
-    data: ITimelineElement  // all the information about the dragged element
-}
-
 export interface ITimelineDraggedElementPosition {
     left: number;  // amount of pixels from the left inside the parent container
     top: number;  // amount of pixels from the top inside the parent container
