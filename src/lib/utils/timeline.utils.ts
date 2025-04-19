@@ -3,7 +3,8 @@ import {
     type ITimelineElement,
     type ITimelineElementBounds,
     type ITimelineTrack,
-    TimelineElementResizeSide
+    TimelineElementResizeSide,
+    TimelineDropArea
 } from "$lib/interfaces/Timeline";
 import { get } from "svelte/store";
 import {
@@ -24,8 +25,33 @@ import {
 } from "../../stores/store";
 import { CONSTS } from "./consts";
 import { onlyPrimaryButtonClicked, convertPxToMs, generateId } from "./utils";
+import { type IMedia } from "$lib/interfaces/Media";
+import { handleTimelineMediaDrop } from "./file.utils";
 
 let timelineScrollContainer: Element | null
+
+export function mediaDropOnTimeline(e: DragEvent, dropArea: TimelineDropArea, rowIndex?: number, startTime?: number) {
+    // prevent default behavior
+    e.preventDefault();
+    e.stopPropagation();
+
+    // get data from dropped element
+    let mediaDataString = e.dataTransfer?.getData(CONSTS.mediaPoolTransferKey);
+
+    if (!mediaDataString) {
+        return;
+    }
+
+    // parse it back to be an object again
+    const mediaData: IMedia = JSON.parse(mediaDataString);
+
+    // only handle files when actually dropped
+    if (!mediaData || e.type === 'dragleave') {
+        return;
+    }
+
+    handleTimelineMediaDrop(mediaData, dropArea, rowIndex, startTime);
+}
 
 // checks whether to resize on the left or right side of the element  
 export function handleElementResizing(e: MouseEvent) {
@@ -424,10 +450,6 @@ export function isElementAtCorrectIndex(el: ITimelineElement, index: number, tra
     // check if the playback start time of the element after is before the start of the given element
     const isElementAfterStartTimeBiggerThanElStartTime = elementAfter !== undefined && elementAfter.playbackStartTime > el.playbackStartTime
 
-    // console.error(
-    //     'Timeline -> isElementAtCorrectIndex -> elementBefore:', elementBefore, "elementAfter:", elementAfter, "el:", el, "at correct index:", (isElementBeforeStartTimeSmallerThanElStartTime || elementBefore === undefined) && (isElementAfterStartTimeBiggerThanElStartTime || elementAfter === undefined)
-    // );
-
     // return if both the element before and after have a correct playback start time relative to the given element
     return (isElementBeforeStartTimeSmallerThanElStartTime || elementBefore === undefined) && (isElementAfterStartTimeBiggerThanElStartTime || elementAfter === undefined)
 }
@@ -456,10 +478,6 @@ export function moveElementToCorrectIndex(el: ITimelineElement, index: number, t
         if (!curStartTimeAfterElement) {
             continue
         }
-
-        // // remove element from array using its previous index
-        // trackEls.splice(index, 1)
-
 
         // add the element at the current index since the current element will be pushed after the element has been added
         trackEls.splice(i, 0, el)

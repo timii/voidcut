@@ -16,6 +16,7 @@
 	import { convertMsToPx, isDraggedElementAFile, resetOverUnderDividers } from '$lib/utils/utils';
 	import type { IMedia } from '$lib/interfaces/Media';
 	import { handleTimelineMediaDrop } from '$lib/utils/file.utils';
+	import { mediaDropOnTimeline } from '$lib/utils/timeline.utils';
 
 	export let track: ITimelineTrack;
 	export let index: number;
@@ -101,28 +102,10 @@
 	}
 
 	function onDropElement(e: DragEvent) {
-		// prevent default behavior
-		e.preventDefault();
-		e.stopPropagation();
 		hoverElement = false;
 
 		// reset so the width of the next hovered element is calculated new again
 		dropZoneWidth = 0;
-
-		// get data from dropped element
-		let mediaDataString = e.dataTransfer?.getData(CONSTS.mediaPoolTransferKey);
-
-		if (!mediaDataString) {
-			return;
-		}
-
-		// parse it back to be an object again
-		const mediaData: IMedia = JSON.parse(mediaDataString);
-
-		// only handle files when actually dropped
-		if (!mediaData || e.type === 'dragleave') {
-			return;
-		}
 
 		// get the left offset where the element was dropped
 		const startTimeInPx = dropZonePositionLeft - CONSTS.timelineRowOffset;
@@ -130,7 +113,7 @@
 		// convert the left offset from px into ms
 		const startTimeInMs = (startTimeInPx / $currentTimelineScale) * CONSTS.secondsMultiplier;
 
-		handleTimelineMediaDrop(mediaData, TimelineDropArea.TRACK, index, startTimeInMs);
+		mediaDropOnTimeline(e, TimelineDropArea.TRACK, index, startTimeInMs);
 	}
 </script>
 

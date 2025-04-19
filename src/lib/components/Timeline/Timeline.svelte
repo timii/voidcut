@@ -40,7 +40,11 @@
 	import TimelineEmpty from './TimelineEmpty.svelte';
 	import { dropTimelineElementHandler } from '$lib/utils/drop-timeline-element-handler.utils';
 	import { hoverTimelineElementHandler } from '$lib/utils/hover-timeline-element-handler.utils';
-	import { handleElementResizing, moveTimelineThumb } from '$lib/utils/timeline.utils';
+	import {
+		handleElementResizing,
+		moveTimelineThumb,
+		mediaDropOnTimeline
+	} from '$lib/utils/timeline.utils';
 	import { handleTimelineMediaDrop } from '$lib/utils/file.utils';
 
 	let scrollContainerEl: HTMLDivElement;
@@ -138,34 +142,15 @@
 	}
 
 	function onDropElement(e: DragEvent) {
-		// TODO: refactor most of this logic into a util function since we mostly do the same for both dropping media element here, divider and the timelineRow
-		// prevent default behavior
-		e.preventDefault();
-		e.stopPropagation();
-
 		// reset all the variables used when checking if dragged element is over or under dividers
 		resetOverUnderDividers();
 		firstDivider = null;
 		lastDivider = null;
 
-		// get data from dropped element
-		let mediaDataString = e.dataTransfer?.getData(CONSTS.mediaPoolTransferKey);
-		if (!mediaDataString) {
-			return;
-		}
-
-		// parse it back to be an object again
-		const mediaData: IMedia = JSON.parse(mediaDataString);
-
-		// only handle files when actually dropped
-		if (!mediaData || e.type === 'dragleave') {
-			return;
-		}
-
 		// check if the element was dropped over the first or under the last divider
 		const rowIndex = $draggedOverFirstDivider ? 0 : $timelineTracks.length;
 
-		handleTimelineMediaDrop(mediaData, TimelineDropArea.DIVIDER, rowIndex);
+		mediaDropOnTimeline(e, TimelineDropArea.DIVIDER, rowIndex);
 	}
 
 	// update local variables if they're null

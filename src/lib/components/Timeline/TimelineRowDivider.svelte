@@ -16,6 +16,7 @@
 	import { isDraggedElementAFile, resetOverUnderDividers } from '$lib/utils/utils';
 	import type { IMedia } from '$lib/interfaces/Media';
 	import { handleTimelineMediaDrop } from '$lib/utils/file.utils';
+	import { mediaDropOnTimeline } from '$lib/utils/timeline.utils';
 
 	export let index: number;
 
@@ -71,26 +72,9 @@
 
 	// handle media element dropped on divider and not timeline element
 	function onDropElement(e: DragEvent) {
-		// prevent default behavior
-		e.preventDefault();
-		e.stopPropagation();
 		hoverElement = false;
 
-		// get data from dropped element
-		let mediaDataString = e.dataTransfer?.getData(CONSTS.mediaPoolTransferKey);
-		if (!mediaDataString) {
-			return;
-		}
-
-		// parse it back to be an object again
-		const mediaData: IMedia = JSON.parse(mediaDataString);
-
-		// only handle files when actually dropped
-		if (!mediaData || e.type === 'dragleave') {
-			return;
-		}
-
-		handleTimelineMediaDrop(mediaData, TimelineDropArea.DIVIDER, index);
+		mediaDropOnTimeline(e, TimelineDropArea.DIVIDER, index);
 	}
 
 	function onScroll(e: Event) {
