@@ -6,7 +6,7 @@
   <p align="center">
     Free, open-source and non-linear video editor designed to run entirely in your web browser.
     <br />
-    <a href="">Try it out (ADD LINK)</a>
+    <a href="https://timii.github.io/voidcut/">Try it out</a>
   </p>
 </p>
 
@@ -37,7 +37,7 @@ The goal of voidcut was to have some fun creating a simple tool that I can use m
 
 ## Getting started
 
-1. Open your browser and navigate to (TODO include link).
+1. Open your browser and navigate to [https://timii.github.io/voidcut/](https://timii.github.io/voidcut/).
 2. Upload your video, audio or image files.
 3. Edit and customize your video.
 4. Export and download your final masterpiece with a few clicks!
