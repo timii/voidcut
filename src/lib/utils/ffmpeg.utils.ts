@@ -26,7 +26,6 @@ export async function initializeFfmpeg() {
     // listen to log events and print them into the console
     ffmpeg.on('log', ({ type, message }) => {
         debugLog(`[LOG] type: ${type}, message: ${message}`)
-        console.log(`[LOG] type: ${type}, message: ${message}`)
     });
 
     // listen to progress events and print them into the console
