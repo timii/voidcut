@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { callFfmpeg } from '$lib/utils/ffmpeg.utils';
 	import {
 		aboutOverlayOpen,
 		exportOverlayOpen,
@@ -14,9 +13,8 @@
 	import { clearStorage, getState, updateState } from '$lib/utils/persistence/persistence.utils';
 	import { isProduction } from '$lib/utils/utils';
 
-	async function openExportDialog() {
+	function openExportDialog() {
 		exportOverlayOpen.set(true);
-		await callFfmpeg();
 	}
 
 	function openAboutDialog() {
