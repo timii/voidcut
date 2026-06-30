@@ -21,7 +21,7 @@ The goal of voidcut was to have some fun creating a simple tool that I can use m
 - **Web-Based Convenience**: Accessible from any modern browser. No installation required.
 - **Intuitive Interface**: Designed with simplicity in mind.
 - **Non-Linear Editing**: Drag-and-drop timeline editing for easy trimming, cutting, and overlapping clips.
-- **Customizable Export**: Export and download your final masterpiece as MP4, GIF, PNG or MP3 with a selectable resolution, compression and filename settings.
+- **Customizable Export**: Export and download your final masterpiece as MP4, GIF, PNG or MP3 with selectable resolution, compression and filename settings.
 - **Easy Preview**: Directly preview your video.
 - **Local-only**: All processing happens locally in your browser; your files never leave your device.
 - **Local Backup**: Current state is regularly saved locally to be able to reload the page and continue where you left off.
