@@ -12,7 +12,6 @@
 		convertPxToMs,
 		elementIsAnImage,
 		getRelativeMousePosition,
-		getTailwindVariables,
 		onlyPrimaryButtonClicked
 	} from '$lib/utils/utils';
 	import { onMount } from 'svelte';
@@ -37,6 +36,7 @@
 		getTimelineTracksBoundingRect,
 		isCurrentElementBeingResized
 	} from '$lib/utils/timeline.utils';
+	import TimelineFilmstrip from './TimelineFilmstrip.svelte';
 
 	export let element: ITimelineElement = {} as ITimelineElement;
 	export let elementIndex: number;
@@ -52,7 +52,7 @@
 	$: resetPosition(element.playbackStartTime, CONSTS.secondsMultiplier, $currentTimelineScale);
 
 	// update svg variables when the timeline scale changes
-	$: updateSvgVariables($currentTimelineScale);
+	$: $currentTimelineScale, updateSvgVariables();
 
 	// set the left offset once in the beginning
 	leftOffset = convertMsToPx(element.playbackStartTime);
@@ -65,8 +65,6 @@
 	// here we actually don't want to use the util function to convert to px since we want the elementWidth to update when the currentTimelineScale changes
 	$: elementWidth = (element.duration / CONSTS.secondsMultiplier) * $currentTimelineScale;
 
-	const tailwindVariables = getTailwindVariables();
-	const tailwindColors = tailwindVariables.theme.colors;
 	let elementRef: HTMLElement;
 	let dragging = false;
 	let tracksElBoundRect: DOMRect;
@@ -105,7 +103,7 @@
 		});
 	});
 
-	function updateSvgVariables(_: number) {
+	function updateSvgVariables() {
 		// update the variables used by the svg when timeline scale changed
 		svgFullWidth = getFullWidth();
 		svgLeftTrim = convertMsToPx(element.trimFromStart);
@@ -575,8 +573,12 @@
 					--leftTrim: -{svgLeftTrim}px;
 				"
 			>
+				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 				{@html element.timelineImage}
 			</div>
+		{:else if element.type === MediaType.Video && element.timelineFrames && element.timelineFrames.length > 0}
+			<TimelineFilmstrip {element} fullWidth={svgFullWidth} leftTrim={svgLeftTrim}
+			></TimelineFilmstrip>
 		{:else}
 			<div
 				class="image absolute left-0 top-0 w-full h-full pointer-events-none bg-repeat-x rounded"
