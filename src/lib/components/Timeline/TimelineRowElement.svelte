@@ -315,11 +315,8 @@
 			return;
 		}
 
-		// update starting x position for the next call of the mouse move
-		resizeStartPosition = e.x;
-
 		// add the pixel difference to the width
-		const newWidth = parseInt(getComputedStyle(elementRef, '').width) + dx;
+		const newWidth = parseFloat(getComputedStyle(elementRef, '').width) + dx;
 
 		// convert the new width into milliseconds
 		const newWidthInMs = convertPxToMs(newWidth);
@@ -343,9 +340,6 @@
 			return;
 		}
 
-		// calculate new leftOffset using the difference from last update
-		leftOffset = newLeftOffset;
-
 		// convert new offset into milliseconds to use as playbackStartTime
 		const newLeftOffsetInMs = convertPxToMs(newLeftOffset);
 
@@ -359,6 +353,12 @@
 		if (doesElToTheLeftExist && newLeftOffsetInMs < resizeData.nextElBounds.nextLeftEl!) {
 			return;
 		}
+
+		// only move the mouse anchor after the resize was accepted
+		resizeStartPosition = e.x;
+
+		// calculate new leftOffset using the difference from last update
+		leftOffset = newLeftOffset;
 
 		// increase/decrease size of element accordingly
 		elementWidth = newWidth;
@@ -422,11 +422,8 @@
 			return;
 		}
 
-		// update starting x position for the next call of the mouse move
-		resizeStartPosition = e.x;
-
 		// add the pixel difference to the width
-		const newWidth = parseInt(getComputedStyle(elementRef, '').width) + dx;
+		const newWidth = parseFloat(getComputedStyle(elementRef, '').width) + dx;
 
 		// convert the new width into milliseconds
 		const newWidthInMs = convertPxToMs(newWidth);
@@ -454,6 +451,9 @@
 		if (newWidthInMs < CONSTS.timelineElementMinWidthMs) {
 			return;
 		}
+
+		// only move the mouse anchor after the resize was accepted
+		resizeStartPosition = e.x;
 
 		// increase/decrease size of element accordingly
 		elementWidth = newWidth;
