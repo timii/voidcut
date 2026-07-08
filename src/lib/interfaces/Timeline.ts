@@ -14,8 +14,36 @@ export interface ITimelineElement {
 	playbackStartTime: number; // time on timeline where element starts in miliseconds
 	trimFromStart: number; // how much is trimmed from the start in milliseconds
 	trimFromEnd: number; // how much is trimmed from the end in milliseconds
-	videoOptions: Record<string, never>; // object to keep track of applied filters of the element (e.g: Blur, Brightness, Volume, etc.)
+	settings: TimelineElementSettings; // editable settings applied to the element in preview and export
 }
+
+export interface IAudioTimelineElementSettings {
+	volume: number;
+	fadeInMs: number;
+	fadeOutMs: number;
+	speed: TimelineElementSpeed;
+}
+
+export interface IVideoTimelineElementSettings {
+	flipHorizontal: boolean;
+	flipVertical: boolean;
+	volume: number;
+	speed: TimelineElementSpeed;
+	opacity: number;
+}
+
+export interface IImageTimelineElementSettings {
+	flipHorizontal: boolean;
+	flipVertical: boolean;
+	opacity: number;
+}
+
+export type TimelineElementSettings =
+	| IAudioTimelineElementSettings
+	| IVideoTimelineElementSettings
+	| IImageTimelineElementSettings;
+
+export type TimelineElementSpeed = 0.5 | 0.75 | 1 | 1.25 | 1.5 | 2;
 
 // parent element for each track(row) in the timeline
 export interface ITimelineTrack {

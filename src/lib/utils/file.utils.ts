@@ -10,6 +10,7 @@ import { generateAudioWaveform } from './ffmpeg.utils';
 import { createTrackWithElement, handleOverlapping, handleElementIndeces } from './timeline.utils';
 import { generateId, convertMsToPx } from './utils';
 import { generateAudioWaveformTimelineImage } from './waveform.utils';
+import { getDefaultTimelineElementSettings } from './timeline-settings.utils';
 
 // save a given array of media objects into the store
 export function saveFilesToStore(files: IMedia[]) {
@@ -186,7 +187,7 @@ export function handleTimelineMediaDrop(
 		timelineFrames: media.timelineFrames,
 		type: media.type,
 		elementId: generateId(),
-		videoOptions: {}
+		settings: getDefaultTimelineElementSettings(media.type)
 	};
 
 	// create an empty track with the newly created element

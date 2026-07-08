@@ -37,6 +37,7 @@
 		isCurrentElementBeingResized
 	} from '$lib/utils/timeline.utils';
 	import TimelineFilmstrip from './TimelineFilmstrip.svelte';
+	import { getTimelineElementSpeed } from '$lib/utils/timeline-settings.utils';
 
 	export let element: ITimelineElement = {} as ITimelineElement;
 	export let elementIndex: number;
@@ -323,7 +324,8 @@
 
 		// check if current width + dx is bigger than maxDuration, if yes we can't increase the size further
 		// if maxDuration is undefined the user can resize the element as much as they want to
-		if (element.maxDuration && newWidthInMs > element.maxDuration) {
+		const speed = getTimelineElementSpeed(element);
+		if (element.maxDuration && newWidthInMs * speed > element.maxDuration) {
 			return;
 		}
 
@@ -374,7 +376,7 @@
 
 			// only update the mediaStartTime when the current element is not an image
 			if (!elementIsAnImage(element) && resizeStartWidth) {
-				newTrimFromStart += resizeStartWidth - newWidthInMs;
+				newTrimFromStart += Math.round((resizeStartWidth - newWidthInMs) * speed);
 				newTrimFromStart = Math.max(newTrimFromStart, 0);
 			}
 
@@ -443,7 +445,8 @@
 
 		// check if current width + dx is equal or bigger than maxDuration, if yes we can't increase the size further
 		// if maxDuration is undefined the user can resize the element as much as they want to
-		if (element.maxDuration && newWidthInMs > element.maxDuration) {
+		const speed = getTimelineElementSpeed(element);
+		if (element.maxDuration && newWidthInMs * speed > element.maxDuration) {
 			return;
 		}
 
@@ -466,7 +469,7 @@
 
 			// only update the mediaStartTime when the current element is not an image
 			if (!elementIsAnImage(element) && resizeStartWidth) {
-				newTrimFromEnd += resizeStartWidth - newWidthInMs;
+				newTrimFromEnd += Math.round((resizeStartWidth - newWidthInMs) * speed);
 				newTrimFromEnd = Math.max(newTrimFromEnd, 0);
 			}
 
