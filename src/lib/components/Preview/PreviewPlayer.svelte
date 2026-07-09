@@ -1,9 +1,22 @@
 <script lang="ts">
 	import { MediaType } from '$lib/interfaces/Media';
+	import type {
+		IAudioTimelineElementSettings,
+		IImageTimelineElementSettings,
+		IVideoTimelineElementSettings
+	} from '$lib/interfaces/Timeline';
 	import type { IPlayerElement, IPlayerElementsMap } from '$lib/interfaces/Player';
 	import type { ITimelineTrack } from '$lib/interfaces/Timeline';
-	import { getCurrentMediaTime, isPlaybackInElement } from '$lib/utils/playback.utils';
+	import {
+		getCurrentMediaTime,
+		getFadeVolumeMultiplier,
+		isPlaybackInElement
+	} from '$lib/utils/playback.utils';
 	import { isSameAspectRatio } from '$lib/utils/utils';
+	import {
+		getTimelineElementSpeed,
+		normalizeTimelineElementSettings
+	} from '$lib/utils/timeline-settings.utils';
 	import {
 		availableMedia,
 		currentPlaybackTime,
@@ -16,6 +29,7 @@
 
 	let previewPlayerRef: HTMLDivElement;
 	let fullWidth = true;
+	let audioContext: AudioContext | undefined;
 
 	$: timelineElements = flattenTimelineTracks($timelineTracks);
 
@@ -27,13 +41,13 @@
 	$: handlePlayingElements($previewPlaying);
 
 	// handle playing and pausing elements when the currentPlaybackTime store value changes
-	$: handlePlaybackTimeUpdate($currentPlaybackTime);
+	$: $currentPlaybackTime, handlePlaybackTimeUpdate();
 
 	// handle preview player sizing when either window height or width change
-	$: handleWindowWidthOrHeightChange($windowWidth, $windowHeight);
+	$: $windowWidth, $windowHeight, handleWindowWidthOrHeightChange();
 
 	// check if preview player sizing needs to be updated on window size change
-	function handleWindowWidthOrHeightChange(_: number, __: number) {
+	function handleWindowWidthOrHeightChange() {
 		if (!previewPlayerRef) {
 			return;
 		}
@@ -54,7 +68,7 @@
 	}
 
 	// handles what elements need to be updated while playback is running
-	function handlePlaybackTimeUpdate(playbackTime: number) {
+	function handlePlaybackTimeUpdate() {
 		// if the playback time is being updated but the playback isn't running we return here
 		if (!$previewPlaying) {
 			return;
@@ -70,6 +84,7 @@
 
 			// type the el property to get correct typing
 			const htmlEl = el.el as HTMLMediaElement;
+			configureMediaElement(htmlEl, el.properties);
 
 			const isMediaPlaying = !htmlEl.paused;
 
@@ -100,6 +115,10 @@
 
 	// handles what elements need to be updated when pausing/resuming playback
 	function handlePlayingElements(playing: boolean) {
+		if (playing && audioContext?.state === 'suspended') {
+			audioContext.resume();
+		}
+
 		// everytime the playback is being started/paused, go through the whole map and check what elements
 		// needs to be played or paused
 		Object.values(playerElementsMap).forEach((el) => {
@@ -110,6 +129,7 @@
 
 			// type the el property to get correct typing
 			const htmlEl = el.el as HTMLMediaElement;
+			configureMediaElement(htmlEl, el.properties);
 
 			// get the time from where the media element should be played at
 			const currentElTime = getCurrentMediaTime(el.properties);
@@ -123,6 +143,61 @@
 				playing ? htmlEl.play() : htmlEl.pause();
 			}
 		});
+	}
+
+	function configureMediaElement(htmlEl: HTMLMediaElement, element: IPlayerElement) {
+		htmlEl.playbackRate = getTimelineElementSpeed(element);
+		const gainNode = getMediaGainNode(htmlEl, element);
+		const volume = getMediaVolume(element);
+
+		if (gainNode) {
+			// use Web Audio gain so preview volume can go above the native media cap of 100%
+			htmlEl.volume = 1;
+			gainNode.gain.value = volume;
+		} else {
+			htmlEl.volume = Math.max(0, Math.min(1, volume));
+		}
+	}
+
+	function getMediaVolume(element: IPlayerElement): number {
+		if (element.type === MediaType.Audio) {
+			const settings = normalizeTimelineElementSettings(element) as IAudioTimelineElementSettings;
+			return Math.max(0, settings.volume * getFadeVolumeMultiplier(element));
+		}
+
+		if (element.type === MediaType.Video) {
+			const settings = normalizeTimelineElementSettings(element) as IVideoTimelineElementSettings;
+			return Math.max(0, settings.volume);
+		}
+
+		return 1;
+	}
+
+	function getMediaGainNode(
+		htmlEl: HTMLMediaElement,
+		element: IPlayerElement
+	): GainNode | undefined {
+		const playerElement = playerElementsMap[element.elementId];
+
+		if (!playerElement) {
+			return undefined;
+		}
+
+		if (playerElement.audio) {
+			return playerElement.audio.gainNode;
+		}
+
+		if (!audioContext) {
+			audioContext = new AudioContext();
+		}
+
+		// each media element can only be connected to one source node, so keep the node on the map
+		const sourceNode = audioContext.createMediaElementSource(htmlEl);
+		const gainNode = audioContext.createGain();
+		sourceNode.connect(gainNode).connect(audioContext.destination);
+		playerElement.audio = { sourceNode, gainNode };
+
+		return gainNode;
 	}
 
 	// filter the given map by removing keys where the "el" property in the value is null
@@ -166,6 +241,31 @@
 			? 'unset'
 			: 'none';
 	}
+
+	function getVisualOpacity(element: IPlayerElement): number {
+		if (element.type === MediaType.Audio) {
+			return 1;
+		}
+
+		const settings = normalizeTimelineElementSettings(element) as
+			| IVideoTimelineElementSettings
+			| IImageTimelineElementSettings;
+		return settings.opacity;
+	}
+
+	function getVisualTransform(element: IPlayerElement): string {
+		if (element.type === MediaType.Audio) {
+			return 'none';
+		}
+
+		const settings = normalizeTimelineElementSettings(element) as
+			| IVideoTimelineElementSettings
+			| IImageTimelineElementSettings;
+		const x = settings.flipHorizontal ? -1 : 1;
+		const y = settings.flipVertical ? -1 : 1;
+
+		return `scale(${x}, ${y})`;
+	}
 </script>
 
 <!-- set either height or width value to 100% to keep aspect ratio -->
@@ -189,6 +289,8 @@
 				style="
 					display: {displayMediaElement($currentPlaybackTime, element)}; 
 					z-index:{timelineElements.length - i};
+					opacity: {getVisualOpacity(element)};
+					transform: {getVisualTransform(element)};
 				"
 				src={element.src}
 				bind:this={playerElementsMap[element.elementId].el}
@@ -216,6 +318,8 @@
 				style="
 					display: {displayMediaElement($currentPlaybackTime, element)}; 
 					z-index:{timelineElements.length - i};
+					opacity: {getVisualOpacity(element)};
+					transform: {getVisualTransform(element)};
 				"
 				data-id={element.elementId}
 			/>
