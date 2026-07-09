@@ -155,6 +155,7 @@
 				return undefined;
 			}
 
+			// changing speed changes the visible timeline duration, so fades must stay within it
 			const settings = normalizeTimelineElementSettings(element) as
 				| IAudioTimelineElementSettings
 				| IVideoTimelineElementSettings;
@@ -184,6 +185,7 @@
 
 	function updateImageDuration(duration: number) {
 		updateSelectedElement((element, tracks, rowIndex, elementIndex) => {
+			// settings edits should not silently push neighboring timeline elements
 			if (!elementCanUseDuration(tracks, rowIndex, elementIndex, duration)) {
 				warning = 'Not enough space to change duration.';
 				return undefined;
@@ -202,6 +204,7 @@
 					? DEFAULT_IMAGE_DURATION_MS
 					: getTimelineDurationForSpeed(element, 1);
 
+			// resetting speed or image duration can grow the element, so keep the same overlap guard
 			if (!elementCanUseDuration(tracks, rowIndex, elementIndex, nextDuration)) {
 				warning = 'Not enough space to reset settings.';
 				return undefined;

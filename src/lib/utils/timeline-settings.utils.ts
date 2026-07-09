@@ -112,6 +112,7 @@ export function getSourceSegmentDuration(element: ITimelineElement): number {
 		return element.duration;
 	}
 
+	// media speed changes timeline length, but trim values stay in source-media milliseconds
 	if (element.maxDuration !== undefined) {
 		return Math.max(0, element.maxDuration - element.trimFromStart - element.trimFromEnd);
 	}
