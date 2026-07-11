@@ -1,4 +1,5 @@
 import type { MediaType } from './Media';
+import type { TimelineElementSettings } from './Timeline';
 
 export interface IFfmpegElement {
 	mediaData: Uint8Array; // media data as an UInt8Array
@@ -9,6 +10,7 @@ export interface IFfmpegElement {
 	fileName: string; // file name
 	trimFromStart: number; // how much is trimmed from the start in milliseconds
 	trimFromEnd: number; // how much is trimmed from the end in milliseconds
+	settings: TimelineElementSettings; // settings applied to this element in preview and export
 }
 
 export type OutputMap = Map<OutputMapKey, string[]>;

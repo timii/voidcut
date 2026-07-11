@@ -32,6 +32,7 @@
 		thumbOverSelectedElement
 	} from '$lib/utils/timeline.utils';
 	import { msToS, formatPlaybackTime } from '$lib/utils/time.utils';
+	import { getTimelineElementSpeed } from '$lib/utils/timeline-settings.utils';
 
 	// update controls when different store values change
 	$: $selectedElement, updateControls();
@@ -122,8 +123,10 @@
 
 			// don't update the trim from start or end for images, since its always 0
 			if (!elementIsAnImage(element)) {
-				newTrimFromStart = element.trimFromStart + timeOverElement;
-				newTrimFromEnd = element.trimFromEnd + (element.duration - timeOverElement);
+				const speed = getTimelineElementSpeed(element);
+				newTrimFromStart = element.trimFromStart + Math.round(timeOverElement * speed);
+				newTrimFromEnd =
+					element.trimFromEnd + Math.round((element.duration - timeOverElement) * speed);
 			}
 
 			// update the original element

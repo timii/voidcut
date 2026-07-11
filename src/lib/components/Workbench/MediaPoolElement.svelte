@@ -2,7 +2,6 @@
 	import { MediaType, type IMedia } from '$lib/interfaces/Media';
 	import { CONSTS } from '$lib/utils/consts';
 	import DeleteIcon from '$lib/assets/workbench/delete.png';
-	import { fade } from 'svelte/transition';
 	import { availableMedia, timelineTracks } from '../../../stores/store';
 	import { cleanUpEmptyTracks } from '$lib/utils/timeline.utils';
 	import { formatTime } from '$lib/utils/time.utils';
@@ -92,16 +91,15 @@
 			>
 		{/if}
 
-		<!-- only show the delete button if mouse is hovered over media element -->
-		{#if isHovering}
-			<button
-				transition:fade={{ duration: 100 }}
-				on:click={deleteElement}
-				class="cursor-pointer rounded hover:opacity-100 absolute top-2 right-2 bg-background-media-pool-time p-1 opacity-80"
-			>
-				<img src={DeleteIcon} alt="delete media" width="14" />
-			</button>
-		{/if}
+		<button
+			on:click={deleteElement}
+			class:pointer-events-none={!isHovering}
+			class="cursor-pointer rounded hover:opacity-100 absolute top-2 right-2 bg-background-media-pool-time p-1 opacity-80 transition-opacity delete-button"
+			style="opacity: {isHovering ? '0.8' : '0'};"
+			tabindex={isHovering ? 0 : -1}
+		>
+			<img src={DeleteIcon} alt="delete media" width="14" />
+		</button>
 	</div>
 	<span class="h-auto mt-1 text-xxs font-medium text-text-media-pool-time truncate w-[128px]"
 		>{file.name}</span
