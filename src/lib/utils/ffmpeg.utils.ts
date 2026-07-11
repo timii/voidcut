@@ -29,6 +29,11 @@ import {
 import { adjustingInterval } from './adjusting-interval';
 import { CONSTS } from './consts';
 import { MediaType } from '$lib/interfaces/Media';
+import type {
+	IAudioTimelineElementSettings,
+	IImageTimelineElementSettings,
+	IVideoTimelineElementSettings
+} from '$lib/interfaces/Timeline';
 import { convertDataUrlToUIntArray, convertFileToDataUrl } from './file.utils';
 import { msToS } from './time.utils';
 import {
@@ -39,6 +44,10 @@ import {
 	getGifFps,
 	getMp3Bitrate
 } from './export.utils';
+import {
+	getTimelineElementSpeed,
+	normalizeTimelineElementSettings
+} from './timeline-settings.utils';
 
 let ffmpeg: FFmpeg;
 let elapsedTimeInterval: {
@@ -179,7 +188,8 @@ function mapTimelineElements(): IFfmpegElement[] {
 			fileExtension: data.fileType,
 			fileName: timelineElement.mediaName.replace(`.${data.fileType}`, ''),
 			trimFromStart: timelineElement.trimFromStart,
-			trimFromEnd: timelineElement.trimFromEnd
+			trimFromEnd: timelineElement.trimFromEnd,
+			settings: normalizeTimelineElementSettings(timelineElement)
 		};
 	});
 
@@ -371,6 +381,98 @@ function appendOutputFlags(
 }
 
 // #region flag helpers
+function getExportSourceDurationInMs(element: IFfmpegElement): number {
+	if (element.mediaType === MediaType.Image) {
+		return element.duration;
+	}
+
+	// timeline duration is already speed-adjusted; ffmpeg trim still needs source-media time
+	return Math.round(element.duration * getFfmpegElementSpeed(element));
+}
+
+function getFfmpegElementSpeed(element: IFfmpegElement): number {
+	if (element.mediaType === MediaType.Image) {
+		return 1;
+	}
+
+	return getTimelineElementSpeed({
+		elementId: '',
+		mediaId: '',
+		mediaName: element.fileName,
+		mediaImage: '',
+		type: element.mediaType,
+		duration: element.duration,
+		maxDuration: undefined,
+		playbackStartTime: element.offset,
+		trimFromStart: element.trimFromStart,
+		trimFromEnd: element.trimFromEnd,
+		settings: element.settings
+	});
+}
+
+function getVisualFilterChain(element: IFfmpegElement): string {
+	if (element.mediaType === MediaType.Audio) {
+		return '';
+	}
+
+	const settings = element.settings as
+		| IVideoTimelineElementSettings
+		| IImageTimelineElementSettings;
+	const filters: string[] = [];
+
+	if (settings.flipHorizontal) {
+		filters.push('hflip');
+	}
+
+	if (settings.flipVertical) {
+		filters.push('vflip');
+	}
+
+	if (settings.opacity < 1) {
+		// overlay needs an alpha-capable stream before opacity can affect the composed output
+		filters.push('format=rgba', `colorchannelmixer=aa=${settings.opacity}`);
+	}
+
+	return filters.length > 0 ? `,${filters.join(',')}` : '';
+}
+
+function getAudioFilterChain(element: IFfmpegElement): string {
+	if (element.mediaType === MediaType.Image) {
+		return '';
+	}
+
+	const speed = getFfmpegElementSpeed(element);
+	const settings = element.settings as
+		| IAudioTimelineElementSettings
+		| IVideoTimelineElementSettings;
+	const filters: string[] = [];
+
+	if (speed !== 1) {
+		// UI presets stay in ffmpeg atempo's simple range, so one filter is enough here
+		filters.push(`atempo=${speed}`);
+	}
+
+	filters.push(`volume=${settings.volume}`);
+
+	if (element.mediaType === MediaType.Audio) {
+		const audioSettings = settings as IAudioTimelineElementSettings;
+		const durationInS = msToS(element.duration);
+		const fadeInInS = Math.min(msToS(audioSettings.fadeInMs), durationInS);
+		const fadeOutInS = Math.min(msToS(audioSettings.fadeOutMs), durationInS);
+
+		if (fadeInInS > 0) {
+			filters.push(`afade=t=in:st=0:d=${fadeInInS.toFixed(2)}`);
+		}
+
+		if (fadeOutInS > 0) {
+			const start = Math.max(0, durationInS - fadeOutInS);
+			filters.push(`afade=t=out:st=${start.toFixed(2)}:d=${fadeOutInS.toFixed(2)}`);
+		}
+	}
+
+	return filters.length > 0 ? `,${filters.join(',')}` : '';
+}
+
 // handle trimming, timestamps and delays for the video streams
 function updateElementVideos(mediaData: IFfmpegElement[], outputMap: OutputMap): string {
 	// create a "trim" key with an empty array that will keep track of the output variable names to be used later
@@ -394,15 +496,17 @@ function updateElementVideos(mediaData: IFfmpegElement[], outputMap: OutputMap):
 
 		// get all necessary properties and convert them to seconds with two digits after the dot
 		const offsetInS = +msToS(curEl.offset).toFixed(2);
-		const durationInS = +msToS(curEl.duration).toFixed(2);
+		const durationInS = +msToS(getExportSourceDurationInMs(curEl)).toFixed(2);
 		const trimFromStart = +msToS(curEl.trimFromStart).toFixed(2);
+		const speed = getFfmpegElementSpeed(curEl);
 
 		// decrement indeces
 		const inputIndex = i + 1;
 		const outputName = `trim${inputIndex}`;
+		const visualFilters = getVisualFilterChain(curEl);
 
 		// build the filter string for current element by appending it to the previous element(s)
-		trimString += `[${inputIndex}:v]trim=start=${trimFromStart}:duration=${durationInS},setpts=PTS-STARTPTS+${offsetInS}/TB[${outputName}];`;
+		trimString += `[${inputIndex}:v]trim=start=${trimFromStart}:duration=${durationInS},setpts=(PTS-STARTPTS)/${speed}+${offsetInS}/TB${visualFilters}[${outputName}];`;
 
 		// get the previous array
 		const prevMapValue = outputMap.get(OutputMapKey.TRIM) ?? '';
@@ -491,15 +595,16 @@ function updateElementAudios(mediaData: IFfmpegElement[], outputMap: OutputMap):
 		}
 
 		// get all necessary properties and convert them to seconds with two digits after the dot
-		const durationInS = +msToS(curEl.duration).toFixed(2);
+		const durationInS = +msToS(getExportSourceDurationInMs(curEl)).toFixed(2);
 		const trimFromStart = +msToS(curEl.trimFromStart).toFixed(2);
+		const audioFilters = getAudioFilterChain(curEl);
 
 		// decrement indeces
 		const inputIndex = i + 1;
 		const outputName = `atrim${inputIndex}`;
 
 		// build the filter string for current element by appending it to the previous element(s)
-		atrimString += `[${inputIndex}:a]atrim=start=${trimFromStart}:duration=${durationInS},asetpts=PTS-STARTPTS,adelay=${curEl.offset}:all=1[${outputName}];`;
+		atrimString += `[${inputIndex}:a]atrim=start=${trimFromStart}:duration=${durationInS},asetpts=PTS-STARTPTS${audioFilters},adelay=${curEl.offset}:all=1[${outputName}];`;
 
 		// get the previous array
 		const prevMapValue = outputMap.get(OutputMapKey.ATRIM) ?? '';
