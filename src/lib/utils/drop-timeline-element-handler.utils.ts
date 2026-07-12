@@ -1,15 +1,13 @@
-
 import { type ITimelineDraggedElementData, type ITimelineElement, type ITimelineElementBounds, type ITimelineTrack, TimelineDropArea } from "$lib/interfaces/Timeline";
 import { get } from "svelte/store";
 import { draggedElementHover, draggedElementPosition, timelineTracks } from "../../stores/store";
 import { CONSTS } from "./consts";
 import { convertPxToMs } from "./utils";
 import {
-    handleOverlapping,
-    handleElementIndeces,
     cleanUpEmptyTracks,
     createTrackWithElement
 } from "./timeline.utils";
+import { resolveTimelineElementDrop } from './timeline-drop.utils';
 
 /**
  * this function is registered on page mount as a callback to the timeline element drop event and handles the dropped element depending on where it got dropped
@@ -48,7 +46,7 @@ export const dropTimelineElementHandler = (e: CustomEvent<ITimelineDraggedElemen
     let tempY = 0
     let droppedDividerIndex = 0
     let droppedRowIndex = 0
-    let droppedAboveElements = elementPositionY < 0
+    const droppedAboveElements = elementPositionY < 0
 
     // if the y position is less than 0 or more than the total height, the element was dropped above the first divider or under the last divider so we can keep the drop area as the timeline
     if (elementPositionY > 0 && elementPositionY < totalHeight) {
@@ -88,7 +86,7 @@ export const dropTimelineElementHandler = (e: CustomEvent<ITimelineDraggedElemen
     switch (dropArea) {
 
         // element dropped either above or below the timeline elements
-        case TimelineDropArea.TIMELINE:
+        case TimelineDropArea.TIMELINE: {
 
             // new index will be the same index as either the first divider or the last one, depending on if was dropped above or below the timeline elements
             const newIndex = droppedAboveElements ? 0 : tracks.length
@@ -96,29 +94,31 @@ export const dropTimelineElementHandler = (e: CustomEvent<ITimelineDraggedElemen
             timelineTracks.update(prevTracks => {
 
                 // create new track, add dragged element into it and remove old one 
-                prevTracks = moveElementToNewTrack(prevTracks, elementData, prevTrackIndex, prevElementIndex, newIndex, dropArea)
+                prevTracks = moveElementToNewTrack(prevTracks, elementData, prevTrackIndex, prevElementIndex, newIndex)
 
                 return prevTracks
             })
 
             break;
+        }
 
         // element dropped on a timeline divider
-        case TimelineDropArea.DIVIDER:
+        case TimelineDropArea.DIVIDER: {
 
             timelineTracks.update(prevTracks => {
 
                 // create new track, add dragged element into it and remove old one 
-                prevTracks = moveElementToNewTrack(prevTracks, elementData, prevTrackIndex, prevElementIndex, droppedDividerIndex, dropArea)
+                prevTracks = moveElementToNewTrack(prevTracks, elementData, prevTrackIndex, prevElementIndex, droppedDividerIndex)
 
 
                 return prevTracks
             })
 
             break;
+        }
 
         // element dropped on a timeline track
-        case TimelineDropArea.TRACK:
+        case TimelineDropArea.TRACK: {
 
             // get position of dropped element along the x axis
             const xWithoutOffset = elementPosition.left - CONSTS.timelineRowOffset;
@@ -140,19 +140,11 @@ export const dropTimelineElementHandler = (e: CustomEvent<ITimelineDraggedElemen
 
                 // element was moved in the same track
                 if (prevTrackIndex === droppedRowIndex) {
-                    // check and handle if any elements overlap after moving and update the track elements if necessary
-                    prevTracks[droppedRowIndex].elements = handleOverlapping(
-                        elBoundsInMs,
+                    // resolve the drop and keep the destination track chronologically ordered
+                    prevTracks[droppedRowIndex].elements = resolveTimelineElementDrop(
                         prevTracks[droppedRowIndex].elements,
-                        prevElementIndex // we ignore the index of the dragged element so we don't check if the element overlaps with itself
-                    );
-
-                    // check and handle if the element with the updated start time is still at the correct index and if not update the track element
-                    prevTracks[droppedRowIndex].elements = handleElementIndeces(
                         foundEl,
-                        elBoundsInMs.start,
-                        prevTracks[droppedRowIndex].elements,
-                        prevElementIndex
+                        elBoundsInMs
                     );
                 }
                 // element was dragged onto a different track
@@ -160,20 +152,10 @@ export const dropTimelineElementHandler = (e: CustomEvent<ITimelineDraggedElemen
                     // remove dragged element from old track
                     prevTracks[prevTrackIndex].elements.splice(prevElementIndex, 1);
 
-                    // check and handle if any elements overlap after moving and update the track elements if necessary
-                    prevTracks[droppedRowIndex].elements = handleOverlapping(
-                        elBoundsInMs,
+                    prevTracks[droppedRowIndex].elements = resolveTimelineElementDrop(
                         prevTracks[droppedRowIndex].elements,
-                        undefined // we also set this to be undefined since the element was dragged from a different track
-                    );
-
-                    // check and handle if the element with the updated start time is still at the correct index and if not update the track elements
-                    prevTracks[droppedRowIndex].elements = handleElementIndeces(
                         foundEl,
-                        elBoundsInMs.start,
-                        prevTracks[droppedRowIndex].elements,
-                        prevTracks[droppedRowIndex].elements.length, // we use the current length here and not length - 1 since we will add the element inside the function and then the length will be increased by one and we want the index of the last element
-                        true // first push the element onto the new track before re-checking the indeces
+                        elBoundsInMs
                     );
 
                     // clean up old track if its empty now
@@ -184,6 +166,7 @@ export const dropTimelineElementHandler = (e: CustomEvent<ITimelineDraggedElemen
             });
 
             break;
+        }
 
         default:
             // shouldn't be reachable
@@ -202,8 +185,7 @@ function moveElementToNewTrack(
     elementData: ITimelineElement,
     prevTrackIndex: number,
     prevElementIndex: number,
-    newIndex: number,
-    dropArea?: string
+    newIndex: number
 ): ITimelineTrack[] {
     const track = createTrackWithElement(elementData);
 

@@ -2,7 +2,7 @@
 // source: https://stackoverflow.com/a/44337628
 export const adjustingInterval = (intervalCallback: () => void, delay: number, errorCallback: () => void) => {
     let expected: number
-    let timeout: number
+    let timeout: ReturnType<typeof setTimeout>
     let stopBeenCalled = false;
 
     const start = () => {
@@ -16,7 +16,7 @@ export const adjustingInterval = (intervalCallback: () => void, delay: number, e
     }
 
     function step() {
-        var drift = Date.now() - expected;
+        const drift = Date.now() - expected;
         if (drift > delay) {
             // You could have some default stuff here too...
             if (errorCallback) errorCallback();

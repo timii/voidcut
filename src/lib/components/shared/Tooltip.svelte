@@ -14,7 +14,7 @@
 	};
 	let containerRef: HTMLSpanElement | null = null;
 	let tooltipRef: HTMLDivElement | null = null;
-	let timer: number | null = null;
+	let timer: ReturnType<typeof setTimeout> | null = null;
 
 	function mouseOver() {
 		coords = getTooltipPosition(containerRef, tooltipRef, coords);
