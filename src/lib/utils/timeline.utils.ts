@@ -216,6 +216,59 @@ export function doesElementExistInTimeline(): boolean {
     return get(timelineTracks).length > 0
 }
 
+// move a selected element up or down using the timeline row rules
+export function moveElementToAdjacentRow(
+    tracks: ITimelineTrack[],
+    indices: ITimelineElementIndeces,
+    direction: 'up' | 'down',
+    newTrackId: string
+): ITimelineTrack[] {
+    const sourceTrack = tracks[indices.rowIndex]
+
+    if (
+        !Number.isInteger(indices.rowIndex) ||
+        !Number.isInteger(indices.elementIndex) ||
+        indices.rowIndex < 0 ||
+        indices.elementIndex < 0 ||
+        !sourceTrack ||
+        indices.elementIndex >= sourceTrack.elements.length
+    ) {
+        return tracks
+    }
+
+    const movedElement = sourceTrack.elements[indices.elementIndex]
+    // swap whole rows when the selected element is already alone in its row
+    if (sourceTrack.elements.length === 1) {
+        const rowToSwapWith = direction === 'up' ? indices.rowIndex - 1 : indices.rowIndex + 1
+
+        // keep the row where it is when there is no row above or below to swap with
+        if (rowToSwapWith < 0 || rowToSwapWith >= tracks.length) {
+            return tracks
+        }
+
+        const result = [...tracks]
+        result[indices.rowIndex] = tracks[rowToSwapWith]
+        result[rowToSwapWith] = sourceTrack
+        return result
+    }
+
+    // create a new row only when the source row still has other elements
+    const newTrack: ITimelineTrack = {
+        trackId: newTrackId,
+        elements: [movedElement]
+    }
+    const updatedSourceTrack: ITimelineTrack = {
+        ...sourceTrack,
+        elements: sourceTrack.elements.filter((_, index) => index !== indices.elementIndex)
+    }
+    const newRowIndex = direction === 'up' ? indices.rowIndex : indices.rowIndex + 1
+    const result = tracks.map((track, index) => index === indices.rowIndex ? updatedSourceTrack : track)
+
+    result.splice(newRowIndex, 0, newTrack)
+
+    return result
+}
+
 // get the next lower scale value compared to the current one
 export function getNextLowerScale() {
     const possibleScales = get(possibleScaleValues)

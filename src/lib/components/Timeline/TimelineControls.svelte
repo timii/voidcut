@@ -16,6 +16,8 @@
 	import FitToScaleIcon from '$lib/assets/timeline/fit.png';
 	import SplitIcon from '$lib/assets/timeline/split.png';
 	import DuplicateIcon from '$lib/assets/timeline/duplicate.png';
+	import MoveBackwardIcon from '$lib/assets/timeline/move-backward.svg';
+	import MoveForwardIcon from '$lib/assets/timeline/move-forward.svg';
 	import { elementIsAnImage, generateId } from '$lib/utils/utils';
 	import { CONSTS } from '$lib/utils/consts';
 	import type { ITimelineElement } from '$lib/interfaces/Timeline';
@@ -29,6 +31,7 @@
 		isAnElementSelected,
 		isAtMaxTimelineScale,
 		isAtMinTimelineScale,
+		moveElementToAdjacentRow,
 		thumbOverSelectedElement
 	} from '$lib/utils/timeline.utils';
 	import { msToS, formatPlaybackTime } from '$lib/utils/time.utils';
@@ -203,6 +206,19 @@
 		});
 	}
 
+	// move forward means up and move backward means down in the timeline
+	function moveSelectedElementToAdjacentRow(direction: 'up' | 'down') {
+		const indices = getIndexOfSelectedElementInTracks();
+
+		if (!indices) {
+			return;
+		}
+
+		timelineTracks.update((tracks) =>
+			moveElementToAdjacentRow(tracks, indices, direction, generateId())
+		);
+	}
+
 	function deleteSelectedElement() {
 		const indeces = getIndexOfSelectedElementInTracks();
 
@@ -255,6 +271,22 @@
 				icon={DuplicateIcon}
 				alt={'Duplicate'}
 				tooltipText={'Duplicate'}
+				size={CONSTS.timelineControlButtonSize}
+				disabled={disableLeftButtons}
+			></IconButton>
+			<IconButton
+				onClickCallback={() => moveSelectedElementToAdjacentRow('up')}
+				icon={MoveForwardIcon}
+				alt={'Move Forward'}
+				tooltipText={'Move Forward'}
+				size={CONSTS.timelineControlButtonSize}
+				disabled={disableLeftButtons}
+			></IconButton>
+			<IconButton
+				onClickCallback={() => moveSelectedElementToAdjacentRow('down')}
+				icon={MoveBackwardIcon}
+				alt={'Move Backward'}
+				tooltipText={'Move Backward'}
 				size={CONSTS.timelineControlButtonSize}
 				disabled={disableLeftButtons}
 			></IconButton>
