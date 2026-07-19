@@ -2,12 +2,14 @@
 	import {
 		aboutOverlayOpen,
 		exportOverlayOpen,
+		keyboardShortcutsOverlayOpen,
 		lastSaveTime,
 		timelineTracks
 	} from '../../../stores/store';
 	import Button from '../shared/Button.svelte';
 	import AppIcon from '$lib/assets/general/icon-white-50.png';
 	import AboutIcon from '$lib/assets/header/about.png';
+	import KeyboardIcon from '$lib/assets/header/keyboard.png';
 	import ExportIcon from '$lib/assets/header/export.png';
 	import IconButton from '../shared/IconButton.svelte';
 	import { clearStorage, getState, updateState } from '$lib/utils/persistence/persistence.utils';
@@ -19,6 +21,10 @@
 
 	function openAboutDialog() {
 		aboutOverlayOpen.set(true);
+	}
+
+	function openKeyboardShortcutsDialog() {
+		keyboardShortcutsOverlayOpen.set(true);
 	}
 
 	// updates the current state in local storage, mainly used for testing
@@ -55,6 +61,14 @@
 		{#if $lastSaveTime}
 			<div class="italic text-xs text-text-info">Last Save: {$lastSaveTime}</div>
 		{/if}
+		<IconButton
+			icon={KeyboardIcon}
+			alt="Keyboard shortcuts"
+			tooltipText="Keyboard shortcuts"
+			tooltipPlacement="bottom"
+			size={28}
+			onClickCallback={openKeyboardShortcutsDialog}
+		></IconButton>
 		<IconButton icon={AboutIcon} size={20} onClickCallback={openAboutDialog}></IconButton>
 		<Button
 			text={'Export'}

@@ -4,7 +4,9 @@
 	import Preview from '$lib/components/preview/Preview.svelte';
 	import {
 		aboutOverlayOpen,
+		anyOverlayOpen,
 		exportOverlayOpen,
+		keyboardShortcutsOverlayOpen,
 		restoreStateOverlayOpen,
 		thumbOffset,
 		windowHeight,
@@ -23,6 +25,8 @@
 		setupBackupInterval
 	} from '$lib/utils/persistence/persistence.utils';
 	import RestoreStateDialog from '$lib/components/persistence/RestoreStateDialog.svelte';
+	import KeyboardShortcutsDialog from '$lib/components/header/KeyboardShortcutsDialog.svelte';
+	import { handleKeyboardShortcut } from '$lib/utils/keyboard-shortcuts.utils';
 
 	// import icons directly so the path is resolved correctly after building
 	import CloseIcon from '$lib/assets/header/close.png';
@@ -108,6 +112,11 @@
 		windowWidth.set(windowSizeMinusOffset);
 		windowHeight.set(height);
 	}
+
+	function onKeyDown(event: KeyboardEvent) {
+		// route every global binding through the shared shortcut definitions
+		handleKeyboardShortcut(event, $anyOverlayOpen);
+	}
 </script>
 
 <main class="flex flex-col w-screen h-screen max-h-screen max-w-screen overflow-hidden">
@@ -151,7 +160,11 @@
 	<RestoreStateDialog open={$restoreStateOverlayOpen} />
 </Overlay>
 
-<svelte:window on:resize={() => onWindowResize(innerWidth, innerHeight)} />
+<Overlay>
+	<KeyboardShortcutsDialog open={$keyboardShortcutsOverlayOpen} />
+</Overlay>
+
+<svelte:window on:resize={() => onWindowResize(innerWidth, innerHeight)} on:keydown={onKeyDown} />
 
 <!-- preload images -->
 <svelte:head>

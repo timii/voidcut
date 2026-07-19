@@ -1,8 +1,9 @@
 <script lang="ts">
-	import type { ITooltipCoords } from '$lib/interfaces/Tooltip';
+	import type { ITooltipCoords, TooltipPlacement } from '$lib/interfaces/Tooltip';
 	import { getTooltipPosition } from '$lib/utils/tooltip.utils';
 
 	export let text = '';
+	export let placement: TooltipPlacement = 'top';
 
 	let isVisible = false;
 	let coords: ITooltipCoords = {
@@ -17,7 +18,7 @@
 	let timer: ReturnType<typeof setTimeout> | null = null;
 
 	function mouseOver() {
-		coords = getTooltipPosition(containerRef, tooltipRef, coords);
+		coords = getTooltipPosition(containerRef, tooltipRef, coords, placement);
 
 		// only show tooltip after a delay
 		timer = setTimeout(() => (isVisible = true), 500);
@@ -46,6 +47,7 @@
 	bind:this={tooltipRef}
 	class="tooltip"
 	class:show={isVisible}
+	class:bottom={placement === 'bottom'}
 	style="
 		--widthCutoff: {coords.widthCutoff}px; 
 		bottom: auto; 
@@ -86,6 +88,10 @@
 		white-space: nowrap;
 	}
 
+	.tooltip.bottom {
+		transform: translate(-50%, 6px);
+	}
+
 	.tooltip:after {
 		border: 6px solid theme(colors.background-tooltip);
 		content: ' ';
@@ -95,5 +101,12 @@
 		/* add the pixel amount the tooltip is cut off at the window edge to reposition the arrow accordingly */
 		left: calc(50% + var(--widthCutoff));
 		transform: translate(-50%, 99%);
+	}
+
+	.tooltip.bottom:after {
+		border-color: transparent transparent theme(colors.background-tooltip) transparent;
+		bottom: auto;
+		top: 0;
+		transform: translate(-50%, -99%);
 	}
 </style>

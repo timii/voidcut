@@ -14,7 +14,8 @@
 	import FrameAfterIcon from '$lib/assets/preview/frame-after.png';
 	import { CONSTS } from '$lib/utils/consts';
 	import { doesElementExistInTimeline } from '$lib/utils/timeline.utils';
-	import { pausePlayback, resumePlayback } from '$lib/utils/playback.utils';
+	import { formatShortcutTooltip } from '$lib/utils/keyboard-shortcuts.utils';
+	import { skipPlayhead, stepPlayhead, togglePlayback } from '$lib/utils/timeline-actions.utils';
 
 	$: $timelineTracks, updateControls();
 	$: $currentPlaybackTime, updateControls();
@@ -36,45 +37,25 @@
 		}, 0);
 	}
 
-	// small wrapper to set the playback time in store after a short delay
-	function setPlaybackTimeAfterShortDelay(value: number) {
-		setTimeout(() => currentPlaybackTime.set(value), 0);
-	}
-
 	function onSkipStartClick() {
-		// pause playback to clear current playback interval
-		pausePlayback();
-		// reset current playback to 0 after a short delay
-		setPlaybackTimeAfterShortDelay(0);
+		skipPlayhead('start');
 	}
 
 	function onFrameBeforeClick() {
-		// pause playback to clear current playback interval
-		pausePlayback();
-		// decrease current playback time by one interval timeout
-		currentPlaybackTime.update((currentTime) => currentTime - CONSTS.playbackIntervalTimer);
+		stepPlayhead('backward');
 	}
 
 	// play/pause current playback
 	function onPlayPauseClick() {
-		previewPlaying.update((value) => {
-			value ? pausePlayback() : resumePlayback();
-			return !value;
-		});
+		togglePlayback();
 	}
 
 	function onFrameAfterClick() {
-		// pause playback to clear current playback interval
-		pausePlayback();
-		// increase current playback time by one interval timeout
-		currentPlaybackTime.update((currentTime) => currentTime + CONSTS.playbackIntervalTimer);
+		stepPlayhead('forward');
 	}
 
 	function onSkipEndClick() {
-		// pause playback to clear current playback interval
-		pausePlayback();
-		// set current playback to max playback time after a short delay
-		setPlaybackTimeAfterShortDelay($maxPlaybackTime);
+		skipPlayhead('end');
 	}
 </script>
 
@@ -83,7 +64,7 @@
 		onClickCallback={onSkipStartClick}
 		icon={SkipStartIcon}
 		alt={'Skip To Start'}
-		tooltipText={'Skip To Start'}
+		tooltipText={formatShortcutTooltip('Skip To Start', 'skip-start')}
 		size={CONSTS.previewControlButtonSize}
 		disabled={disableButtons || disableBackwardButtons}
 	></IconButton>
@@ -91,7 +72,7 @@
 		onClickCallback={onFrameBeforeClick}
 		icon={FrameBeforeIcon}
 		alt={'Frame Before'}
-		tooltipText={'Frame Before'}
+		tooltipText={formatShortcutTooltip('Frame Before', 'step-backward')}
 		size={CONSTS.previewControlButtonSize}
 		disabled={disableButtons || disableBackwardButtons}
 	></IconButton>
@@ -99,7 +80,7 @@
 		onClickCallback={onPlayPauseClick}
 		icon={$previewPlaying ? PauseIcon : PlayIcon}
 		alt={$previewPlaying ? 'Pause' : 'Play'}
-		tooltipText={$previewPlaying ? 'Pause' : 'Play'}
+		tooltipText={formatShortcutTooltip($previewPlaying ? 'Pause' : 'Play', 'toggle-playback')}
 		size={CONSTS.previewControlButtonSize}
 		disabled={disableButtons || disableForwardButtons}
 	></IconButton>
@@ -107,7 +88,7 @@
 		onClickCallback={onFrameAfterClick}
 		icon={FrameAfterIcon}
 		alt={'Frame After'}
-		tooltipText={'Frame After'}
+		tooltipText={formatShortcutTooltip('Frame After', 'step-forward')}
 		size={CONSTS.previewControlButtonSize}
 		disabled={disableButtons || disableForwardButtons}
 	></IconButton>
@@ -115,7 +96,7 @@
 		onClickCallback={onSkipEndClick}
 		icon={SkipEndIcon}
 		alt={'Skip To End'}
-		tooltipText={'Skip To End'}
+		tooltipText={formatShortcutTooltip('Skip To End', 'skip-end')}
 		size={CONSTS.previewControlButtonSize}
 		disabled={disableButtons || disableForwardButtons}
 	></IconButton>
