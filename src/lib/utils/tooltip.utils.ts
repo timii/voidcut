@@ -1,9 +1,11 @@
-import type { ITooltipCoords } from "$lib/interfaces/Tooltip";
+import type { ITooltipCoords, TooltipPlacement } from '$lib/interfaces/Tooltip';
 
 export const getTooltipPosition = (
     containerRef: HTMLSpanElement | null,
     tooltipRef: HTMLDivElement | null,
-    coords: ITooltipCoords
+    coords: ITooltipCoords,
+    placement: TooltipPlacement = 'top',
+    viewportWidth = window.innerWidth
 ) => {
     if (!containerRef || !tooltipRef) {
         return coords;
@@ -13,11 +15,11 @@ export const getTooltipPosition = (
     const containerRect = containerRef.getBoundingClientRect();
     const tooltipRect = tooltipRef.getBoundingClientRect();
 
-    coords.top = containerRect.top;
+    coords.top = placement === 'bottom' ? containerRect.bottom : containerRect.top;
     coords.left = containerRect.left + containerRect.width / 2;
 
     // calculate if element goes outside right side of window, we need to add half the tooltip width since coords.left is at the middle of the tooltip right now
-    const widthOutsideRightEdge = coords.left + (tooltipRect.width / 2) - window.innerWidth
+    const widthOutsideRightEdge = coords.left + (tooltipRect.width / 2) - viewportWidth
 
     // calculate if element goes outside left side of screen 
     const widthOutsideLeftEdge = coords.left - (tooltipRect.width / 2)

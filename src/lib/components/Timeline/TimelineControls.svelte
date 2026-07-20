@@ -18,16 +18,13 @@
 	import DuplicateIcon from '$lib/assets/timeline/duplicate.png';
 	import MoveBackwardIcon from '$lib/assets/timeline/move-backward.svg';
 	import MoveForwardIcon from '$lib/assets/timeline/move-forward.svg';
-	import { elementIsAnImage, generateId } from '$lib/utils/utils';
+	import { generateId } from '$lib/utils/utils';
 	import { CONSTS } from '$lib/utils/consts';
-	import type { ITimelineElement } from '$lib/interfaces/Timeline';
 	import {
-		addElementToTimeline,
 		doesElementExistInTimeline,
 		getIndexOfSelectedElementInTracks,
 		getNextHigherScale,
 		getNextLowerScale,
-		getNextRightElementStartTime,
 		isAnElementSelected,
 		isAtMaxTimelineScale,
 		isAtMinTimelineScale,
@@ -35,7 +32,12 @@
 		thumbOverSelectedElement
 	} from '$lib/utils/timeline.utils';
 	import { msToS, formatPlaybackTime } from '$lib/utils/time.utils';
-	import { getTimelineElementSpeed } from '$lib/utils/timeline-settings.utils';
+	import { formatShortcutTooltip } from '$lib/utils/keyboard-shortcuts.utils';
+	import {
+		deleteSelectedTimelineElement,
+		duplicateSelectedTimelineElement,
+		splitSelectedTimelineElement
+	} from '$lib/utils/timeline-actions.utils';
 
 	// update controls when different store values change
 	$: $selectedElement, updateControls();
@@ -102,110 +104,6 @@
 		scaleFitToScreen.set(true);
 	}
 
-	function splitSelectedElement() {
-		// get the time where the thumb is over the element
-		const timeOverElement = thumbOverSelectedElement();
-
-		// get index of row and element in the tracks
-		const indeces = getIndexOfSelectedElementInTracks();
-
-		if (!indeces) {
-			return;
-		}
-
-		timelineTracks.update((tracks) => {
-			const element = tracks[indeces.rowIndex].elements[indeces.elementIndex];
-			// create a duplicate element but with new element id
-			const newElement: ITimelineElement = { ...element, elementId: generateId() };
-
-			// put duplicate element directly after the old one
-			tracks[indeces.rowIndex].elements.splice(indeces.elementIndex + 1, 0, newElement);
-
-			let newTrimFromStart = element.trimFromStart;
-			let newTrimFromEnd = element.trimFromEnd;
-
-			// don't update the trim from start or end for images, since its always 0
-			if (!elementIsAnImage(element)) {
-				const speed = getTimelineElementSpeed(element);
-				newTrimFromStart = element.trimFromStart + Math.round(timeOverElement * speed);
-				newTrimFromEnd =
-					element.trimFromEnd + Math.round((element.duration - timeOverElement) * speed);
-			}
-
-			// update the original element
-			tracks[indeces.rowIndex].elements[indeces.elementIndex] = {
-				...element,
-				duration: timeOverElement, // new duration is the point where the element was split
-				trimFromEnd: newTrimFromEnd // new trim from end is everything to the right of split position including the previous trim on the right
-			};
-
-			// update the new element
-			tracks[indeces.rowIndex].elements[indeces.elementIndex + 1] = {
-				...newElement,
-				duration: element.duration - timeOverElement, // duration for new element is everything to the right side of the split position
-				playbackStartTime: element.playbackStartTime + timeOverElement, // playback start time is at the same time as the original element including everythinh up to the split point
-				trimFromStart: newTrimFromStart // include original leftTrim to new one
-			};
-
-			return tracks;
-		});
-	}
-
-	function duplicateSelectedElement() {
-		// get index of row and element in the tracks
-		const indeces = getIndexOfSelectedElementInTracks();
-
-		if (!indeces) {
-			return;
-		}
-
-		timelineTracks.update((tracks) => {
-			const curRow = tracks[indeces.rowIndex].elements;
-			const element = curRow[indeces.elementIndex];
-			// create a duplicate element but with new element id
-			const newElement: ITimelineElement = { ...element, elementId: generateId() };
-
-			// decide where after the original element the duplicate element fits in the row
-			// go through the row, starting from the original element index
-			for (let i = indeces.elementIndex; i < curRow.length; i++) {
-				// check if an element exists to the right
-				const rightElementStart = getNextRightElementStartTime(indeces.rowIndex, i);
-
-				// get the time where current element ends
-				const curElementEnd = curRow[i].playbackStartTime + curRow[i].duration;
-
-				// no element exists to the right
-				if (rightElementStart === undefined) {
-					// add element directly after current element and update its playback start time accordingly
-					tracks[indeces.rowIndex].elements = addElementToTimeline(
-						curRow,
-						i + 1,
-						newElement,
-						curElementEnd
-					);
-					break;
-				}
-
-				// how big is the gap to the next element
-				const gapToNextElement = rightElementStart - curElementEnd;
-
-				// gap is bigger than the new element duration
-				if (gapToNextElement > newElement.duration) {
-					// add element directly after current element and update its playback start time accordingly
-					tracks[indeces.rowIndex].elements = addElementToTimeline(
-						curRow,
-						i + 1,
-						newElement,
-						curElementEnd
-					);
-					break;
-				}
-			}
-
-			return tracks;
-		});
-	}
-
 	// move forward means up and move backward means down in the timeline
 	function moveSelectedElementToAdjacentRow(direction: 'up' | 'down') {
 		const indices = getIndexOfSelectedElementInTracks();
@@ -219,58 +117,32 @@
 		);
 	}
 
-	function deleteSelectedElement() {
-		const indeces = getIndexOfSelectedElementInTracks();
-
-		// if we couldn't find the indeces of the selected element we return directly
-		if (!indeces) {
-			return;
-		}
-
-		const firstIndex = indeces.rowIndex;
-		const secondIndex = indeces.elementIndex;
-		timelineTracks.update((tracks) => {
-			// if there is only one element on the track, remove the whole track
-			if (tracks[firstIndex].elements.length === 1) {
-				return tracks.toSpliced(firstIndex, 1);
-			}
-			// else remove the specific element from the elements on the track
-			else {
-				const trackAfterRemoval = tracks[firstIndex].elements.toSpliced(secondIndex, 1);
-				tracks[firstIndex].elements = trackAfterRemoval;
-				return tracks;
-			}
-		});
-
-		// reset the selected element id so no timeline element is selected after deletion
-		selectedElement.set({ mediaType: undefined, elementId: '' });
-	}
 </script>
 
 <div class="flex flex-row px-2 py-[6px] timeline-controls items-center">
 	<div class="flex-1">
 		<div class="flex gap-[6px] items-center">
 			<IconButton
-				onClickCallback={deleteSelectedElement}
+				onClickCallback={deleteSelectedTimelineElement}
 				icon={DeleteIcon}
 				alt={'Delete'}
-				tooltipText={'Delete'}
+				tooltipText={formatShortcutTooltip('Delete', 'delete')}
 				size={CONSTS.timelineControlButtonSize}
 				disabled={disableLeftButtons || disableDelete}
 			></IconButton>
 			<IconButton
-				onClickCallback={splitSelectedElement}
+				onClickCallback={splitSelectedTimelineElement}
 				icon={SplitIcon}
 				alt={'Split'}
-				tooltipText={'Split'}
+				tooltipText={formatShortcutTooltip('Split', 'split')}
 				size={CONSTS.timelineControlButtonSize}
 				disabled={disableLeftButtons || disableSplit}
 			></IconButton>
 			<IconButton
-				onClickCallback={duplicateSelectedElement}
+				onClickCallback={duplicateSelectedTimelineElement}
 				icon={DuplicateIcon}
 				alt={'Duplicate'}
-				tooltipText={'Duplicate'}
+				tooltipText={formatShortcutTooltip('Duplicate', 'duplicate')}
 				size={CONSTS.timelineControlButtonSize}
 				disabled={disableLeftButtons}
 			></IconButton>

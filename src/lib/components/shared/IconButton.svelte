@@ -1,17 +1,19 @@
 <script lang="ts">
+	import type { TooltipPlacement } from '$lib/interfaces/Tooltip';
 	import Tooltip from './Tooltip.svelte';
 
 	export let icon: string = '';
 	export let alt: string = '';
 	export let tooltipText: string = '';
+	export let tooltipPlacement: TooltipPlacement = 'top';
 	export let size = 24;
 	export let disabled = false;
-	export let onClickCallback = (e: Event) => {};
+	export let onClickCallback: (event: Event) => unknown = () => undefined;
 </script>
 
 <!-- only show a tooltip if tooltipText is given -->
 {#if tooltipText}
-	<Tooltip text={tooltipText}>
+	<Tooltip text={tooltipText} placement={tooltipPlacement}>
 		<button
 			on:click={onClickCallback}
 			{disabled}

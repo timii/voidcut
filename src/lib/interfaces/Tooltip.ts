@@ -5,3 +5,5 @@ export interface ITooltipCoords {
     left: number;
     widthCutoff: number; // amount of pixels the tooltip cuts of at the window edge
 }
+
+export type TooltipPlacement = 'top' | 'bottom';

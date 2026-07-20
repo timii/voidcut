@@ -11,12 +11,13 @@ import type {
 } from '$lib/interfaces/Timeline';
 import { CONSTS } from '$lib/utils/consts';
 import { defaultExportSettings } from '$lib/utils/export.utils';
-import { writable } from 'svelte/store';
+import { derived, writable } from 'svelte/store';
 
 // General
 export const windowWidth = writable(0); // current window width in ms
 export const windowHeight = writable(0); // current window height px
 export const aboutOverlayOpen = writable(false);
+export const keyboardShortcutsOverlayOpen = writable(false);
 
 // Persistence
 export const restoreStateOverlayOpen = writable(false);
@@ -34,6 +35,13 @@ export const processedFileSize = writable(0); // track the current state of the 
 export const exportSettings = writable(defaultExportSettings);
 export const estimatedExportFileSize = writable(''); // approximate file size before export
 export const outputFileName = writable('output.mp4'); // name of the processed file
+
+// Internal UI state
+export const anyOverlayOpen = derived(
+	[aboutOverlayOpen, exportOverlayOpen, keyboardShortcutsOverlayOpen, restoreStateOverlayOpen],
+	([$aboutOpen, $exportOpen, $keyboardShortcutsOpen, $restoreStateOpen]) =>
+		$aboutOpen || $exportOpen || $keyboardShortcutsOpen || $restoreStateOpen
+);
 
 // Timeline
 export const currentTimelineScale = writable(CONSTS.timelineStartingScale); // default timeline scale (40 * 1px = 1 sec)
