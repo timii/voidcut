@@ -12,10 +12,19 @@ import { pausePlayback, resumePlayback } from './playback.utils';
 import { getTimelineElementSpeed } from './timeline-settings.utils';
 import { getIndexOfSelectedElementInTracks, thumbOverSelectedElement } from './timeline.utils';
 import { elementIsAnImage, generateId } from './utils';
+import { runTimelineEdit, timelineHistory } from './timeline-history.utils';
 
 export type HorizontalDirection = 'left' | 'right';
 export type PlayheadDirection = 'backward' | 'forward';
 export type PlayheadDestination = 'start' | 'end';
+
+export function undoTimelineEdit(): boolean {
+	return !get(previewPlaying) && timelineHistory.undo();
+}
+
+export function redoTimelineEdit(): boolean {
+	return !get(previewPlaying) && timelineHistory.redo();
+}
 
 export function skipPlayhead(destination: PlayheadDestination): number {
 	pausePlayback();
@@ -60,19 +69,22 @@ export function deleteSelectedTimelineElement(): boolean {
 		return false;
 	}
 
-	timelineTracks.update((tracks) => {
-		const track = tracks[indices.rowIndex];
-		const updatedElements = track.elements.filter((_, index) => index !== indices.elementIndex);
+	runTimelineEdit(() => {
+		timelineTracks.update((tracks) => {
+			const track = tracks[indices.rowIndex];
+			const updatedElements = track.elements.filter((_, index) => index !== indices.elementIndex);
 
-		if (updatedElements.length === 0) {
-			return tracks.filter((_, index) => index !== indices.rowIndex);
-		}
+			if (updatedElements.length === 0) {
+				return tracks.filter((_, index) => index !== indices.rowIndex);
+			}
 
-		return tracks.map((currentTrack, index) =>
-			index === indices.rowIndex ? { ...currentTrack, elements: updatedElements } : currentTrack
-		);
+			return tracks.map((currentTrack, index) =>
+				index === indices.rowIndex ? { ...currentTrack, elements: updatedElements } : currentTrack
+			);
+		});
+		selectedElement.set({ mediaType: undefined, elementId: '' });
+		return true;
 	});
-	selectedElement.set({ mediaType: undefined, elementId: '' });
 	return true;
 }
 
@@ -87,7 +99,7 @@ export function splitSelectedTimelineElement(): boolean {
 		return false;
 	}
 
-	timelineTracks.update((tracks) => {
+	runTimelineEdit(() => timelineTracks.update((tracks) => {
 		const track = tracks[indices.rowIndex];
 		const element = track.elements[indices.elementIndex];
 		const newElement: ITimelineElement = { ...element, elementId: generateId() };
@@ -119,7 +131,7 @@ export function splitSelectedTimelineElement(): boolean {
 		return tracks.map((currentTrack, index) =>
 			index === indices.rowIndex ? { ...currentTrack, elements: updatedElements } : currentTrack
 		);
-	});
+	}));
 	return true;
 }
 
@@ -130,7 +142,7 @@ export function duplicateSelectedTimelineElement(): boolean {
 	}
 
 	let duplicated = false;
-	timelineTracks.update((tracks) => {
+	runTimelineEdit(() => timelineTracks.update((tracks) => {
 		const track = tracks[indices.rowIndex];
 		const elements = track.elements;
 		const selected = elements[indices.elementIndex];
@@ -156,7 +168,7 @@ export function duplicateSelectedTimelineElement(): boolean {
 		}
 
 		return tracks;
-	});
+	}));
 
 	return duplicated;
 }
@@ -172,7 +184,7 @@ export function nudgeSelectedTimelineElement(direction: HorizontalDirection): bo
 	}
 
 	let changed = false;
-	timelineTracks.update((tracks) => {
+	runTimelineEdit(() => timelineTracks.update((tracks) => {
 		const track = tracks[indices.rowIndex];
 		const element = track.elements[indices.elementIndex];
 		const previous = track.elements[indices.elementIndex - 1];
@@ -202,7 +214,7 @@ export function nudgeSelectedTimelineElement(direction: HorizontalDirection): bo
 		return tracks.map((currentTrack, index) =>
 			index === indices.rowIndex ? { ...currentTrack, elements: updatedElements } : currentTrack
 		);
-	});
+	}));
 
 	return changed;
 }

@@ -26,7 +26,11 @@
 	} from '$lib/utils/persistence/persistence.utils';
 	import RestoreStateDialog from '$lib/components/persistence/RestoreStateDialog.svelte';
 	import KeyboardShortcutsDialog from '$lib/components/header/KeyboardShortcutsDialog.svelte';
-	import { handleKeyboardShortcut } from '$lib/utils/keyboard-shortcuts.utils';
+	import {
+		handleKeyboardShortcut,
+		resolveKeyboardShortcut
+	} from '$lib/utils/keyboard-shortcuts.utils';
+	import { timelineHistory } from '$lib/utils/timeline-history.utils';
 
 	// import icons directly so the path is resolved correctly after building
 	import CloseIcon from '$lib/assets/header/close.png';
@@ -54,6 +58,7 @@
 		DeleteIcon,
 		UploadIcon
 	];
+	let keyboardNudgeActive = false;
 
 	onMount(async () => {
 		// initialize all the ffmpeg stuff in the background
@@ -114,8 +119,30 @@
 	}
 
 	function onKeyDown(event: KeyboardEvent) {
+		const resolution = resolveKeyboardShortcut(event, $anyOverlayOpen);
+		if (
+			!event.repeat &&
+			(resolution?.action === 'nudge-left' || resolution?.action === 'nudge-right')
+		) {
+			keyboardNudgeActive = timelineHistory.begin();
+		}
+
 		// route every global binding through the shared shortcut definitions
 		handleKeyboardShortcut(event, $anyOverlayOpen);
+	}
+
+	function onKeyUp(event: KeyboardEvent) {
+		if (keyboardNudgeActive && event.key.startsWith('Arrow')) {
+			timelineHistory.commit();
+			keyboardNudgeActive = false;
+		}
+	}
+
+	function onWindowBlur() {
+		if (keyboardNudgeActive) {
+			timelineHistory.commit();
+			keyboardNudgeActive = false;
+		}
 	}
 </script>
 
@@ -164,7 +191,12 @@
 	<KeyboardShortcutsDialog open={$keyboardShortcutsOverlayOpen} />
 </Overlay>
 
-<svelte:window on:resize={() => onWindowResize(innerWidth, innerHeight)} on:keydown={onKeyDown} />
+<svelte:window
+	on:resize={() => onWindowResize(innerWidth, innerHeight)}
+	on:keydown={onKeyDown}
+	on:keyup={onKeyUp}
+	on:blur={onWindowBlur}
+/>
 
 <!-- preload images -->
 <svelte:head>

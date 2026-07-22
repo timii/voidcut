@@ -8,6 +8,7 @@ import {
     createTrackWithElement
 } from "./timeline.utils";
 import { resolveTimelineElementDrop } from './timeline-drop.utils';
+import { runTimelineEdit } from './timeline-history.utils';
 
 /**
  * this function is registered on page mount as a callback to the timeline element drop event and handles the dropped element depending on where it got dropped
@@ -91,13 +92,13 @@ export const dropTimelineElementHandler = (e: CustomEvent<ITimelineDraggedElemen
             // new index will be the same index as either the first divider or the last one, depending on if was dropped above or below the timeline elements
             const newIndex = droppedAboveElements ? 0 : tracks.length
 
-            timelineTracks.update(prevTracks => {
+            runTimelineEdit(() => timelineTracks.update(prevTracks => {
 
                 // create new track, add dragged element into it and remove old one 
                 prevTracks = moveElementToNewTrack(prevTracks, elementData, prevTrackIndex, prevElementIndex, newIndex)
 
                 return prevTracks
-            })
+            }))
 
             break;
         }
@@ -105,14 +106,14 @@ export const dropTimelineElementHandler = (e: CustomEvent<ITimelineDraggedElemen
         // element dropped on a timeline divider
         case TimelineDropArea.DIVIDER: {
 
-            timelineTracks.update(prevTracks => {
+            runTimelineEdit(() => timelineTracks.update(prevTracks => {
 
                 // create new track, add dragged element into it and remove old one 
                 prevTracks = moveElementToNewTrack(prevTracks, elementData, prevTrackIndex, prevElementIndex, droppedDividerIndex)
 
 
                 return prevTracks
-            })
+            }))
 
             break;
         }
@@ -133,16 +134,21 @@ export const dropTimelineElementHandler = (e: CustomEvent<ITimelineDraggedElemen
 
 
             // update the current tracks in the store with the newly moved element
-            timelineTracks.update((prevTracks) => {
+            runTimelineEdit(() => timelineTracks.update((prevTracks) => {
+				// clone changed collections so older history snapshots remain immutable
+				const nextTracks = prevTracks.map((track) => ({
+					...track,
+					elements: [...track.elements]
+				}));
 
                 // get the dragged element from the previous track
-                const foundEl = prevTracks[prevTrackIndex].elements[prevElementIndex];
+                const foundEl = nextTracks[prevTrackIndex].elements[prevElementIndex];
 
                 // element was moved in the same track
                 if (prevTrackIndex === droppedRowIndex) {
                     // resolve the drop and keep the destination track chronologically ordered
-                    prevTracks[droppedRowIndex].elements = resolveTimelineElementDrop(
-                        prevTracks[droppedRowIndex].elements,
+                    nextTracks[droppedRowIndex].elements = resolveTimelineElementDrop(
+                        nextTracks[droppedRowIndex].elements,
                         foundEl,
                         elBoundsInMs
                     );
@@ -150,20 +156,20 @@ export const dropTimelineElementHandler = (e: CustomEvent<ITimelineDraggedElemen
                 // element was dragged onto a different track
                 else {
                     // remove dragged element from old track
-                    prevTracks[prevTrackIndex].elements.splice(prevElementIndex, 1);
+                    nextTracks[prevTrackIndex].elements.splice(prevElementIndex, 1);
 
-                    prevTracks[droppedRowIndex].elements = resolveTimelineElementDrop(
-                        prevTracks[droppedRowIndex].elements,
+                    nextTracks[droppedRowIndex].elements = resolveTimelineElementDrop(
+                        nextTracks[droppedRowIndex].elements,
                         foundEl,
                         elBoundsInMs
                     );
 
                     // clean up old track if its empty now
-                    cleanUpEmptyTracks(prevTracks);
+                    cleanUpEmptyTracks(nextTracks);
                 }
 
-                return prevTracks;
-            });
+                return nextTracks;
+            }));
 
             break;
         }
@@ -187,6 +193,8 @@ function moveElementToNewTrack(
     prevElementIndex: number,
     newIndex: number
 ): ITimelineTrack[] {
+	// copy each mutable collection before using the existing placement helpers
+	tracks = tracks.map((track) => ({ ...track, elements: [...track.elements] }));
     const track = createTrackWithElement(elementData);
 
     // remove dragged element from track

@@ -4,6 +4,7 @@
 		exportOverlayOpen,
 		keyboardShortcutsOverlayOpen,
 		lastSaveTime,
+		previewPlaying,
 		timelineTracks
 	} from '../../../stores/store';
 	import Button from '../shared/Button.svelte';
@@ -11,9 +12,16 @@
 	import AboutIcon from '$lib/assets/header/about.png';
 	import KeyboardIcon from '$lib/assets/header/keyboard.png';
 	import ExportIcon from '$lib/assets/header/export.png';
+	import UndoIcon from '$lib/assets/header/undo.svg';
+	import RedoIcon from '$lib/assets/header/redo.svg';
 	import IconButton from '../shared/IconButton.svelte';
 	import { clearStorage, getState, updateState } from '$lib/utils/persistence/persistence.utils';
 	import { isProduction } from '$lib/utils/utils';
+	import { timelineHistory } from '$lib/utils/timeline-history.utils';
+	import { redoTimelineEdit, undoTimelineEdit } from '$lib/utils/timeline-actions.utils';
+	import { formatShortcutTooltip } from '$lib/utils/keyboard-shortcuts.utils';
+
+	const { canUndo, canRedo, transactionActive } = timelineHistory;
 
 	function openExportDialog() {
 		exportOverlayOpen.set(true);
@@ -61,6 +69,27 @@
 		{#if $lastSaveTime}
 			<div class="italic text-xs text-text-info">Last Save: {$lastSaveTime}</div>
 		{/if}
+		<div class="flex items-center gap-1">
+			<IconButton
+				icon={UndoIcon}
+				alt="Undo"
+				tooltipText={formatShortcutTooltip('Undo', 'undo')}
+				tooltipPlacement="bottom"
+				size={28}
+				disabled={!$canUndo || $previewPlaying || $transactionActive}
+				onClickCallback={undoTimelineEdit}
+			></IconButton>
+			<IconButton
+				icon={RedoIcon}
+				alt="Redo"
+				tooltipText={formatShortcutTooltip('Redo', 'redo')}
+				tooltipPlacement="bottom"
+				size={28}
+				disabled={!$canRedo || $previewPlaying || $transactionActive}
+				onClickCallback={redoTimelineEdit}
+			></IconButton>
+		</div>
+		<div class="h-6 w-px bg-text-info opacity-30" aria-hidden="true"></div>
 		<IconButton
 			icon={KeyboardIcon}
 			alt="Keyboard shortcuts"

@@ -2,10 +2,12 @@ import {
 	deleteSelectedTimelineElement,
 	duplicateSelectedTimelineElement,
 	nudgeSelectedTimelineElement,
+	redoTimelineEdit,
 	skipPlayhead,
 	splitSelectedTimelineElement,
 	stepPlayhead,
-	togglePlayback
+	togglePlayback,
+	undoTimelineEdit
 } from './timeline-actions.utils';
 
 export type KeyboardShortcutAction =
@@ -18,9 +20,11 @@ export type KeyboardShortcutAction =
 	| 'split'
 	| 'duplicate'
 	| 'nudge-left'
-	| 'nudge-right';
+	| 'nudge-right'
+	| 'undo'
+	| 'redo';
 
-type ShortcutModifier = 'none' | 'primary' | 'alt';
+type ShortcutModifier = 'none' | 'primary' | 'primary-shift' | 'alt';
 
 export interface KeyboardShortcutTarget {
 	tagName?: string;
@@ -56,6 +60,27 @@ export interface KeyboardShortcutGroup {
 export type KeyboardShortcutActions = Partial<Record<KeyboardShortcutAction, () => unknown>>;
 
 export const keyboardShortcutGroups: KeyboardShortcutGroup[] = [
+	{
+		label: 'History',
+		shortcuts: [
+			{
+				action: 'undo',
+				description: 'Undo timeline edit',
+				eventKeys: ['z'],
+				keys: [['Ctrl', 'Cmd'], ['Z']],
+				modifier: 'primary',
+				repeatable: false
+			},
+			{
+				action: 'redo',
+				description: 'Redo timeline edit',
+				eventKeys: ['z'],
+				keys: [['Ctrl', 'Cmd'], ['Shift'], ['Z']],
+				modifier: 'primary-shift',
+				repeatable: false
+			}
+		]
+	},
 	{
 		label: 'Playback',
 		shortcuts: [
@@ -161,7 +186,9 @@ const defaultActions: KeyboardShortcutActions = {
 	split: splitSelectedTimelineElement,
 	duplicate: duplicateSelectedTimelineElement,
 	'nudge-left': () => nudgeSelectedTimelineElement('left'),
-	'nudge-right': () => nudgeSelectedTimelineElement('right')
+	'nudge-right': () => nudgeSelectedTimelineElement('right'),
+	undo: undoTimelineEdit,
+	redo: redoTimelineEdit
 };
 
 export function formatShortcutTooltip(label: string, action: KeyboardShortcutAction): string {
@@ -178,6 +205,10 @@ export function formatShortcutTooltip(label: string, action: KeyboardShortcutAct
 function hasMatchingModifiers(event: KeyboardShortcutEvent, modifier: ShortcutModifier): boolean {
 	if (modifier === 'primary') {
 		return !event.altKey && !event.shiftKey && event.ctrlKey !== event.metaKey;
+	}
+
+	if (modifier === 'primary-shift') {
+		return !event.altKey && event.shiftKey && event.ctrlKey !== event.metaKey;
 	}
 
 	if (modifier === 'alt') {

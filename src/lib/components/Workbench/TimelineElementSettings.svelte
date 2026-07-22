@@ -23,6 +23,7 @@
 		normalizeTimelineElementSettings
 	} from '$lib/utils/timeline-settings.utils';
 	import { formatTime } from '$lib/utils/time.utils';
+	import { runTimelineEdit, timelineHistory } from '$lib/utils/timeline-history.utils';
 
 	let warning = '';
 	let lastSelectedElementId = '';
@@ -74,7 +75,7 @@
 			return;
 		}
 
-		timelineTracks.update((tracks) => {
+		runTimelineEdit(() => timelineTracks.update((tracks) => {
 			const nextElement = createElement(
 				tracks[selectedData!.rowIndex].elements[selectedData!.elementIndex],
 				tracks,
@@ -98,7 +99,32 @@
 					)
 				};
 			});
-		});
+		}));
+	}
+
+	function historyRange(node: HTMLInputElement) {
+		const begin = () => timelineHistory.begin();
+		const commit = () => timelineHistory.commit();
+		const cancel = () => timelineHistory.cancel();
+
+		node.addEventListener('pointerdown', begin);
+		node.addEventListener('keydown', begin);
+		node.addEventListener('keyup', commit);
+		node.addEventListener('blur', commit);
+		window.addEventListener('pointerup', commit);
+		node.addEventListener('pointercancel', cancel);
+
+		return {
+			destroy: () => {
+				node.removeEventListener('pointerdown', begin);
+				node.removeEventListener('keydown', begin);
+				node.removeEventListener('keyup', commit);
+				node.removeEventListener('blur', commit);
+				window.removeEventListener('pointerup', commit);
+				node.removeEventListener('pointercancel', cancel);
+				return true;
+			}
+		};
 	}
 
 	function updateAudioSetting(
@@ -275,6 +301,7 @@
 					<label for="audio-volume">Volume</label>
 					<span>{Math.round(settings.volume * 100)}%</span>
 					<input
+						use:historyRange
 						id="audio-volume"
 						type="range"
 						min="0"
@@ -293,6 +320,7 @@
 					<label for="audio-fade-in">Fade In</label>
 					<span>{formatTime(settings.fadeInMs)}</span>
 					<input
+						use:historyRange
 						id="audio-fade-in"
 						type="range"
 						min="0"
@@ -311,6 +339,7 @@
 					<label for="audio-fade-out">Fade Out</label>
 					<span>{formatTime(settings.fadeOutMs)}</span>
 					<input
+						use:historyRange
 						id="audio-fade-out"
 						type="range"
 						min="0"
@@ -373,6 +402,7 @@
 					<label for="video-volume">Volume</label>
 					<span>{Math.round(settings.volume * 100)}%</span>
 					<input
+						use:historyRange
 						id="video-volume"
 						type="range"
 						min="0"
@@ -406,6 +436,7 @@
 					<label for="video-opacity">Opacity</label>
 					<span>{Math.round(settings.opacity * 100)}%</span>
 					<input
+						use:historyRange
 						id="video-opacity"
 						type="range"
 						min="0"
@@ -453,6 +484,7 @@
 					<label for="image-opacity">Opacity</label>
 					<span>{Math.round(settings.opacity * 100)}%</span>
 					<input
+						use:historyRange
 						id="image-opacity"
 						type="range"
 						min="0"

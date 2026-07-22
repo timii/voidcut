@@ -2,12 +2,10 @@
 	import { MediaType, type IMedia } from '$lib/interfaces/Media';
 	import { CONSTS } from '$lib/utils/consts';
 	import DeleteIcon from '$lib/assets/workbench/delete.png';
-	import { availableMedia, timelineTracks } from '../../../stores/store';
-	import { cleanUpEmptyTracks } from '$lib/utils/timeline.utils';
 	import { formatTime } from '$lib/utils/time.utils';
+	import { deleteMediaFromProject } from '$lib/utils/media-actions.utils';
 
 	export let file: IMedia;
-	export let index: number;
 
 	let elementRef: HTMLElement;
 	let isHovering = false;
@@ -33,23 +31,8 @@
 
 	// handle deleting a media pool element
 	function deleteElement() {
-		// delete current element in the store
-		availableMedia.update((media) => media.toSpliced(index, 1));
-
 		// TODO: show a dialog before deleting it with a warning that the timeline elements will also be deleted
-
-		// update timeline tracks in store after deleting elements
-		timelineTracks.update((tracks) => {
-			// go through each track and remove all elements that have the same media id as the deleted media
-			for (let i = 0; i < tracks.length; i++) {
-				tracks[i].elements = tracks[i].elements.filter((el) => el.mediaId !== file.mediaId);
-			}
-
-			// remove empty tracks if necessary
-			cleanUpEmptyTracks(tracks);
-
-			return tracks;
-		});
+		deleteMediaFromProject(file.mediaId);
 	}
 </script>
 

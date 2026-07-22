@@ -21,6 +21,7 @@ import {
 	readManyItems,
 	clearItems
 } from './persistence.worker.js';
+import { timelineHistory } from '../timeline-history.utils';
 
 // map of each store value that is being saved in local storage with their corresponding key
 const storeNamesMap = new Map<string, Writable<unknown>>([
@@ -97,6 +98,9 @@ export async function restoreLastState() {
 			}
 		}
 	);
+
+	// restored projects start a new session baseline instead of mixing incompatible snapshots
+	timelineHistory.reset();
 
 	// hide dialog after everything has been restored
 	restoreStateOverlayOpen.set(false);

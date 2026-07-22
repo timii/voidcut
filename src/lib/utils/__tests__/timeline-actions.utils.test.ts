@@ -17,6 +17,7 @@ import {
 	splitSelectedTimelineElement,
 	stepPlayhead
 } from '../timeline-actions.utils';
+import { timelineHistory } from '../timeline-history.utils';
 
 const settings = {
 	flipHorizontal: false,
@@ -54,6 +55,7 @@ beforeEach(() => {
 	previewPlaying.set(false);
 	currentPlaybackTime.set(0);
 	maxPlaybackTime.set(0);
+	timelineHistory.reset();
 });
 
 describe('stepPlayhead', () => {
@@ -153,6 +155,23 @@ describe('shared timeline editing actions', () => {
 
 		expect(get(timelineTracks)[0].elements.map((element) => element.elementId)).toEqual(['first']);
 		expect(get(selectedElement).elementId).toBe('');
+	});
+
+	it('undoes deletion with the original selection', () => {
+		setTrack([makeElement('first', 0), makeElement('selected', 1000)]);
+		selectedElement.set({ elementId: 'selected', mediaType: MediaType.Image });
+
+		deleteSelectedTimelineElement();
+		timelineHistory.undo();
+
+		expect(get(timelineTracks)[0].elements.map((element) => element.elementId)).toEqual([
+			'first',
+			'selected'
+		]);
+		expect(get(selectedElement)).toEqual({
+			elementId: 'selected',
+			mediaType: MediaType.Image
+		});
 	});
 
 	it('does not delete during playback or without a valid selection', () => {
