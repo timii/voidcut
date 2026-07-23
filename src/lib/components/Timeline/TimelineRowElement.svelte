@@ -38,6 +38,7 @@
 	} from '$lib/utils/timeline.utils';
 	import TimelineFilmstrip from './TimelineFilmstrip.svelte';
 	import { getTimelineElementSpeed } from '$lib/utils/timeline-settings.utils';
+	import { runTimelineEdit, timelineHistory } from '$lib/utils/timeline-history.utils';
 
 	export let element: ITimelineElement = {} as ITimelineElement;
 	export let elementIndex: number;
@@ -369,7 +370,7 @@
 		position = { ...position, x: leftOffset };
 
 		// update duration, playbackStartTime and mediaStartTime of element in store
-		timelineTracks.update((tracks) => {
+		runTimelineEdit(() => timelineTracks.update((tracks) => {
 			const curEl = tracks[rowIndex].elements[elementIndex];
 
 			let newTrimFromStart = element.trimFromStart;
@@ -383,15 +384,24 @@
 			// update the left offset for the svg if shown
 			svgLeftTrim = convertMsToPx(newTrimFromStart);
 
-			tracks[rowIndex].elements[elementIndex] = {
+			const nextElement = {
 				...curEl,
 				duration: newWidthInMs,
 				playbackStartTime: newLeftOffsetInMs,
 				trimFromStart: newTrimFromStart
 			};
 
-			return tracks;
-		});
+			return tracks.map((track, index) =>
+				index === rowIndex
+					? {
+							...track,
+							elements: track.elements.map((item, itemIndex) =>
+								itemIndex === elementIndex ? nextElement : item
+							)
+					  }
+					: track
+			);
+		}));
 
 		resizeStartWidth = newWidthInMs;
 	}
@@ -462,7 +472,7 @@
 		elementWidth = newWidth;
 
 		// update duration of element in store
-		timelineTracks.update((tracks) => {
+		runTimelineEdit(() => timelineTracks.update((tracks) => {
 			const curEl = tracks[rowIndex].elements[elementIndex];
 
 			let newTrimFromEnd = element.trimFromEnd;
@@ -473,14 +483,23 @@
 				newTrimFromEnd = Math.max(newTrimFromEnd, 0);
 			}
 
-			tracks[rowIndex].elements[elementIndex] = {
+			const nextElement = {
 				...curEl,
 				duration: newWidthInMs,
 				trimFromEnd: newTrimFromEnd
 			};
 
-			return tracks;
-		});
+			return tracks.map((track, index) =>
+				index === rowIndex
+					? {
+							...track,
+							elements: track.elements.map((item, itemIndex) =>
+								itemIndex === elementIndex ? nextElement : item
+							)
+					  }
+					: track
+			);
+		}));
 
 		resizeStartWidth = newWidthInMs;
 	}
@@ -507,6 +526,8 @@
 		const rightElStartTime = getNextRightElementStartTime(rowIndex, elementIndex);
 
 		if (onlyPrimaryButtonClicked(e) && !$isThumbBeingDragged) {
+			// all pointermove resize updates commit as one undoable gesture
+			timelineHistory.begin();
 			isTimelineElementBeingResized.set(true);
 			elementResizeData.set({
 				side,

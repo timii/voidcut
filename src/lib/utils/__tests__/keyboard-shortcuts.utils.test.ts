@@ -34,7 +34,11 @@ describe('resolveKeyboardShortcut', () => {
 		[event('d', { ctrlKey: true }), 'duplicate'],
 		[event('D', { metaKey: true }), 'duplicate'],
 		[event('ArrowLeft', { altKey: true }), 'nudge-left'],
-		[event('ArrowRight', { altKey: true }), 'nudge-right']
+		[event('ArrowRight', { altKey: true }), 'nudge-right'],
+		[event('z', { ctrlKey: true }), 'undo'],
+		[event('Z', { metaKey: true }), 'undo'],
+		[event('z', { ctrlKey: true, shiftKey: true }), 'redo'],
+		[event('Z', { metaKey: true, shiftKey: true }), 'redo']
 	] as const)('resolves %s to %s', (keyboardEvent, action) => {
 		expect(resolveKeyboardShortcut(keyboardEvent, false)).toEqual({ action, execute: true });
 	});
@@ -46,7 +50,8 @@ describe('resolveKeyboardShortcut', () => {
 		event('d', { altKey: true, ctrlKey: true }),
 		event('Home', { ctrlKey: true }),
 		event('End', { altKey: true }),
-		event('ArrowRight', { metaKey: true })
+		event('ArrowRight', { metaKey: true }),
+		event('y', { ctrlKey: true })
 	])('requires the binding modifiers exactly', (keyboardEvent) => {
 		expect(resolveKeyboardShortcut(keyboardEvent, false)).toBeNull();
 	});
@@ -57,7 +62,9 @@ describe('resolveKeyboardShortcut', () => {
 		['skip-start', event('Home', { repeat: true })],
 		['skip-end', event('End', { repeat: true })],
 		['split', event('k', { ctrlKey: true, repeat: true })],
-		['duplicate', event('d', { metaKey: true, repeat: true })]
+		['duplicate', event('d', { metaKey: true, repeat: true })],
+		['undo', event('z', { ctrlKey: true, repeat: true })],
+		['redo', event('z', { metaKey: true, shiftKey: true, repeat: true })]
 	] as const)('recognizes but does not execute repeated %s', (action, keyboardEvent) => {
 		expect(resolveKeyboardShortcut(keyboardEvent, false)).toEqual({ action, execute: false });
 	});
@@ -108,7 +115,9 @@ describe('formatShortcutTooltip', () => {
 		['Play', 'toggle-playback', 'Play (Space)'],
 		['Delete', 'delete', 'Delete (Delete / Backspace)'],
 		['Split', 'split', 'Split (Ctrl / Cmd + K)'],
-		['Skip To Start', 'skip-start', 'Skip To Start (Home)']
+		['Skip To Start', 'skip-start', 'Skip To Start (Home)'],
+		['Undo', 'undo', 'Undo (Ctrl / Cmd + Z)'],
+		['Redo', 'redo', 'Redo (Ctrl / Cmd + Shift + Z)']
 	] as const)('formats %s from shared shortcut metadata', (label, action, expected) => {
 		expect(formatShortcutTooltip(label, action)).toBe(expected);
 	});

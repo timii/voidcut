@@ -38,6 +38,7 @@
 		duplicateSelectedTimelineElement,
 		splitSelectedTimelineElement
 	} from '$lib/utils/timeline-actions.utils';
+	import { runTimelineEdit } from '$lib/utils/timeline-history.utils';
 
 	// update controls when different store values change
 	$: $selectedElement, updateControls();
@@ -112,8 +113,10 @@
 			return;
 		}
 
-		timelineTracks.update((tracks) =>
-			moveElementToAdjacentRow(tracks, indices, direction, generateId())
+		runTimelineEdit(() =>
+			timelineTracks.update((tracks) =>
+				moveElementToAdjacentRow(tracks, indices, direction, generateId())
+			)
 		);
 	}
 

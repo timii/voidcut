@@ -11,6 +11,7 @@ import { createTrackWithElement, handleOverlapping, handleElementIndeces } from 
 import { generateId, convertMsToPx } from './utils';
 import { generateAudioWaveformTimelineImage } from './waveform.utils';
 import { getDefaultTimelineElementSettings } from './timeline-settings.utils';
+import { runTimelineEdit } from './timeline-history.utils';
 
 // save a given array of media objects into the store
 export function saveFilesToStore(files: IMedia[]) {
@@ -193,8 +194,12 @@ export function handleTimelineMediaDrop(
 	// create an empty track with the newly created element
 	const timelineTrack = createTrackWithElement(timelineEl);
 
-	// handle the element drop differently depending on where the element was dropped (timeline, divider or track)
-	switch (dropArea) {
+	// each media drop is one atomic edit regardless of its destination
+	return runTimelineEdit(() => switchTimelineMediaDrop());
+
+	function switchTimelineMediaDrop() {
+		// handle the element drop differently depending on where the element was dropped (timeline, divider or track)
+		switch (dropArea) {
 		// element dropped on the timeline but not a track or divider
 		case TimelineDropArea.TIMELINE:
 			// add the newly created track to the end of the timeline track array
@@ -229,22 +234,24 @@ export function handleTimelineMediaDrop(
 				};
 
 				// check and handle if any elements overlap after adding the element and update the track elements if necessary
-				tracks[rowIndex].elements = handleOverlapping(
+				let elements = handleOverlapping(
 					elBounds,
-					tracks[rowIndex].elements,
+					tracks[rowIndex].elements.map((element) => ({ ...element })),
 					undefined // we also set this to be undefined since the element was was just created, so it doesn't ahve a previous index
 				);
 
 				// check and handle if the element with the updated start time is still at the correct index and if not update the track elements
-				tracks[rowIndex].elements = handleElementIndeces(
+				elements = handleElementIndeces(
 					timelineEl,
 					elBounds.start,
-					tracks[rowIndex].elements,
-					tracks[rowIndex].elements.length, // we use the current length here and not length - 1 since we will add the element inside the function and then the length will be increased by one and we want the index of the last element
+					elements,
+					elements.length, // we use the current length here and not length - 1 since we will add the element inside the function and then the length will be increased by one and we want the index of the last element
 					true
 				);
 
-				return tracks;
+				return tracks.map((track, index) =>
+					index === rowIndex ? { ...track, elements } : track
+				);
 			});
 
 			break;
@@ -253,6 +260,8 @@ export function handleTimelineMediaDrop(
 			// shouldn't be reachable
 			console.error(`No correct drop area was provided: drop area ${dropArea} not defined`);
 			break;
+		}
+		return true;
 	}
 }
 

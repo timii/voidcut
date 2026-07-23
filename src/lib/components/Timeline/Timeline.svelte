@@ -1,10 +1,7 @@
 <script lang="ts">
-	import type { IMedia } from '$lib/interfaces/Media';
 	import {
 		allBoundingRectValuesZero,
 		convertMsToPx,
-		hasHorizontalScrollbar,
-		hasVerticalScrollbar,
 		isDraggedElementAFile,
 		onlyPrimaryButtonClicked,
 		resetAllBeingDragged,
@@ -40,16 +37,14 @@
 	import TimelineEmpty from './TimelineEmpty.svelte';
 	import { dropTimelineElementHandler } from '$lib/utils/drop-timeline-element-handler.utils';
 	import { hoverTimelineElementHandler } from '$lib/utils/hover-timeline-element-handler.utils';
+	import { timelineHistory } from '$lib/utils/timeline-history.utils';
 	import {
 		handleElementResizing,
 		moveTimelineThumb,
 		mediaDropOnTimeline
 	} from '$lib/utils/timeline.utils';
-	import { handleTimelineMediaDrop } from '$lib/utils/file.utils';
 
 	let scrollContainerEl: HTMLDivElement;
-	let isOverflowingX = false;
-	let isOverflowingY = false;
 	let amountOfTicks = 0;
 	let amountOfTicksRounded = 0;
 	let thumbElementRef: HTMLElement | null = null;
@@ -59,8 +54,11 @@
 	onMount(() => {
 		// listen to selected events in the window
 		const events = ['mouseup', 'dragend'];
-		events.forEach((e) => {
+			events.forEach((e) => {
 			window.addEventListener(e, () => {
+				if (e === 'mouseup' && $isTimelineElementBeingResized) {
+					timelineHistory.commit();
+				}
 				// delay resetting the store values to workaround when mouse down event fires after mouse button isn't held down anymore
 				setTimeout(() => {
 					resetAllBeingDragged();
@@ -86,8 +84,6 @@
 		}
 		possibleScaleValues.set(values);
 
-		isOverflowingY = hasVerticalScrollbar(scrollContainerEl);
-		isOverflowingX = hasHorizontalScrollbar(scrollContainerEl);
 
 		// get current width of timeline to calculate max playback time at the start
 		amountOfTicks = scrollContainerEl.scrollWidth / $currentTimelineScale;

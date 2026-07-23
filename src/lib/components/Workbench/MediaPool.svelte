@@ -63,8 +63,8 @@
 			<div
 				class="flex flex-row flex-wrap content-start h-full gap-4 overflow-y-auto mediapool z-10"
 			>
-				{#each $availableMedia as media, i (media.mediaId)}
-					<MediaPoolElement file={media} index={i}></MediaPoolElement>
+				{#each $availableMedia as media (media.mediaId)}
+					<MediaPoolElement file={media}></MediaPoolElement>
 				{/each}
 			</div>
 		{:else}
