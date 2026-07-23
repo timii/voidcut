@@ -38,18 +38,17 @@ export function createHistory<TSnapshot>(
 
 	let past: TSnapshot[] = [];
 	let future: TSnapshot[] = [];
-	let active = false;
-	let transactionStart: TSnapshot | undefined;
+	let transaction: { start: TSnapshot } | null = null;
+	let restoring = false;
 	const canUndoWritable = writable(false);
 	const canRedoWritable = writable(false);
 	const transactionActiveWritable = writable(false);
 
 	function refreshAvailability() {
 		// active edits must settle before history can move to another snapshot
-		canUndoWritable.set(!active && past.length > 0);
-		canRedoWritable.set(!active && future.length > 0);
-		transactionActiveWritable.set(active);
-		return true;
+		canUndoWritable.set(!transaction && past.length > 0);
+		canRedoWritable.set(!transaction && future.length > 0);
+		transactionActiveWritable.set(transaction !== null);
 	}
 
 	function record(before: TSnapshot, after: TSnapshot) {
@@ -68,8 +67,21 @@ export function createHistory<TSnapshot>(
 		return true;
 	}
 
+	function restoreSnapshot(snapshot: TSnapshot) {
+		// reactive work triggered by restoration must not create nested history entries
+		restoring = true;
+		try {
+			return adapter.restore(snapshot);
+		} finally {
+			restoring = false;
+		}
+	}
+
 	function run<TResult>(change: () => TResult): TResult {
-		if (active) {
+		if (restoring) {
+			return change();
+		}
+		if (transaction) {
 			throw new Error('Cannot run an atomic history edit during a transaction');
 		}
 
@@ -80,72 +92,73 @@ export function createHistory<TSnapshot>(
 			return result;
 		} catch (error) {
 			// failed edits restore their exact starting snapshot and never enter history
-			adapter.restore(before);
+			restoreSnapshot(before);
 			refreshAvailability();
 			throw error;
 		}
 	}
 
 	function begin() {
-		if (active) {
+		if (restoring || transaction) {
 			return false;
 		}
 
-		transactionStart = adapter.capture();
-		active = true;
+		// wrap the snapshot so undefined remains a valid generic snapshot value
+		transaction = { start: adapter.capture() };
 		refreshAvailability();
 		return true;
 	}
 
 	function update<TResult>(change: () => TResult): TResult {
-		if (!active || transactionStart === undefined) {
+		if (restoring) {
+			return change();
+		}
+		if (!transaction) {
 			throw new Error('Cannot update history without an active transaction');
 		}
 
+		const { start } = transaction;
 		try {
 			return change();
 		} catch (error) {
 			// gesture failures roll back the entire gesture instead of a partial update
-			adapter.restore(transactionStart);
-			transactionStart = undefined;
-			active = false;
+			restoreSnapshot(start);
+			transaction = null;
 			refreshAvailability();
 			throw error;
 		}
 	}
 
 	function commit() {
-		if (!active || transactionStart === undefined) {
+		if (restoring || !transaction) {
 			return false;
 		}
 
-		const before = transactionStart;
-		transactionStart = undefined;
-		active = false;
+		const before = transaction.start;
+		transaction = null;
 		return record(before, adapter.capture());
 	}
 
 	function cancel() {
-		if (!active || transactionStart === undefined) {
+		if (restoring || !transaction) {
 			return false;
 		}
 
-		adapter.restore(transactionStart);
-		transactionStart = undefined;
-		active = false;
+		restoreSnapshot(transaction.start);
+		transaction = null;
 		refreshAvailability();
 		return true;
 	}
 
 	function undo() {
-		if (active || past.length === 0) {
+		if (restoring || transaction || past.length === 0) {
 			return false;
 		}
 
 		const current = adapter.capture();
 		const previous = past[past.length - 1];
 		// update stacks only after restore succeeds so a failing adapter cannot corrupt history
-		adapter.restore(previous);
+		restoreSnapshot(previous);
 		past = past.slice(0, -1);
 		future.push(current);
 		refreshAvailability();
@@ -153,13 +166,13 @@ export function createHistory<TSnapshot>(
 	}
 
 	function redo() {
-		if (active || future.length === 0) {
+		if (restoring || transaction || future.length === 0) {
 			return false;
 		}
 
 		const current = adapter.capture();
 		const next = future[future.length - 1];
-		adapter.restore(next);
+		restoreSnapshot(next);
 		future = future.slice(0, -1);
 		past.push(current);
 		refreshAvailability();
@@ -167,11 +180,13 @@ export function createHistory<TSnapshot>(
 	}
 
 	function reset() {
+		if (restoring) {
+			return false;
+		}
 		// resets establish the current external state as a fresh session baseline
 		past = [];
 		future = [];
-		active = false;
-		transactionStart = undefined;
+		transaction = null;
 		refreshAvailability();
 		return true;
 	}

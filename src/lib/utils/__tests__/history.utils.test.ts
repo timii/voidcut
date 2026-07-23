@@ -123,11 +123,44 @@ describe('createHistory', () => {
 		expect(get(history.canRedo)).toBe(false);
 	});
 
-	it('exposes the current typed snapshot without recording it', () => {
-		const { history, setValue } = setupHistory();
-		setValue(7);
+	it('supports undefined as a valid transaction snapshot', () => {
+		let value: number | undefined;
+		const history = createHistory<number | undefined>({
+			capture: () => value,
+			restore: (snapshot) => {
+				value = snapshot;
+				return true;
+			},
+			equals: Object.is
+		});
 
-		expect(history.getSnapshot()).toBe(7);
+		expect(history.begin()).toBe(true);
+		history.update(() => {
+			value = 1;
+		});
+		expect(history.commit()).toBe(true);
+		expect(history.undo()).toBe(true);
+		expect(value).toBeUndefined();
+	});
+
+	it('does not record changes triggered while restoring a snapshot', () => {
+		let value = 0;
+		const adapter: HistoryAdapter<number> = {
+			capture: () => value,
+			restore: restoreThroughHistory,
+			equals: Object.is
+		};
+		const history = createHistory(adapter);
+
+		function restoreThroughHistory(snapshot: number) {
+			return history.run(() => (value = snapshot));
+		}
+
+		history.run(() => (value = 1));
+
+		expect(history.undo()).toBe(true);
+		expect(value).toBe(0);
 		expect(get(history.canUndo)).toBe(false);
+		expect(get(history.canRedo)).toBe(true);
 	});
 });
