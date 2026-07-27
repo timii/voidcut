@@ -11,6 +11,37 @@ interface ReleaseOptions {
 	runCommand: CommandRunner;
 }
 
+interface CommandEnvironment {
+	platform: NodeJS.Platform;
+	nodePath: string;
+	npmPath: string | undefined;
+}
+
+interface CommandInvocation {
+	executable: string;
+	args: string[];
+}
+
+export const resolveCommand = (
+	command: string,
+	args: string[],
+	environment: CommandEnvironment
+): CommandInvocation => {
+	if (command !== 'npm' || environment.platform !== 'win32') {
+		return { executable: command, args };
+	}
+
+	if (!environment.npmPath) {
+		throw new Error('Unable to locate the npm CLI');
+	}
+
+	// running the npm JavaScript entrypoint avoids Windows command shim errors
+	return {
+		executable: environment.nodePath,
+		args: [environment.npmPath, ...args]
+	};
+};
+
 export const runRelease = ({ releaseType, runCommand }: ReleaseOptions) => {
 	if (!releaseType || !releaseTypes.has(releaseType)) {
 		throw new Error('Release type must be major, minor, or patch');
@@ -37,9 +68,12 @@ export const runRelease = ({ releaseType, runCommand }: ReleaseOptions) => {
 };
 
 const runCommand: CommandRunner = (command, args) => {
-	// npm uses a command shim on Windows
-	const executable = command === 'npm' && process.platform === 'win32' ? 'npm.cmd' : command;
-	const result = spawnSync(executable, args, {
+	const invocation = resolveCommand(command, args, {
+		platform: process.platform,
+		nodePath: process.execPath,
+		npmPath: process.env.npm_execpath
+	});
+	const result = spawnSync(invocation.executable, invocation.args, {
 		encoding: 'utf8',
 		stdio: ['inherit', 'pipe', 'pipe']
 	});
