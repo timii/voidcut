@@ -10,7 +10,14 @@ export interface IPlayerElementAudio {
 }
 
 export interface IPlayerElementsMap {
-	[x: string]: { audio?: IPlayerElementAudio; el: HTMLElement; properties: IPlayerElement };
+	[x: string]: {
+		audio?: IPlayerElementAudio;
+		el: HTMLElement | null;
+		lastCorrectionAt?: number;
+		loadFailed?: boolean;
+		playPending?: boolean;
+		properties: IPlayerElement;
+	};
 }
 
 export enum PreviewAspectRatio {

@@ -1,17 +1,29 @@
 <script lang="ts">
-	import { MediaType } from '$lib/interfaces/Media';
+	import { afterUpdate, onDestroy } from 'svelte';
+	import { MediaType, type IMedia } from '$lib/interfaces/Media';
 	import type {
 		IAudioTimelineElementSettings,
 		IImageTimelineElementSettings,
+		ITimelineTrack,
 		IVideoTimelineElementSettings
 	} from '$lib/interfaces/Timeline';
-	import type { IPlayerElement, IPlayerElementsMap } from '$lib/interfaces/Player';
-	import type { ITimelineTrack } from '$lib/interfaces/Timeline';
+	import type {
+		IPlayerElement,
+		IPlayerElementAudio,
+		IPlayerElementsMap
+	} from '$lib/interfaces/Player';
 	import {
-		getCurrentMediaTime,
-		getFadeVolumeMultiplier,
-		isPlaybackInElement
-	} from '$lib/utils/playback.utils';
+		getMediaSyncActions,
+		hasPlaybackTimeJumped,
+		shouldCheckMediaDrift,
+		shouldRunMediaSync
+	} from '$lib/utils/media-sync.utils';
+	import { getCurrentMediaTime, getFadeVolumeMultiplier } from '$lib/utils/playback.utils';
+	import {
+		getManagedPreviewElements,
+		getManagedPreviewSignature,
+		type IManagedPreviewElement
+	} from '$lib/utils/preview.utils';
 	import { isSameAspectRatio } from '$lib/utils/utils';
 	import {
 		getTimelineElementSpeed,
@@ -30,139 +42,274 @@
 	let previewPlayerRef: HTMLDivElement;
 	let fullWidth = true;
 	let audioContext: AudioContext | undefined;
-
-	$: timelineElements = flattenTimelineTracks($timelineTracks);
-
-	// map to hold references to each player element and its properties using its elementId as a key
 	let playerElementsMap: IPlayerElementsMap = {};
-	$: filterPlayerElementsMap(playerElementsMap);
+	let managedElements: IManagedPreviewElement[] = [];
+	let renderedManagedSignature = '';
+	let previousTimelineTracks: ITimelineTrack[] | undefined;
+	let previousAvailableMedia: IMedia[] | undefined;
+	let lastManagedSignature = '';
+	let lastObservedTime = 0;
+	let observedPlaybackTime = false;
+	let lastDriftCheckAt = 0;
+	let lastSyncAt = 0;
+	let previousPlaying = false;
 
-	// handle playing and pausing elements when the playback is being paused/played store value changes
-	$: handlePlayingElements($previewPlaying);
-
-	// handle playing and pausing elements when the currentPlaybackTime store value changes
-	$: $currentPlaybackTime, handlePlaybackTimeUpdate();
-
-	// handle preview player sizing when either window height or width change
+	$: updateManagedPreviewElements($timelineTracks, $availableMedia, $currentPlaybackTime);
+	$: registerManagedElements(managedElements);
 	$: $windowWidth, $windowHeight, handleWindowWidthOrHeightChange();
 
-	// check if preview player sizing needs to be updated on window size change
+	afterUpdate(() => {
+		syncPreviewIfNeeded(managedElements, $currentPlaybackTime, $previewPlaying);
+		removeDetachedEntries(managedElements);
+	});
+
+	onDestroy(() => {
+		Object.values(playerElementsMap).forEach(cleanupPlayerElement);
+		if (audioContext) {
+			audioContext.close().catch(() => undefined);
+		}
+	});
+
 	function handleWindowWidthOrHeightChange() {
 		if (!previewPlayerRef) {
 			return;
 		}
 
-		// get the height and width from the preview player
 		const previewBoundingRect = previewPlayerRef.getBoundingClientRect();
-		const previewWidth = previewBoundingRect.width;
-		const previewHeight = previewBoundingRect.height;
-
-		// check if the current width and height of the player match the aspect ratio defined in the store
-		const sameAspectRatio = isSameAspectRatio(previewWidth, previewHeight);
-
-		// if the aspect ratio of the preview player doesn't match the on in the store
-		if (!sameAspectRatio) {
-			// if the height was cut off (width: 100%, height: auto) before, cut off width (width: auto, height: 100%) now and the other way around
+		if (!isSameAspectRatio(previewBoundingRect.width, previewBoundingRect.height)) {
 			fullWidth = !fullWidth;
 		}
 	}
 
-	// handles what elements need to be updated while playback is running
-	function handlePlaybackTimeUpdate() {
-		// if the playback time is being updated but the playback isn't running we return here
-		if (!$previewPlaying) {
+	function updateManagedPreviewElements(tracks: ITimelineTrack[], media: IMedia[], timeMs: number) {
+		const nextElements = getManagedPreviewElements(tracks, media, timeMs);
+		const nextSignature = getManagedPreviewSignature(nextElements);
+		const sourceDataChanged = tracks !== previousTimelineTracks || media !== previousAvailableMedia;
+
+		// stable layer arrays prevent unchanged media DOM from being invalidated on every clock tick
+		if (sourceDataChanged || nextSignature !== renderedManagedSignature) {
+			managedElements = nextElements;
+			renderedManagedSignature = nextSignature;
+		}
+
+		previousTimelineTracks = tracks;
+		previousAvailableMedia = media;
+	}
+
+	function registerManagedElements(elements: IManagedPreviewElement[]) {
+		const managedIds = new Set(elements.map((element) => element.elementId));
+
+		elements.forEach((element) => {
+			const existing = playerElementsMap[element.elementId];
+			if (existing) {
+				existing.properties = element;
+				return;
+			}
+
+			playerElementsMap[element.elementId] = {
+				el: null,
+				properties: element
+			};
+		});
+
+		Object.entries(playerElementsMap).forEach(([elementId, playerElement]) => {
+			if (!managedIds.has(elementId)) {
+				cleanupPlayerElement(playerElement);
+			}
+		});
+	}
+
+	function removeDetachedEntries(elements: IManagedPreviewElement[]) {
+		const managedIds = new Set(elements.map((element) => element.elementId));
+
+		Object.entries(playerElementsMap).forEach(([elementId, playerElement]) => {
+			if (!managedIds.has(elementId) && !playerElement.el) {
+				delete playerElementsMap[elementId];
+			}
+		});
+	}
+
+	function syncManagedElements(
+		elements: IManagedPreviewElement[],
+		timeMs: number,
+		playing: boolean,
+		forceSeek: boolean,
+		checkDrift: boolean,
+		now: number
+	) {
+		if (playing && audioContext?.state === 'suspended') {
+			audioContext.resume().catch(() => undefined);
+		}
+
+		elements.forEach((element) => {
+			if (element.type === MediaType.Image) {
+				return;
+			}
+
+			const playerElement = playerElementsMap[element.elementId];
+			const htmlEl = playerElement?.el as HTMLMediaElement | null;
+			if (!htmlEl || playerElement.loadFailed) {
+				return;
+			}
+
+			const playbackRate = getTimelineElementSpeed(element);
+			if (htmlEl.playbackRate !== playbackRate) {
+				htmlEl.playbackRate = playbackRate;
+			}
+
+			const targetTime = getCurrentMediaTime(element, timeMs);
+			const drift = checkDrift ? Math.abs(htmlEl.currentTime - targetTime) : 0;
+			const actions = getMediaSyncActions({
+				active: element.active,
+				playing,
+				paused: htmlEl.paused,
+				seeking: htmlEl.seeking,
+				playPending: playerElement.playPending ?? false,
+				driftSeconds: drift,
+				checkDrift,
+				forceSeek,
+				timeSinceCorrectionMs:
+					playerElement.lastCorrectionAt === undefined
+						? Number.POSITIVE_INFINITY
+						: now - playerElement.lastCorrectionAt
+			});
+
+			if (actions.pause) {
+				htmlEl.pause();
+			}
+
+			if (!element.active) {
+				return;
+			}
+
+			if (element.type === MediaType.Audio || !playing || forceSeek) {
+				configureMediaVolume(htmlEl, element, timeMs);
+			}
+
+			if (actions.seek && setMediaTime(htmlEl, targetTime)) {
+				playerElement.lastCorrectionAt = now;
+			}
+
+			if (actions.play) {
+				playerElement.playPending = true;
+				const clearPendingPlay = () => {
+					playerElement.playPending = false;
+				};
+				htmlEl.play().then(clearPendingPlay, clearPendingPlay);
+			}
+		});
+	}
+
+	function syncPreviewIfNeeded(
+		elements: IManagedPreviewElement[],
+		timeMs: number,
+		playing: boolean
+	) {
+		const now = performance.now();
+		const managedSignature = elements
+			.map((element) => `${element.elementId}:${element.active}`)
+			.join('|');
+		const playbackChanged = playing !== previousPlaying;
+		const managedSetChanged = managedSignature !== lastManagedSignature;
+		// scheduler delays are not timeline seeks and must not reset every active decoder
+		const timeJumped = hasPlaybackTimeJumped({
+			previousTimeMs: lastObservedTime,
+			currentTimeMs: timeMs,
+			observedBefore: observedPlaybackTime
+		});
+		const forceSync = playbackChanged || managedSetChanged || timeJumped;
+		const checkDrift = shouldCheckMediaDrift({
+			force: forceSync,
+			elapsedMs: now - lastDriftCheckAt
+		});
+
+		if (
+			shouldRunMediaSync({
+				playing,
+				playbackChanged,
+				managedSetChanged,
+				timeJumped,
+				elapsedMs: now - lastSyncAt
+			})
+		) {
+			// normal playback sync is rate-limited so native decoding can advance uninterrupted
+			syncManagedElements(elements, timeMs, playing, forceSync, checkDrift, now);
+			lastSyncAt = now;
+			if (checkDrift) {
+				lastDriftCheckAt = now;
+			}
+		}
+
+		lastManagedSignature = managedSignature;
+		lastObservedTime = timeMs;
+		observedPlaybackTime = true;
+		previousPlaying = playing;
+	}
+
+	function handleLoadedMetadata(element: IManagedPreviewElement) {
+		const htmlEl = playerElementsMap[element.elementId]?.el as HTMLMediaElement | null;
+		if (!htmlEl) {
 			return;
 		}
 
-		// for each update of the playback time go through the whole map and check if the element
-		// needs to be played or paused
-		Object.values(playerElementsMap).forEach((el) => {
-			// ignore image elements
-			if (el.properties.type === MediaType.Image) {
-				return;
-			}
-
-			// type the el property to get correct typing
-			const htmlEl = el.el as HTMLMediaElement;
-			configureMediaElement(htmlEl, el.properties);
-
-			const isMediaPlaying = !htmlEl.paused;
-
-			// get the time from where the media element should be played at
-			const currentElTime = getCurrentMediaTime(el.properties);
-
-			// check if the element is out of sync while the playbakc is running
-			const elTimeOutOfSync =
-				currentElTime < htmlEl.currentTime - 0.2 || currentElTime > htmlEl.currentTime + 0.2;
-
-			// if media element time and playback time are out of sync update the media time
-			if (elTimeOutOfSync) {
-				htmlEl.currentTime = currentElTime;
-			}
-
-			// check if the playback time is within the element start and end time on the timeline
-			if (!isPlaybackInElement(el.properties)) {
-				// if the playback time is outside element bounds and the media is still playing we pause it
-				if (isMediaPlaying) htmlEl.pause();
-				return;
-			}
-
-			if (!isMediaPlaying) {
-				htmlEl.play();
-			}
-		});
+		// upcoming media starts decoding near its trim point before the cut becomes active
+		const targetTime = element.active
+			? getCurrentMediaTime(element, $currentPlaybackTime)
+			: element.trimFromStart / 1000;
+		setMediaTime(htmlEl, targetTime);
 	}
 
-	// handles what elements need to be updated when pausing/resuming playback
-	function handlePlayingElements(playing: boolean) {
-		if (playing && audioContext?.state === 'suspended') {
-			audioContext.resume();
+	function handleMediaError(elementId: string) {
+		const playerElement = playerElementsMap[elementId];
+		if (!playerElement) {
+			return;
 		}
 
-		// everytime the playback is being started/paused, go through the whole map and check what elements
-		// needs to be played or paused
-		Object.values(playerElementsMap).forEach((el) => {
-			// ignore image elements
-			if (el.properties.type === MediaType.Image) {
-				return;
-			}
-
-			// type the el property to get correct typing
-			const htmlEl = el.el as HTMLMediaElement;
-			configureMediaElement(htmlEl, el.properties);
-
-			// get the time from where the media element should be played at
-			const currentElTime = getCurrentMediaTime(el.properties);
-
-			// check if we are withing bounds of the element
-			if (currentElTime >= 0 && isPlaybackInElement(el.properties)) {
-				// set currentTime of element to current playback time (in seconds)
-				htmlEl.currentTime = currentElTime;
-
-				// play/pause the element depending the "previewPlaying" store value
-				playing ? htmlEl.play() : htmlEl.pause();
-			}
-		});
+		playerElement.loadFailed = true;
+		if (playerElement.el instanceof HTMLMediaElement) {
+			playerElement.el.pause();
+		}
 	}
 
-	function configureMediaElement(htmlEl: HTMLMediaElement, element: IPlayerElement) {
-		htmlEl.playbackRate = getTimelineElementSpeed(element);
+	function setMediaTime(htmlEl: HTMLMediaElement, targetTime: number): boolean {
+		if (htmlEl.readyState < HTMLMediaElement.HAVE_METADATA || !Number.isFinite(targetTime)) {
+			return false;
+		}
+
+		const duration = Number.isFinite(htmlEl.duration) ? htmlEl.duration : targetTime;
+		const clampedTime = Math.max(0, Math.min(duration, targetTime));
+		if (Math.abs(htmlEl.currentTime - clampedTime) > 0.001) {
+			htmlEl.currentTime = clampedTime;
+			return true;
+		}
+
+		return false;
+	}
+
+	function configureMediaVolume(htmlEl: HTMLMediaElement, element: IPlayerElement, timeMs: number) {
 		const gainNode = getMediaGainNode(htmlEl, element);
-		const volume = getMediaVolume(element);
+		const volume = getMediaVolume(element, timeMs);
 
 		if (gainNode) {
-			// use Web Audio gain so preview volume can go above the native media cap of 100%
-			htmlEl.volume = 1;
-			gainNode.gain.value = volume;
-		} else {
-			htmlEl.volume = Math.max(0, Math.min(1, volume));
+			if (htmlEl.volume !== 1) {
+				htmlEl.volume = 1;
+			}
+			if (Math.abs(gainNode.gain.value - volume) > 0.001) {
+				gainNode.gain.value = volume;
+			}
+			return;
+		}
+
+		const nativeVolume = Math.max(0, Math.min(1, volume));
+		if (Math.abs(htmlEl.volume - nativeVolume) > 0.001) {
+			htmlEl.volume = nativeVolume;
 		}
 	}
 
-	function getMediaVolume(element: IPlayerElement): number {
+	function getMediaVolume(element: IPlayerElement, timeMs: number): number {
 		if (element.type === MediaType.Audio) {
 			const settings = normalizeTimelineElementSettings(element) as IAudioTimelineElementSettings;
-			return Math.max(0, settings.volume * getFadeVolumeMultiplier(element));
+			return Math.max(0, settings.volume * getFadeVolumeMultiplier(element, timeMs));
 		}
 
 		if (element.type === MediaType.Video) {
@@ -178,7 +325,6 @@
 		element: IPlayerElement
 	): GainNode | undefined {
 		const playerElement = playerElementsMap[element.elementId];
-
 		if (!playerElement) {
 			return undefined;
 		}
@@ -191,7 +337,6 @@
 			audioContext = new AudioContext();
 		}
 
-		// each media element can only be connected to one source node, so keep the node on the map
 		const sourceNode = audioContext.createMediaElementSource(htmlEl);
 		const gainNode = audioContext.createGain();
 		sourceNode.connect(gainNode).connect(audioContext.destination);
@@ -200,49 +345,28 @@
 		return gainNode;
 	}
 
-	// filter the given map by removing keys where the "el" property in the value is null
-	function filterPlayerElementsMap(map: IPlayerElementsMap) {
-		// loop through map and filter out elements where the element is null
-		for (const [key, value] of Object.entries(map)) {
-			if (value.el === null) {
-				delete playerElementsMap[key];
-			}
+	function cleanupPlayerElement(playerElement: {
+		audio?: IPlayerElementAudio;
+		el: HTMLElement | null;
+		lastCorrectionAt?: number;
+		playPending?: boolean;
+	}) {
+		if (playerElement.el instanceof HTMLMediaElement) {
+			playerElement.el.pause();
 		}
+
+		if (playerElement.audio) {
+			// detached media must release its audio graph before the bounded entry is removed
+			playerElement.audio.sourceNode.disconnect();
+			playerElement.audio.gainNode.disconnect();
+			playerElement.audio = undefined;
+		}
+
+		playerElement.lastCorrectionAt = undefined;
+		playerElement.playPending = false;
 	}
 
-	// create a flattened array of timeline elements from a given array of tracks
-	function flattenTimelineTracks(arr: ITimelineTrack[]): IPlayerElement[] {
-		// go through each track, return the flattened elements array and flatten the end result after all tracks have been iterated through so we end up with a flat array of all elements in all tracks
-		const flatArr = arr.flatMap((track) =>
-			track.elements.flatMap((el) => {
-				// lookup media from availableMedia array in store using mediaId and get src property
-				const foundEl = $availableMedia.find((media) => media.mediaId === el.mediaId);
-				if (!foundEl) {
-					return el;
-				}
-				const playerEl = { src: foundEl.src, ...el } as IPlayerElement;
-
-				// if key with matching element id exists, add the media properties to the value
-				playerElementsMap[playerEl.elementId] = {
-					...playerElementsMap[playerEl.elementId],
-					properties: playerEl
-				};
-
-				return playerEl;
-			})
-		);
-
-		return flatArr.length > 0 ? flatArr : [];
-	}
-
-	// calculate if given element should be displayed or not by checking if the current playback time is within the element time on the timeline
-	function displayMediaElement(time: number, el: IPlayerElement) {
-		return time - el.playbackStartTime >= 0 && time - el.playbackStartTime <= el.duration
-			? 'unset'
-			: 'none';
-	}
-
-	function getVisualOpacity(element: IPlayerElement): number {
+	function getVisualOpacity(element: IManagedPreviewElement): number {
 		if (element.type === MediaType.Audio) {
 			return 1;
 		}
@@ -253,7 +377,7 @@
 		return settings.opacity;
 	}
 
-	function getVisualTransform(element: IPlayerElement): string {
+	function getVisualTransform(element: IManagedPreviewElement): string {
 		if (element.type === MediaType.Audio) {
 			return 'none';
 		}
@@ -268,7 +392,6 @@
 	}
 </script>
 
-<!-- set either height or width value to 100% to keep aspect ratio -->
 <div
 	class="relative bg-black preview-player max-h-full max-w-full"
 	style="
@@ -277,37 +400,36 @@
 	"
 	bind:this={previewPlayerRef}
 >
-	<!-- for each element in the timeline show either a video, audio or image element -->
-	{#each timelineElements as element, i (element.elementId)}
+	{#each managedElements as element (element.elementId)}
 		{#if element.type === MediaType.Video}
 			<!-- svelte-ignore a11y-media-has-caption -->
 			<video
 				data-id={element.elementId}
 				data-duration={element.duration}
-				preload="auto"
+				preload={element.active ? 'auto' : 'metadata'}
 				class="absolute top-0 left-0 w-full h-full pointer-events-none object-contain"
 				style="
-					display: {displayMediaElement($currentPlaybackTime, element)}; 
-					z-index:{timelineElements.length - i};
+					display: {element.active ? 'unset' : 'none'};
+					z-index: {element.layerIndex};
 					opacity: {getVisualOpacity(element)};
 					transform: {getVisualTransform(element)};
 				"
 				src={element.src}
 				bind:this={playerElementsMap[element.elementId].el}
-			>
-			</video>
+				on:loadedmetadata={() => handleLoadedMetadata(element)}
+				on:error={() => handleMediaError(element.elementId)}
+			></video>
 		{:else if element.type === MediaType.Audio}
 			<audio
 				data-id={element.elementId}
 				data-duration={element.duration}
-				preload="auto"
+				preload={element.active ? 'auto' : 'metadata'}
 				class="absolute top-0 left-0 w-full h-full pointer-events-none"
-				style="
-					display: {displayMediaElement($currentPlaybackTime, element)}; 
-					z-index:{timelineElements.length - i};
-				"
+				style="display: none; z-index: {element.layerIndex}"
 				src={element.src}
 				bind:this={playerElementsMap[element.elementId].el}
+				on:loadedmetadata={() => handleLoadedMetadata(element)}
+				on:error={() => handleMediaError(element.elementId)}
 			></audio>
 		{:else if element.type === MediaType.Image}
 			<img
@@ -316,16 +438,13 @@
 				bind:this={playerElementsMap[element.elementId].el}
 				class="absolute top-0 left-0 w-full h-full pointer-events-none object-contain"
 				style="
-					display: {displayMediaElement($currentPlaybackTime, element)}; 
-					z-index:{timelineElements.length - i};
+					display: {element.active ? 'unset' : 'none'};
+					z-index: {element.layerIndex};
 					opacity: {getVisualOpacity(element)};
 					transform: {getVisualTransform(element)};
 				"
 				data-id={element.elementId}
 			/>
-		{:else}
-			<!-- default case that should not be reached usually -->
-			<div class="no-matching-element-type"></div>
 		{/if}
 	{/each}
 </div>

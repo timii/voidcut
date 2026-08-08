@@ -13,29 +13,12 @@
 	import FrameBeforeIcon from '$lib/assets/preview/frame-before.png';
 	import FrameAfterIcon from '$lib/assets/preview/frame-after.png';
 	import { CONSTS } from '$lib/utils/consts';
-	import { doesElementExistInTimeline } from '$lib/utils/timeline.utils';
 	import { formatShortcutTooltip } from '$lib/utils/keyboard-shortcuts.utils';
 	import { skipPlayhead, stepPlayhead, togglePlayback } from '$lib/utils/timeline-actions.utils';
 
-	$: $timelineTracks, updateControls();
-	$: $currentPlaybackTime, updateControls();
-
-	let disableButtons = false;
-	let disableForwardButtons = false;
-	let disableBackwardButtons = false;
-
-	function updateControls() {
-		setTimeout(() => {
-			// disable controls if no element exists in the timeline
-			disableButtons = !doesElementExistInTimeline();
-
-			// disable the "forward" buttons if we are the max play back time
-			disableForwardButtons = $currentPlaybackTime >= $maxPlaybackTime;
-
-			// disable the "backward buttons if we are the start of the timeline
-			disableBackwardButtons = $currentPlaybackTime <= 0;
-		}, 0);
-	}
+	$: disableButtons = $timelineTracks.length === 0;
+	$: disableForwardButtons = $currentPlaybackTime >= $maxPlaybackTime;
+	$: disableBackwardButtons = $currentPlaybackTime <= 0;
 
 	function onSkipStartClick() {
 		skipPlayhead('start');

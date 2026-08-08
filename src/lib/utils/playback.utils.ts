@@ -11,81 +11,74 @@ import {
 	normalizeTimelineElementSettings
 } from './timeline-settings.utils';
 
-let interval: {
-	start: () => void;
-	stop: () => void;
-};
+let playbackInterval: ReturnType<typeof adjustingInterval> | undefined;
 
 // #region playback
-// stop interval that handles the current playback time
+// stop the single timer that owns timeline playback
 export function pausePlayback() {
 	previewPlaying.set(false);
-	if (interval) {
-		interval.stop();
+	if (playbackInterval) {
+		playbackInterval.stop();
+		playbackInterval = undefined;
 	}
 }
 
-// create interval that increases current playback time
 export function resumePlayback() {
+	// only one timer may publish timeline time
+	if (get(previewPlaying)) {
+		return;
+	}
+
 	previewPlaying.set(true);
-	const intervallCallback = () => {
-		const previousValue = get(currentPlaybackTime);
-		const nextValue = previousValue + CONSTS.playbackIntervalTimer;
+	playbackInterval = adjustingInterval(
+		() => {
+			const nextTime = Math.min(
+				get(currentPlaybackTime) + CONSTS.playbackIntervalTimer,
+				get(maxPlaybackTime)
+			);
+			currentPlaybackTime.set(nextTime);
 
-		// pause playback if its after the max playback time
-		if (nextValue > get(maxPlaybackTime)) {
-			pausePlayback();
-		} else {
-			// increase the current playback time in store by timeout amount
-			currentPlaybackTime.update((value) => value + CONSTS.playbackIntervalTimer);
-		}
-	};
-
-	const doError = () => {
-		// console.warn('The drift exceeded the interval.');
-	};
-
-	// create new interval with callbacks
-	interval = adjustingInterval(intervallCallback, CONSTS.playbackIntervalTimer, doError);
-
-	// manually start the intervals
-	interval.start();
+			if (nextTime >= get(maxPlaybackTime)) {
+				pausePlayback();
+			}
+		},
+		CONSTS.playbackIntervalTimer,
+		() => undefined
+	);
+	playbackInterval.start();
 }
 
 // check if the current playback time is inside given element bounds
-export function isPlaybackInElement(el: IPlayerElement): boolean {
+export function isPlaybackInElement(el: IPlayerElement, timeMs: number): boolean {
 	// calculate element bounds using the playback start time and the duration
 	const elBounds: ITimelineElementBounds = {
 		start: el.playbackStartTime,
 		end: el.playbackStartTime + el.duration
 	};
 
-	const playbackTime = get(currentPlaybackTime);
-
 	// return if the current playback time is between the start and end time of the element
-	return playbackTime >= elBounds.start && playbackTime < elBounds.end;
+	return timeMs >= elBounds.start && timeMs < elBounds.end;
 }
 
 // get the current element time for a given media element
-export function getCurrentMediaTime(el: IPlayerElement): number {
+export function getCurrentMediaTime(el: IPlayerElement, timeMs: number): number {
 	// get the start time of the element considering the playback start time and the left trim
 	const speed = getTimelineElementSpeed(el);
-	const timelineElapsed = get(currentPlaybackTime) - el.playbackStartTime;
+	const timelineElapsed = timeMs - el.playbackStartTime;
 	const mediaTimeInMs = el.trimFromStart + timelineElapsed * speed;
 
 	// calculate the time where from where the media element should be played
 	return mediaTimeInMs / CONSTS.secondsMultiplier;
 }
 
-export function getFadeVolumeMultiplier(el: IPlayerElement): number {
+export function getFadeVolumeMultiplier(el: IPlayerElement, timeMs: number): number {
 	if (el.type !== MediaType.Audio) {
 		return 1;
 	}
 
 	const settings = normalizeTimelineElementSettings(el) as IAudioTimelineElementSettings;
-	const playbackTime = get(currentPlaybackTime);
-	const elapsed = playbackTime - el.playbackStartTime;
-	const remaining = el.playbackStartTime + el.duration - playbackTime;
+	const elapsed = timeMs - el.playbackStartTime;
+	const remaining = el.playbackStartTime + el.duration - timeMs;
 	let multiplier = 1;
 
 	if (settings.fadeInMs > 0 && elapsed < settings.fadeInMs) {
