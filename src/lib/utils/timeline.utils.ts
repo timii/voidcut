@@ -60,13 +60,13 @@ export function handleElementResizing(e: MouseEvent) {
     e.stopPropagation();
     e.stopImmediatePropagation();
 
-    // if another element or thumg being dragged don't resize
-    if (get(isTimelineElementBeingDragged) || get(isThumbBeingDragged)) {
-        return;
-    }
-
-    // don't resize if not only primary button is clicked
-    if (!onlyPrimaryButtonClicked(e)) {
+    // don't resize if another element or the thumb is being dragged
+    // don't resize unless only the primary button is clicked
+    if (
+        get(isTimelineElementBeingDragged) ||
+        get(isThumbBeingDragged) ||
+        !onlyPrimaryButtonClicked(e)
+    ) {
         return;
     }
 
