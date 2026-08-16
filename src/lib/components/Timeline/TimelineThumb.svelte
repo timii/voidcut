@@ -57,11 +57,7 @@
 		const thumbBoundingRect = thumbElementRef?.getBoundingClientRect();
 		const scrollContainerBoundingRect = timelineScrollContainer?.getBoundingClientRect();
 
-		if (!thumbBoundingRect) {
-			return;
-		}
-
-		if (!scrollContainerBoundingRect || !timelineScrollContainer) {
+		if (!thumbBoundingRect || !scrollContainerBoundingRect || !timelineScrollContainer) {
 			return;
 		}
 

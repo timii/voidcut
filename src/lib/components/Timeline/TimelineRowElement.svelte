@@ -213,11 +213,13 @@
 
 	// handles the event while an element is being dragged
 	function onDrag(e: CustomEvent<DragEventData>) {
-		if ($isTimelineElementBeingResized || $isThumbBeingDragged) {
-			return;
-		}
-
-		if (!elStartPosition || !mouseStartPositioninTimeline || !$draggedElementPosition) {
+		if (
+			$isTimelineElementBeingResized ||
+			$isThumbBeingDragged ||
+			!elStartPosition ||
+			!mouseStartPositioninTimeline ||
+			!$draggedElementPosition
+		) {
 			return;
 		}
 
@@ -296,16 +298,13 @@
 		e.stopPropagation();
 		e.stopImmediatePropagation();
 
-		if ($isTimelineElementBeingDragged || $isThumbBeingDragged) {
-			return;
-		}
-
-		if (!onlyPrimaryButtonClicked(e)) {
-			return;
-		}
-
-		// only resize if the resized element id matches the current element
-		if (!isCurrentElementBeingResized(element)) {
+		// only resize when no drag is active, the primary button is clicked, and the element id matches
+		if (
+			$isTimelineElementBeingDragged ||
+			$isThumbBeingDragged ||
+			!onlyPrimaryButtonClicked(e) ||
+			!isCurrentElementBeingResized(element)
+		) {
 			return;
 		}
 
@@ -326,12 +325,11 @@
 		// check if current width + dx is bigger than maxDuration, if yes we can't increase the size further
 		// if maxDuration is undefined the user can resize the element as much as they want to
 		const speed = getTimelineElementSpeed(element);
-		if (element.maxDuration && newWidthInMs * speed > element.maxDuration) {
-			return;
-		}
-
-		// if the new width is smaller than the minimum width, the element size can't be decreaseed further
-		if (newWidthInMs < CONSTS.timelineElementMinWidthMs) {
+		// if the new width is smaller than the minimum width, the element size can't be decreased further
+		if (
+			(element.maxDuration && newWidthInMs * speed > element.maxDuration) ||
+			newWidthInMs < CONSTS.timelineElementMinWidthMs
+		) {
 			return;
 		}
 
@@ -411,16 +409,13 @@
 		// avoid the thumb being also moved to where the handle is
 		e.stopPropagation();
 
-		if ($isTimelineElementBeingDragged || $isThumbBeingDragged) {
-			return;
-		}
-
-		if (!onlyPrimaryButtonClicked(e)) {
-			return;
-		}
-
-		// only resize if the resized element id matches the current element
-		if (!isCurrentElementBeingResized(element)) {
+		// only resize when no drag is active, the primary button is clicked, and the element id matches
+		if (
+			$isTimelineElementBeingDragged ||
+			$isThumbBeingDragged ||
+			!onlyPrimaryButtonClicked(e) ||
+			!isCurrentElementBeingResized(element)
+		) {
 			return;
 		}
 
@@ -456,12 +451,11 @@
 		// check if current width + dx is equal or bigger than maxDuration, if yes we can't increase the size further
 		// if maxDuration is undefined the user can resize the element as much as they want to
 		const speed = getTimelineElementSpeed(element);
-		if (element.maxDuration && newWidthInMs * speed > element.maxDuration) {
-			return;
-		}
-
-		// if the new width is smaller than the minimum width, the element size can't be decreaseed further
-		if (newWidthInMs < CONSTS.timelineElementMinWidthMs) {
+		// if the new width is smaller than the minimum width, the element size can't be decreased further
+		if (
+			(element.maxDuration && newWidthInMs * speed > element.maxDuration) ||
+			newWidthInMs < CONSTS.timelineElementMinWidthMs
+		) {
 			return;
 		}
 
