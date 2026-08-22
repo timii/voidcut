@@ -6,8 +6,10 @@
 		ITimelineElement,
 		ITimelineTrack,
 		IVideoTimelineElementSettings,
+		TimelineElementScaleMode,
 		TimelineElementSpeed
 	} from '$lib/interfaces/Timeline';
+	import type { PreviewAspectRatio } from '$lib/interfaces/Player';
 	import { selectedElement, timelineTracks } from '../../../stores/store';
 	import {
 		DEFAULT_IMAGE_DURATION_MS,
@@ -24,13 +26,19 @@
 	} from '$lib/utils/timeline-settings.utils';
 	import { formatTime } from '$lib/utils/time.utils';
 	import { runTimelineEdit, timelineHistory } from '$lib/utils/timeline-history.utils';
+	import {
+		getDisplayedScaleMode,
+		MEDIA_CROP_ASPECT_RATIO_PRESETS
+	} from '$lib/utils/media-transform.utils';
 
 	let warning = '';
 	let lastSelectedElementId = '';
+	let cropOptionsOpen = false;
 
 	$: selectedData = getSelectedElementData($timelineTracks, $selectedElement.elementId);
 	$: if (lastSelectedElementId !== $selectedElement.elementId) {
 		warning = '';
+		cropOptionsOpen = false;
 		lastSelectedElementId = $selectedElement.elementId;
 	}
 
@@ -169,6 +177,40 @@
 		});
 	}
 
+	function updateVisualScaleSetting(
+		scaleMode: TimelineElementScaleMode,
+		cropAspectRatio?: PreviewAspectRatio
+	) {
+		updateSelectedElement((element) => {
+			if (element.type === MediaType.Audio) {
+				return element;
+			}
+
+			const settings = normalizeTimelineElementSettings(element) as
+				| IVideoTimelineElementSettings
+				| IImageTimelineElementSettings;
+			const nextSettings = { ...settings, scaleMode };
+
+			if (scaleMode === 'crop' && cropAspectRatio) {
+				nextSettings.cropAspectRatio = cropAspectRatio;
+			} else {
+				delete nextSettings.cropAspectRatio;
+			}
+
+			warning = '';
+			return { ...element, settings: nextSettings };
+		});
+	}
+
+	function applyScaleMode(scaleMode: Exclude<TimelineElementScaleMode, 'crop'>) {
+		updateVisualScaleSetting(scaleMode);
+		cropOptionsOpen = false;
+	}
+
+	function applyCropAspectRatio(cropAspectRatio: PreviewAspectRatio) {
+		updateVisualScaleSetting('crop', cropAspectRatio);
+	}
+
 	function updateSpeed(speed: TimelineElementSpeed) {
 		updateSelectedElement((element, tracks, rowIndex, elementIndex) => {
 			if (element.type === MediaType.Image) {
@@ -263,11 +305,11 @@
 	}
 
 	function getVideoSettings(element: ITimelineElement): IVideoTimelineElementSettings {
-		return element.settings as IVideoTimelineElementSettings;
+		return normalizeTimelineElementSettings(element) as IVideoTimelineElementSettings;
 	}
 
 	function getImageSettings(element: ITimelineElement): IImageTimelineElementSettings {
-		return element.settings as IImageTimelineElementSettings;
+		return normalizeTimelineElementSettings(element) as IImageTimelineElementSettings;
 	}
 </script>
 
@@ -370,6 +412,60 @@
 				</div>
 			{:else if selectedData.element.type === MediaType.Video}
 				{@const settings = getVideoSettings(selectedData.element)}
+				{@const displayedScaleMode = getDisplayedScaleMode(settings.scaleMode, cropOptionsOpen)}
+				<div class="setting-group">
+					<div class="setting-label">Scale</div>
+					<div class="button-grid">
+						<button
+							type="button"
+							class:active-button={displayedScaleMode === 'fill'}
+							class="preset-button"
+							on:click={() => applyScaleMode('fill')}
+						>
+							Fill
+						</button>
+						<button
+							type="button"
+							class:active-button={displayedScaleMode === 'fit'}
+							class="preset-button"
+							on:click={() => applyScaleMode('fit')}
+						>
+							Fit
+						</button>
+						<button
+							type="button"
+							class:active-button={displayedScaleMode === 'crop'}
+							class="preset-button"
+							aria-expanded={cropOptionsOpen}
+							on:click={() => (cropOptionsOpen = !cropOptionsOpen)}
+						>
+							Crop
+						</button>
+					</div>
+					{#if cropOptionsOpen}
+						<div class="button-grid">
+							<button
+								type="button"
+								class="preset-button"
+								on:click={() => applyScaleMode('fit')}
+							>
+								Original
+							</button>
+							{#each MEDIA_CROP_ASPECT_RATIO_PRESETS as ratio}
+								<button
+									type="button"
+									class:active-button={settings.scaleMode === 'crop' &&
+										settings.cropAspectRatio === ratio}
+									class="preset-button"
+									on:click={() => applyCropAspectRatio(ratio)}
+								>
+									{ratio.replace('/', ':')}
+								</button>
+							{/each}
+						</div>
+					{/if}
+				</div>
+
 				<div class="setting-group">
 					<div class="setting-label">Flip</div>
 					<div class="grid grid-cols-2 gap-2">
@@ -452,6 +548,60 @@
 				</div>
 			{:else if selectedData.element.type === MediaType.Image}
 				{@const settings = getImageSettings(selectedData.element)}
+				{@const displayedScaleMode = getDisplayedScaleMode(settings.scaleMode, cropOptionsOpen)}
+				<div class="setting-group">
+					<div class="setting-label">Scale</div>
+					<div class="button-grid">
+						<button
+							type="button"
+							class:active-button={displayedScaleMode === 'fill'}
+							class="preset-button"
+							on:click={() => applyScaleMode('fill')}
+						>
+							Fill
+						</button>
+						<button
+							type="button"
+							class:active-button={displayedScaleMode === 'fit'}
+							class="preset-button"
+							on:click={() => applyScaleMode('fit')}
+						>
+							Fit
+						</button>
+						<button
+							type="button"
+							class:active-button={displayedScaleMode === 'crop'}
+							class="preset-button"
+							aria-expanded={cropOptionsOpen}
+							on:click={() => (cropOptionsOpen = !cropOptionsOpen)}
+						>
+							Crop
+						</button>
+					</div>
+					{#if cropOptionsOpen}
+						<div class="button-grid">
+							<button
+								type="button"
+								class="preset-button"
+								on:click={() => applyScaleMode('fit')}
+							>
+								Original
+							</button>
+							{#each MEDIA_CROP_ASPECT_RATIO_PRESETS as ratio}
+								<button
+									type="button"
+									class:active-button={settings.scaleMode === 'crop' &&
+										settings.cropAspectRatio === ratio}
+									class="preset-button"
+									on:click={() => applyCropAspectRatio(ratio)}
+								>
+									{ratio.replace('/', ':')}
+								</button>
+							{/each}
+						</div>
+					{/if}
+				</div>
+
 				<div class="setting-group">
 					<div class="setting-label">Flip</div>
 					<div class="grid grid-cols-2 gap-2">

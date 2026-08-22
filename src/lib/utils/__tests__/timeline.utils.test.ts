@@ -1,12 +1,17 @@
 import { describe, expect, it } from 'vitest';
-import type { ITimelineElement, ITimelineTrack } from '$lib/interfaces/Timeline';
+import type {
+	IImageTimelineElementSettings,
+	ITimelineElement,
+	ITimelineTrack
+} from '$lib/interfaces/Timeline';
 import { MediaType } from '$lib/interfaces/Media';
 import { moveElementToAdjacentRow } from '../timeline.utils';
 
-const settings = {
+const settings: IImageTimelineElementSettings = {
 	flipHorizontal: false,
 	flipVertical: false,
-	opacity: 1
+	opacity: 1,
+	scaleMode: 'fit'
 };
 
 function makeElement(elementId: string, playbackStartTime: number): ITimelineElement {

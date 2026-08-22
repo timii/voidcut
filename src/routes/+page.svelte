@@ -31,6 +31,7 @@
 		resolveKeyboardShortcut
 	} from '$lib/utils/keyboard-shortcuts.utils';
 	import { timelineHistory } from '$lib/utils/timeline-history.utils';
+	import { preloadImages } from '$lib/utils/image.utils';
 
 	// import icons directly so the path is resolved correctly after building
 	import CloseIcon from '$lib/assets/header/close.png';
@@ -61,6 +62,9 @@
 	let keyboardNudgeActive = false;
 
 	onMount(async () => {
+		// load state-specific icons before slower startup work
+		preloadImages(preloadImageUrls);
+
 		// initialize all the ffmpeg stuff in the background
 		// using async in this onMount is only fine if we don't
 		// need to return a destroy function
@@ -95,19 +99,7 @@
 			restoreStateOverlayOpen.set(true);
 			await restoreLastState();
 		}
-
-		// preload all images defined above
-		await preloadImages();
 	});
-
-	// manually use all defined icons for preload to avoid warnings in console that they are not being used
-	async function preloadImages() {
-		for (const image of preloadImageUrls) {
-			const img = new Image();
-			img.src = image;
-			img.onload = () => {};
-		}
-	}
 
 	//  listen to window changes and update the store variable on change
 	function onWindowResize(width: number, height: number) {

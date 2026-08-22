@@ -26,7 +26,7 @@ const element: ITimelineElement = {
 	playbackStartTime: 0,
 	trimFromStart: 0,
 	trimFromEnd: 0,
-	settings: { flipHorizontal: false, flipVertical: false, opacity: 1 }
+	settings: { flipHorizontal: false, flipVertical: false, opacity: 1, scaleMode: 'fit' }
 };
 
 beforeEach(() => {

@@ -1,10 +1,12 @@
 import { MediaType } from '$lib/interfaces/Media';
+import { PreviewAspectRatio } from '$lib/interfaces/Player';
 import type {
 	IAudioTimelineElementSettings,
 	IImageTimelineElementSettings,
 	ITimelineElement,
 	ITimelineTrack,
 	IVideoTimelineElementSettings,
+	TimelineElementScaleMode,
 	TimelineElementSettings,
 	TimelineElementSpeed
 } from '$lib/interfaces/Timeline';
@@ -32,14 +34,16 @@ export function getDefaultTimelineElementSettings(type: MediaType): TimelineElem
 				flipVertical: false,
 				volume: 1,
 				speed: 1,
-				opacity: 1
+				opacity: 1,
+				scaleMode: 'fit'
 			};
 		case MediaType.Image:
 		default:
 			return {
 				flipHorizontal: false,
 				flipVertical: false,
-				opacity: 1
+				opacity: 1,
+				scaleMode: 'fit'
 			};
 	}
 }
@@ -65,6 +69,7 @@ export function normalizeTimelineElementSettings(
 		const settings = existingSettings as Partial<IVideoTimelineElementSettings> | undefined;
 		return {
 			...defaults,
+			...normalizeScaleSettings(settings),
 			flipHorizontal: settings?.flipHorizontal ?? false,
 			flipVertical: settings?.flipVertical ?? false,
 			volume: clampNumber(settings?.volume, MIN_SETTING_VALUE, MAX_VOLUME, 1),
@@ -76,6 +81,7 @@ export function normalizeTimelineElementSettings(
 	const settings = existingSettings as Partial<IImageTimelineElementSettings> | undefined;
 	return {
 		...defaults,
+		...normalizeScaleSettings(settings),
 		flipHorizontal: settings?.flipHorizontal ?? false,
 		flipVertical: settings?.flipVertical ?? false,
 		opacity: clampNumber(settings?.opacity, MIN_SETTING_VALUE, MAX_OPACITY, 1)
@@ -175,4 +181,30 @@ function normalizeSpeed(value: number | undefined): TimelineElementSpeed {
 	return TIMELINE_SPEED_PRESETS.includes(value as TimelineElementSpeed)
 		? (value as TimelineElementSpeed)
 		: 1;
+}
+
+function normalizeScaleSettings(
+	settings:
+		| {
+				scaleMode?: unknown;
+				cropAspectRatio?: unknown;
+		  }
+		| undefined
+): {
+	scaleMode: TimelineElementScaleMode;
+	cropAspectRatio?: PreviewAspectRatio;
+} {
+	if (settings?.scaleMode === 'crop' && isPreviewAspectRatio(settings.cropAspectRatio)) {
+		return {
+			scaleMode: 'crop',
+			cropAspectRatio: settings.cropAspectRatio
+		};
+	}
+
+	// legacy or incomplete crop settings fall back to fit
+	return { scaleMode: settings?.scaleMode === 'fill' ? 'fill' : 'fit' };
+}
+
+function isPreviewAspectRatio(value: unknown): value is PreviewAspectRatio {
+	return Object.values(PreviewAspectRatio).some((aspectRatio) => aspectRatio === value);
 }

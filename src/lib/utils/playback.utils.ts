@@ -77,6 +77,27 @@ export function getCurrentMediaTime(el: IPlayerElement): number {
 	return mediaTimeInMs / CONSTS.secondsMultiplier;
 }
 
+type PlayableMediaElement = Pick<HTMLMediaElement, 'currentTime' | 'pause' | 'play'>;
+
+export function syncMediaElementPlayback(
+	element: PlayableMediaElement,
+	playing: boolean,
+	currentMediaTime: number,
+	playbackInElement: boolean
+) {
+	if (!playing) {
+		element.pause();
+		return;
+	}
+
+	if (currentMediaTime < 0 || !playbackInElement) {
+		return;
+	}
+
+	element.currentTime = currentMediaTime;
+	element.play();
+}
+
 export function getFadeVolumeMultiplier(el: IPlayerElement): number {
 	if (el.type !== MediaType.Audio) {
 		return 1;

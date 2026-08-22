@@ -1,5 +1,6 @@
 import type { DragEventData } from '@neodrag/svelte';
 import type { MediaType } from './Media';
+import type { PreviewAspectRatio } from './Player';
 
 export interface ITimelineElement {
 	elementId: string; // unique id of timeline element
@@ -30,12 +31,16 @@ export interface IVideoTimelineElementSettings {
 	volume: number;
 	speed: TimelineElementSpeed;
 	opacity: number;
+	scaleMode: TimelineElementScaleMode;
+	cropAspectRatio?: PreviewAspectRatio;
 }
 
 export interface IImageTimelineElementSettings {
 	flipHorizontal: boolean;
 	flipVertical: boolean;
 	opacity: number;
+	scaleMode: TimelineElementScaleMode;
+	cropAspectRatio?: PreviewAspectRatio;
 }
 
 export type TimelineElementSettings =
@@ -44,6 +49,7 @@ export type TimelineElementSettings =
 	| IImageTimelineElementSettings;
 
 export type TimelineElementSpeed = 0.5 | 0.75 | 1 | 1.25 | 1.5 | 2;
+export type TimelineElementScaleMode = 'fit' | 'fill' | 'crop';
 
 // parent element for each track(row) in the timeline
 export interface ITimelineTrack {
