@@ -30,7 +30,6 @@ The goal of voidcut was to have some fun creating a simple tool that I can use m
 
 - **Effects & Filters**: Add more functionality to workbench such as rotation, changing aspect ratio, etc.
   - **Text Overlays**: Be able to add text with customizable styling.
-  - **Audio Editing**: Be able to adjust the volume of different tracks.
 - **Manage Different Projects**: Add a start window to manage different projects
 - **Responsive Layout**: Add styling for mobile devices
 
