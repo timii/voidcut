@@ -10,7 +10,8 @@ import { resolveTimelineElementDrop } from '../timeline-drop.utils';
 const defaultSettings: IImageTimelineElementSettings = {
 	flipHorizontal: false,
 	flipVertical: false,
-	opacity: 1
+	opacity: 1,
+	scaleMode: 'fit'
 };
 
 function makeElement(

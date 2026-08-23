@@ -1,7 +1,11 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { get } from 'svelte/store';
 import { MediaType } from '$lib/interfaces/Media';
-import type { ITimelineElement, ITimelineTrack } from '$lib/interfaces/Timeline';
+import type {
+	IImageTimelineElementSettings,
+	ITimelineElement,
+	ITimelineTrack
+} from '$lib/interfaces/Timeline';
 import {
 	currentPlaybackTime,
 	maxPlaybackTime,
@@ -19,10 +23,11 @@ import {
 } from '../timeline-actions.utils';
 import { timelineHistory } from '../timeline-history.utils';
 
-const settings = {
+const settings: IImageTimelineElementSettings = {
 	flipHorizontal: false,
 	flipVertical: false,
-	opacity: 1
+	opacity: 1,
+	scaleMode: 'fit'
 };
 
 function makeElement(

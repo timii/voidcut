@@ -10,13 +10,18 @@
 	import {
 		getCurrentMediaTime,
 		getFadeVolumeMultiplier,
-		isPlaybackInElement
+		isPlaybackInElement,
+		syncMediaElementPlayback
 	} from '$lib/utils/playback.utils';
 	import { isSameAspectRatio } from '$lib/utils/utils';
 	import {
 		getTimelineElementSpeed,
 		normalizeTimelineElementSettings
 	} from '$lib/utils/timeline-settings.utils';
+	import {
+		getMediaTransformLayout,
+		type MediaTransformLayout
+	} from '$lib/utils/media-transform.utils';
 	import {
 		availableMedia,
 		currentPlaybackTime,
@@ -134,14 +139,7 @@
 			// get the time from where the media element should be played at
 			const currentElTime = getCurrentMediaTime(el.properties);
 
-			// check if we are withing bounds of the element
-			if (currentElTime >= 0 && isPlaybackInElement(el.properties)) {
-				// set currentTime of element to current playback time (in seconds)
-				htmlEl.currentTime = currentElTime;
-
-				// play/pause the element depending the "previewPlaying" store value
-				playing ? htmlEl.play() : htmlEl.pause();
-			}
+			syncMediaElementPlayback(htmlEl, playing, currentElTime, isPlaybackInElement(el.properties));
 		});
 	}
 
@@ -242,6 +240,27 @@
 			: 'none';
 	}
 
+	function displayVisualElement(time: number, element: IPlayerElement): string {
+		return displayMediaElement(time, element) === 'none' ? 'none' : 'flex';
+	}
+
+	function getVisualLayout(element: IPlayerElement): MediaTransformLayout {
+		const settings = normalizeTimelineElementSettings(element) as
+			| IVideoTimelineElementSettings
+			| IImageTimelineElementSettings;
+		return getMediaTransformLayout(settings, $previewAspectRatio);
+	}
+
+	function getFrameStyle(layout: MediaTransformLayout): string {
+		if (layout.frameSize === 'full') {
+			return 'width: 100%; height: 100%;';
+		}
+
+		return layout.frameSize === 'width'
+			? `width: 100%; height: auto; aspect-ratio: ${layout.frameAspectRatio};`
+			: `height: 100%; width: auto; aspect-ratio: ${layout.frameAspectRatio};`;
+	}
+
 	function getVisualOpacity(element: IPlayerElement): number {
 		if (element.type === MediaType.Audio) {
 			return 1;
@@ -280,22 +299,31 @@
 	<!-- for each element in the timeline show either a video, audio or image element -->
 	{#each timelineElements as element, i (element.elementId)}
 		{#if element.type === MediaType.Video}
-			<!-- svelte-ignore a11y-media-has-caption -->
-			<video
-				data-id={element.elementId}
-				data-duration={element.duration}
-				preload="auto"
-				class="absolute top-0 left-0 w-full h-full pointer-events-none object-contain"
+			{@const layout = getVisualLayout(element)}
+			<div
+				class="absolute top-0 left-0 w-full h-full pointer-events-none items-center justify-center"
 				style="
-					display: {displayMediaElement($currentPlaybackTime, element)}; 
+					display: {displayVisualElement($currentPlaybackTime, element)};
 					z-index:{timelineElements.length - i};
-					opacity: {getVisualOpacity(element)};
-					transform: {getVisualTransform(element)};
 				"
-				src={element.src}
-				bind:this={playerElementsMap[element.elementId].el}
 			>
-			</video>
+				<div class="overflow-hidden" style={getFrameStyle(layout)}>
+					<!-- svelte-ignore a11y-media-has-caption -->
+					<video
+						data-id={element.elementId}
+						data-duration={element.duration}
+						preload="auto"
+						class="w-full h-full pointer-events-none"
+						style="
+							object-fit: {layout.objectFit};
+							opacity: {getVisualOpacity(element)};
+							transform: {getVisualTransform(element)};
+						"
+						src={element.src}
+						bind:this={playerElementsMap[element.elementId].el}
+					></video>
+				</div>
+			</div>
 		{:else if element.type === MediaType.Audio}
 			<audio
 				data-id={element.elementId}
@@ -310,19 +338,29 @@
 				bind:this={playerElementsMap[element.elementId].el}
 			></audio>
 		{:else if element.type === MediaType.Image}
-			<img
-				src={element.src}
-				alt=""
-				bind:this={playerElementsMap[element.elementId].el}
-				class="absolute top-0 left-0 w-full h-full pointer-events-none object-contain"
+			{@const layout = getVisualLayout(element)}
+			<div
+				class="absolute top-0 left-0 w-full h-full pointer-events-none items-center justify-center"
 				style="
-					display: {displayMediaElement($currentPlaybackTime, element)}; 
+					display: {displayVisualElement($currentPlaybackTime, element)};
 					z-index:{timelineElements.length - i};
-					opacity: {getVisualOpacity(element)};
-					transform: {getVisualTransform(element)};
 				"
-				data-id={element.elementId}
-			/>
+			>
+				<div class="overflow-hidden" style={getFrameStyle(layout)}>
+					<img
+						src={element.src}
+						alt=""
+						bind:this={playerElementsMap[element.elementId].el}
+						class="w-full h-full pointer-events-none"
+						style="
+							object-fit: {layout.objectFit};
+							opacity: {getVisualOpacity(element)};
+							transform: {getVisualTransform(element)};
+						"
+						data-id={element.elementId}
+					/>
+				</div>
+			</div>
 		{:else}
 			<!-- default case that should not be reached usually -->
 			<div class="no-matching-element-type"></div>

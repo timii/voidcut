@@ -48,6 +48,7 @@ import {
 	getTimelineElementSpeed,
 	normalizeTimelineElementSettings
 } from './timeline-settings.utils';
+import { getMediaVisualFilters } from './media-transform.utils';
 
 let ffmpeg: FFmpeg;
 let elapsedTimeInterval: {
@@ -266,7 +267,8 @@ function createFfmpegFlags(
 
 	if (needsVideo) {
 		// 1.1 trim element videos and shift their timeline forward accordingly so that they appear at the correct times
-		const updateVideosString = updateElementVideos(mediaData, outputMap);
+		const outputResolution = getAspectRatioInPx(settings);
+		const updateVideosString = updateElementVideos(mediaData, outputMap, outputResolution);
 		filterComplexString += updateVideosString;
 
 		// 1.2 reset the blank video’s (background video) timestamp to the start
@@ -410,32 +412,6 @@ function getFfmpegElementSpeed(element: IFfmpegElement): number {
 	});
 }
 
-function getVisualFilterChain(element: IFfmpegElement): string {
-	if (element.mediaType === MediaType.Audio) {
-		return '';
-	}
-
-	const settings = element.settings as
-		| IVideoTimelineElementSettings
-		| IImageTimelineElementSettings;
-	const filters: string[] = [];
-
-	if (settings.flipHorizontal) {
-		filters.push('hflip');
-	}
-
-	if (settings.flipVertical) {
-		filters.push('vflip');
-	}
-
-	if (settings.opacity < 1) {
-		// overlay needs an alpha-capable stream before opacity can affect the composed output
-		filters.push('format=rgba', `colorchannelmixer=aa=${settings.opacity}`);
-	}
-
-	return filters.length > 0 ? `,${filters.join(',')}` : '';
-}
-
 function getAudioFilterChain(element: IFfmpegElement): string {
 	if (element.mediaType === MediaType.Image) {
 		return '';
@@ -474,7 +450,11 @@ function getAudioFilterChain(element: IFfmpegElement): string {
 }
 
 // handle trimming, timestamps and delays for the video streams
-function updateElementVideos(mediaData: IFfmpegElement[], outputMap: OutputMap): string {
+function updateElementVideos(
+	mediaData: IFfmpegElement[],
+	outputMap: OutputMap,
+	outputResolution: string
+): string {
 	// create a "trim" key with an empty array that will keep track of the output variable names to be used later
 	outputMap.set(OutputMapKey.TRIM, []);
 
@@ -503,10 +483,14 @@ function updateElementVideos(mediaData: IFfmpegElement[], outputMap: OutputMap):
 		// decrement indeces
 		const inputIndex = i + 1;
 		const outputName = `trim${inputIndex}`;
-		const visualFilters = getVisualFilterChain(curEl);
+		const settings = curEl.settings as
+			| IVideoTimelineElementSettings
+			| IImageTimelineElementSettings;
+		const visualFilters = getMediaVisualFilters(settings, outputResolution);
+		const visualFilterChain = visualFilters.length > 0 ? `,${visualFilters.join(',')}` : '';
 
 		// build the filter string for current element by appending it to the previous element(s)
-		trimString += `[${inputIndex}:v]trim=start=${trimFromStart}:duration=${durationInS},setpts=(PTS-STARTPTS)/${speed}+${offsetInS}/TB${visualFilters}[${outputName}];`;
+		trimString += `[${inputIndex}:v]trim=start=${trimFromStart}:duration=${durationInS},setpts=(PTS-STARTPTS)/${speed}+${offsetInS}/TB${visualFilterChain}[${outputName}];`;
 
 		// get the previous array
 		const prevMapValue = outputMap.get(OutputMapKey.TRIM) ?? '';
